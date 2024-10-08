@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
-const typeDefs = require('./schema'); // Import your schema
-const resolvers = require('./resolvers'); // Import your resolvers
+const typeDefs = require('./schemas/typeDefs'); // Import your schema
+const resolvers = require('./schemas/resolvers'); // Import your resolvers
 
 require('dotenv').config();
 
