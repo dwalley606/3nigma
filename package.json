@@ -1,0 +1,29 @@
+{
+  "name": "3nigma",
+  "version": "1.0.0",
+  "description": "Experimental E2EE messaging PWA running on the MERN stack",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server --ignore client",
+    "develop": "concurrently \"cd server && npm run start\" \"cd client && npm run dev\"",
+    "install": "cd server && npm i && cd ../client && npm i",
+    "seed": "cd server && npm run seed",
+    "build": "cd client && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dwalley606/3nigma.git"
+  },
+  "author": "Daniel Walley",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dwalley606/3nigma/issues"
+  },
+  "homepage": "https://github.com/dwalley606/3nigma#readme",
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  },
+  "dependencies": {
+    "3nigma": "file:"
+  }
+}
