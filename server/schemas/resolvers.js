@@ -36,6 +36,10 @@ const resolvers = {
       return await User.findById(id);
     },
 
+    getUsers: async () => {
+      return await User.find();  // Fetch all users directly from the User model
+    },
+
     // Fetch user's encryption keys
     getEncryptionKey: async (_, { userId }) => {
       const user = await User.findById(userId);

@@ -49,6 +49,7 @@ const typeDefs = `
     getMessages(senderId: ID!, recipientId: ID!): [Message!]!
     getGroupMessages(groupID: ID!): [Message!]!
     getUser(id: ID!): User!
+    getUsers: [User!]
     getEncryptionKey(userId: ID!): EncryptionKey!
   }
 
