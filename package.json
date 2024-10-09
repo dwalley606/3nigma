@@ -2,7 +2,7 @@
   "name": "3nigma",
   "version": "1.0.0",
   "description": "Experimental E2EE messaging PWA running on the MERN stack",
-  "main": "server.js",
+  "main": "server/server.js",
   "scripts": {
     "start": "node server --ignore client",
     "develop": "concurrently \"cd server && npm run start\" \"cd client && npm run dev\"",
