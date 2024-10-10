@@ -1,4 +1,3 @@
-
 const typeDefs = `
   type User {
     id: ID!
@@ -44,6 +43,11 @@ const typeDefs = `
     privateKey: String!
   }
 
+  type RegisterUserResponse {
+     user: User!
+     privateKey: String!
+   }
+
   type Query {
     getContacts(userId: ID!): [User!]!
     getMessages(senderId: ID!, recipientId: ID!): [Message!]!
@@ -54,7 +58,7 @@ const typeDefs = `
   }
 
   type Mutation {
-    registerUser(username: String!, phoneNumber: String!, publicKey: String!): User!
+    registerUser(username: String!, phoneNumber: String!): RegisterUserResponse!
     sendMessage(senderId: ID!, recipientId: ID!, content: String!, isGroupMessage: Boolean): Message!
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!
     respondContactRequest(requestId: ID!, status: String!): ContactRequest!   

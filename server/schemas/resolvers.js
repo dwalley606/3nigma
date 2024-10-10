@@ -1,34 +1,36 @@
-const User = require('../models/User');  // Assuming you've created models
-const Message = require('../models/Message');
-const Group = require('../models/Group');
-const ContactRequest = require('../models/ContactRequest');
-const { encryptMessage, decryptMessage } = require('../utils/encryption');
+const User = require("../models/User"); // Assuming you've created models
+const Message = require("../models/Message");
+const Group = require("../models/Group");
+const ContactRequest = require("../models/ContactRequest");
+const { encryptMessage, decryptMessage } = require("../utils/encryption");
+const { generateKeyPair } = require("../utils/keyUtils"); // Import the key generation utility
+const { registerUser } = require("../controllers/userController"); // Import the user controller
 
 const resolvers = {
   Query: {
     // Get user's contacts
     getContacts: async (_, { userId }) => {
-      return await User.findById(userId).populate('contacts');
+      return await User.findById(userId).populate("contacts");
     },
-    
+
     // Fetch a conversation between two users
     getMessages: async (_, { senderId, recipientId }) => {
-      const messages = await Message.find({ 
+      const messages = await Message.find({
         $or: [
-          { senderId, recipientId }, 
-          { senderId: recipientId, recipientId: senderId }
-        ]
+          { senderId, recipientId },
+          { senderId: recipientId, recipientId: senderId },
+        ],
       });
       // Decrypt messages
-      return messages.map(msg => ({
+      return messages.map((msg) => ({
         ...msg.toObject(),
-        content: decryptMessage(msg.content, recipientId)
+        content: decryptMessage(msg.content, recipientId),
       }));
     },
 
     // Fetch group conversation
     getGroupMessages: async (_, { groupId }) => {
-      return await Group.findById(groupId).populate('messages');
+      return await Group.findById(groupId).populate("messages");
     },
 
     // Fetch user details
@@ -37,7 +39,7 @@ const resolvers = {
     },
 
     getUsers: async () => {
-      return await User.find();  // Fetch all users directly from the User model
+      return await User.find(); // Fetch all users directly from the User model
     },
 
     // Fetch user's encryption keys
@@ -46,20 +48,30 @@ const resolvers = {
       return {
         user: user._id,
         publicKey: user.publicKey,
-        privateKey: user.privateKey // Should only be returned if this is a client-specific request
+        privateKey: user.privateKey, // Should only be returned if this is a client-specific request
       };
-    }
+    },
   },
 
   Mutation: {
     // Register a new user
-    registerUser: async (_, { username, phoneNumber, publicKey }) => {
-      const newUser = new User({ username, phoneNumber, publicKey });
-      return await newUser.save();
+    registerUser: async (_, { username, phoneNumber }) => {
+      // Delegate user registration to the userController
+      const { user, privateKey } = await registerUser(username, phoneNumber);
+
+      // Return the user and the private key to the client
+      // Ensure the private key is transmitted securely
+      return {
+        user,
+        privateKey, // Return the private key to the client
+      };
     },
 
     // Send a direct or group message
-    sendMessage: async (_, { senderId, recipientId, content, isGroupMessage }) => {
+    sendMessage: async (
+      _,
+      { senderId, recipientId, content, isGroupMessage }
+    ) => {
       const encryptedContent = encryptMessage(content, recipientId);
       const newMessage = new Message({
         senderId,
@@ -73,7 +85,11 @@ const resolvers = {
 
     // Send contact request for secure connection
     sendContactRequest: async (_, { fromUserId, toUserId }) => {
-      const request = new ContactRequest({ from: fromUserId, to: toUserId, status: "pending" });
+      const request = new ContactRequest({
+        from: fromUserId,
+        to: toUserId,
+        status: "pending",
+      });
       return await request.save();
     },
 
@@ -118,8 +134,8 @@ const resolvers = {
         return true;
       }
       return false;
-    }
-  }
+    },
+  },
 };
 
 module.exports = resolvers;
