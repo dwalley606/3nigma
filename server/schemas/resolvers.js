@@ -1,9 +1,7 @@
 const User = require("../models/User"); // Assuming you've created models
 const Message = require("../models/Message");
 const Group = require("../models/Group");
-const ContactRequest = require("../models/ContactRequest");
-const { encryptMessage, decryptMessage } = require("../utils/encryption");
-const { generateKeyPair } = require("../utils/keyUtils"); // Import the key generation utility
+const ContactRequest = require("../models/ContactRequest"); // Import the key generation utility
 const { registerUser } = require("../controllers/userController"); // Import the user controller
 
 const resolvers = {
@@ -21,10 +19,10 @@ const resolvers = {
           { senderId: recipientId, recipientId: senderId },
         ],
       });
-      // Decrypt messages
+      // Return messages without decrypting
       return messages.map((msg) => ({
         ...msg.toObject(),
-        content: decryptMessage(msg.content, recipientId),
+        content: msg.content, // Return encrypted content
       }));
     },
 
@@ -72,11 +70,11 @@ const resolvers = {
       _,
       { senderId, recipientId, content, isGroupMessage }
     ) => {
-      const encryptedContent = encryptMessage(content, recipientId);
+      // Assume content is already encrypted
       const newMessage = new Message({
         senderId,
         recipientId,
-        content: encryptedContent,
+        content, // Store encrypted content
         isGroupMessage,
         timestamp: new Date().toISOString(),
       });
