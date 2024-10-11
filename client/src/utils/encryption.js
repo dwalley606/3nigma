@@ -1,26 +1,28 @@
-import crypto from "crypto";
-
-// Asymmetric encryption to encrypt the symmetric key
-export const encryptSymmetricKey = (symmetricKey, publicKey) => {
-  const buffer = Buffer.from(symmetricKey, "utf8");
-  const encrypted = crypto.publicEncrypt(publicKey, buffer);
-  return encrypted.toString("base64");
-};
+import CryptoJS from "crypto-js";
+import JSEncrypt from "jsencrypt";
 
 // Symmetric encryption to encrypt the message content
 export const encryptMessageContent = (message, symmetricKey) => {
-  const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(
-    "aes-256-cbc",
-    Buffer.from(symmetricKey),
-    iv
+  const iv = CryptoJS.lib.WordArray.random(16);
+  const encrypted = CryptoJS.AES.encrypt(
+    message,
+    CryptoJS.enc.Hex.parse(symmetricKey),
+    {
+      iv: iv,
+      format: CryptoJS.format.OpenSSL,
+    }
   );
-  let encrypted = cipher.update(message, "utf8", "hex");
-  encrypted += cipher.final("hex");
-  return iv.toString("hex") + ":" + encrypted;
+  return iv.toString() + ":" + encrypted.toString();
 };
 
 // Generate a symmetric key
 export const generateSymmetricKey = () => {
-  return crypto.randomBytes(32).toString("hex");
+  return CryptoJS.lib.WordArray.random(32).toString(CryptoJS.enc.Hex);
+};
+
+// Asymmetric encryption to encrypt the symmetric key
+export const encryptSymmetricKey = (symmetricKey, publicKey) => {
+  const encrypt = new JSEncrypt();
+  encrypt.setPublicKey(publicKey);
+  return encrypt.encrypt(symmetricKey);
 };
