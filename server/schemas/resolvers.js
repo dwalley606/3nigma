@@ -1,7 +1,12 @@
 const User = require("../models/User"); // Assuming you've created models
 const Message = require("../models/Message");
 const Group = require("../models/Group");
+<<<<<<< Updated upstream
 const ContactRequest = require("../models/ContactRequest"); // Import the key generation utility
+=======
+const ContactRequest = require("../models/ContactRequest");
+const { encryptMessage, decryptMessage } = require("../utils/encryption");
+>>>>>>> Stashed changes
 const { registerUser } = require("../controllers/userController"); // Import the user controller
 
 const resolvers = {

@@ -9,6 +9,8 @@
     "install": "cd server && npm i && cd ../client && npm i",
     "seed": "cd server && npm run seed",
     "build": "cd client && npm run build",
+    "test:client": "jest --config=jest.client.config.js",
+    "test:server": "jest --config=jest.server.config.js",
     "test": "jest"
   },
   "repository": {
@@ -22,8 +24,11 @@
   },
   "homepage": "https://github.com/dwalley606/3nigma#readme",
   "devDependencies": {
+    "@babel/preset-env": "^7.25.8",
+    "@babel/preset-react": "^7.25.7",
     "concurrently": "^9.0.1",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
   },
   "dependencies": {
     "3nigma": "file:"

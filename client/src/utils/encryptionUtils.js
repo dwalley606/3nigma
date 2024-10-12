@@ -15,6 +15,21 @@ export const encryptMessageContent = (message, symmetricKey) => {
   return iv.toString() + ":" + encrypted.toString();
 };
 
+// Decrypt the message content
+export const decryptMessageContent = (encryptedMessage, symmetricKey) => {
+  const [ivString, encryptedString] = encryptedMessage.split(":");
+  const iv = CryptoJS.enc.Hex.parse(ivString);
+  const decrypted = CryptoJS.AES.decrypt(
+    encryptedString,
+    CryptoJS.enc.Hex.parse(symmetricKey),
+    {
+      iv: iv,
+      format: CryptoJS.format.OpenSSL,
+    }
+  );
+  return decrypted.toString(CryptoJS.enc.Utf8);
+};
+
 // Generate a symmetric key
 export const generateSymmetricKey = () => {
   return CryptoJS.lib.WordArray.random(32).toString(CryptoJS.enc.Hex);
