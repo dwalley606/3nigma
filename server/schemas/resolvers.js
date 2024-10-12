@@ -1,12 +1,7 @@
 const User = require("../models/User"); // Assuming you've created models
 const Message = require("../models/Message");
 const Group = require("../models/Group");
-<<<<<<< Updated upstream
-const ContactRequest = require("../models/ContactRequest"); // Import the key generation utility
-=======
 const ContactRequest = require("../models/ContactRequest");
-const { encryptMessage, decryptMessage } = require("../utils/encryption");
->>>>>>> Stashed changes
 const { registerUser } = require("../controllers/userController"); // Import the user controller
 
 const resolvers = {
@@ -44,18 +39,18 @@ const resolvers = {
       try {
         const user = await User.findById(id);
         if (!user) {
-          throw new Error('User not found');
+          throw new Error("User not found");
         }
         return {
           id: user._id.toString(), // Ensure the ID is correctly mapped
           username: user.username,
           phoneNumber: user.phoneNumber,
-          publicKey: user.publicKey
+          publicKey: user.publicKey,
           // ... other fields ...
         };
       } catch (error) {
-        console.error('Error fetching user by ID:', error);
-        throw new Error('Failed to fetch user');
+        console.error("Error fetching user by ID:", error);
+        throw new Error("Failed to fetch user");
       }
     },
 
@@ -105,20 +100,76 @@ const resolvers = {
     },
 
     // Send contact request for secure connection
-    sendContactRequest: async (_, { fromUserId, toUserId }) => {
-      const request = new ContactRequest({
-        from: fromUserId,
-        to: toUserId,
-        status: "pending",
-      });
-      return await request.save();
+    sendContactRequest: async (_, { fromUserId, toUserId }, { db }) => {
+      try {
+        // Create a new contact request
+        const newRequest = new ContactRequest({
+          from: fromUserId,
+          to: toUserId,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+        });
+
+        // Save the contact request to the database
+        const savedRequest = await newRequest.save();
+
+        // Populate the 'from' and 'to' fields with User data
+        const populatedRequest = await savedRequest
+          .populate("from to")
+          .execPopulate();
+
+        return {
+          id: populatedRequest._id.toString(),
+          from: populatedRequest.from,
+          to: populatedRequest.to,
+          status: populatedRequest.status,
+          createdAt: populatedRequest.createdAt,
+        };
+      } catch (error) {
+        console.error("Error sending contact request:", error);
+        throw new Error("Failed to send contact request");
+      }
     },
 
     // Respond to contact request
     respondContactRequest: async (_, { requestId, status }) => {
-      const request = await ContactRequest.findById(requestId);
-      request.status = status;
-      return await request.save();
+      try {
+        const request = await ContactRequest.findById(requestId);
+
+        if (!request) {
+          throw new Error("Contact request not found");
+        }
+
+        request.status = status;
+        const updatedRequest = await request.save();
+
+        if (status === "accepted") {
+          // Add each user to the other's contact list
+          await User.findByIdAndUpdate(request.from, {
+            $addToSet: { contacts: request.to },
+          });
+
+          await User.findByIdAndUpdate(request.to, {
+            $addToSet: { contacts: request.from },
+          });
+        }
+
+        return {
+          id: updatedRequest._id.toString(), // Convert ObjectId to string
+          from: {
+            id: updatedRequest.from.toString(), // Convert ObjectId to string
+            // Add other fields if necessary
+          },
+          to: {
+            id: updatedRequest.to.toString(), // Convert ObjectId to string
+            // Add other fields if necessary
+          },
+          status: updatedRequest.status,
+        };
+      } catch (error) {
+        console.error("Error responding to contact request:", error);
+        throw new Error("Failed to respond to contact request");
+      }
     },
 
     // Create a group chat
