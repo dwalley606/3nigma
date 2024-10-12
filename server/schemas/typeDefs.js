@@ -19,8 +19,8 @@ const typeDefs = `
   
   type Message {
     id: ID!
-    sender: User!
-    recipient: User!
+    senderId: ID!
+    recipientId: ID!
     content: String!
     timestamp: String!
     read: Boolean!
@@ -52,7 +52,7 @@ const typeDefs = `
     getContacts(userId: ID!): [User!]!
     getMessages(senderId: ID!, recipientId: ID!): [Message!]!
     getGroupMessages(groupID: ID!): [Message!]!
-    getUser(id: ID!): User!
+    getUserById(id: ID!): User
     getUsers: [User!]
     getEncryptionKey(userId: ID!): EncryptionKey!
   }

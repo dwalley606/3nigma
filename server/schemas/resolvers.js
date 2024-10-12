@@ -19,10 +19,13 @@ const resolvers = {
           { senderId: recipientId, recipientId: senderId },
         ],
       });
-      // Return messages without decrypting
+
       return messages.map((msg) => ({
-        ...msg.toObject(),
-        content: msg.content, // Return encrypted content
+        id: msg._id.toString(), // Ensure the ID is correctly mapped
+        senderId: msg.senderId,
+        recipientId: msg.recipientId,
+        content: msg.content,
+        timestamp: msg.timestamp,
       }));
     },
 
@@ -32,8 +35,23 @@ const resolvers = {
     },
 
     // Fetch user details
-    getUser: async (_, { id }) => {
-      return await User.findById(id);
+    getUserById: async (_, { id }) => {
+      try {
+        const user = await User.findById(id);
+        if (!user) {
+          throw new Error('User not found');
+        }
+        return {
+          id: user._id.toString(), // Ensure the ID is correctly mapped
+          username: user.username,
+          phoneNumber: user.phoneNumber,
+          publicKey: user.publicKey
+          // ... other fields ...
+        };
+      } catch (error) {
+        console.error('Error fetching user by ID:', error);
+        throw new Error('Failed to fetch user');
+      }
     },
 
     getUsers: async () => {
