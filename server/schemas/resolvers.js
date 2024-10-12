@@ -100,7 +100,7 @@ const resolvers = {
     },
 
     // Send contact request for secure connection
-    sendContactRequest: async (_, { fromUserId, toUserId }, { db }) => {
+    sendContactRequest: async (_, { fromUserId, toUserId }) => {
       try {
         // Create a new contact request
         const newRequest = new ContactRequest({
@@ -109,15 +109,16 @@ const resolvers = {
           status: "pending",
           createdAt: new Date().toISOString(),
         });
-
+    
         // Save the contact request to the database
         const savedRequest = await newRequest.save();
-
+    
         // Populate the 'from' and 'to' fields with User data
-        const populatedRequest = await savedRequest
-          .populate("from to")
-          .execPopulate();
-
+        const populatedRequest = await ContactRequest.findById(savedRequest._id)
+          .populate('from')
+          .populate('to')
+          .exec();
+    
         return {
           id: populatedRequest._id.toString(),
           from: populatedRequest.from,
@@ -174,38 +175,113 @@ const resolvers = {
 
     // Create a group chat
     createGroup: async (_, { name, memberIds }) => {
-      const newGroup = new Group({
-        name,
-        members: memberIds,
-        createdAt: new Date().toISOString(),
-      });
-      return await newGroup.save();
+      try {
+        const newGroup = new Group({
+          name,
+          members: memberIds,
+          createdAt: new Date().toISOString(),
+        });
+ 
+        const savedGroup = await newGroup.save();
+ 
+        // Populate the members field
+        const populatedGroup = await Group.findById(savedGroup._id)
+          .populate('members')
+          .exec();
+ 
+        return {
+          id: populatedGroup._id.toString(),
+          name: populatedGroup.name,
+          members: populatedGroup.members.map(member => ({
+            id: member._id.toString(), // Ensure ID is a string
+            username: member.username,
+            // Add other fields if necessary
+          })),
+          createdAt: populatedGroup.createdAt,
+        };
+      } catch (error) {
+        console.error("Error creating group:", error);
+        throw new Error("Failed to create group");
+      }
     },
 
     // Add member to group
     addGroupMember: async (_, { groupId, userId }) => {
-      const group = await Group.findById(groupId);
-      group.members.push(userId);
-      return await group.save();
+      try {
+        // Add the user to the group
+        const group = await Group.findByIdAndUpdate(
+          groupId,
+          { $addToSet: { members: userId } },
+          { new: true }
+        ).populate('members');
+ 
+        if (!group) {
+          throw new Error('Group not found');
+        }
+ 
+        return {
+          id: group._id.toString(),
+          name: group.name,
+          members: group.members.map(member => ({
+            id: member._id.toString(), // Ensure ID is a string
+            username: member.username,
+            // Add other fields if necessary
+          })),
+          createdAt: group.createdAt,
+        };
+      } catch (error) {
+        console.error("Error adding group member:", error);
+        throw new Error("Failed to add group member");
+      }
     },
 
     // Remove member from group
     removeGroupMember: async (_, { groupId, userId }) => {
-      const group = await Group.findByIdAndUpdate(
-        groupId,
-        { $pull: { members: userId } },
-        { new: true }
-      );
-      return group;
+      try {
+        // Remove the user from the group
+        const group = await Group.findByIdAndUpdate(
+          groupId,
+          { $pull: { members: userId } },
+          { new: true }
+        ).populate('members');
+ 
+        if (!group) {
+          throw new Error('Group not found');
+        }
+ 
+        return {
+          id: group._id.toString(),
+          name: group.name,
+          members: group.members.map(member => ({
+            id: member._id.toString(), // Ensure ID is a string
+            username: member.username,
+            // Add other fields if necessary
+          })),
+          createdAt: group.createdAt,
+        };
+      } catch (error) {
+        console.error("Error removing group member:", error);
+        throw new Error("Failed to remove group member");
+      }
     },
 
     // Delete a message (optionally for everyone)
     deleteMessage: async (_, { messageId, forEveryone }) => {
-      if (forEveryone) {
-        await Message.findByIdAndDelete(messageId);
-        return true;
+      try {
+        if (forEveryone) {
+          const deletedMessage = await Message.findByIdAndDelete(messageId);
+          if (!deletedMessage) {
+            throw new Error('Message not found');
+          }
+          return true;
+        }
+        // If not deleting for everyone, implement logic for individual deletion
+        // For now, return false as a placeholder
+        return false;
+      } catch (error) {
+        console.error("Error deleting message:", error);
+        throw new Error("Failed to delete message");
       }
-      return false;
     },
   },
 };
