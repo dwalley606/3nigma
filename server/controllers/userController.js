@@ -1,7 +1,7 @@
-const User = require("../models/User");
-const { generateKeyPair } = require("../utils/keyUtils");
+import User from '../models/User.js';
+import { generateKeyPair } from '../utils/keyUtils.js';
 
-const registerUser = async (username, phoneNumber) => {
+export const registerUser = async (username, phoneNumber) => {
   // Generate a new key pair for the user
   const { publicKey, privateKey } = generateKeyPair();
 
@@ -19,5 +19,3 @@ const registerUser = async (username, phoneNumber) => {
   // Return the user and the private key
   return { user: newUser, privateKey };
 };
-
-module.exports = { registerUser };

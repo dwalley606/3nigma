@@ -3,7 +3,6 @@ const typeDefs = `
     id: ID!
     username: String!
     email: String!
-    password: String!
     phoneNumber: String!
     publicKey: String!
     lastSeen: String!
@@ -66,6 +65,7 @@ const typeDefs = `
 
   type Mutation {
     registerUser(username: String!, phoneNumber: String!): RegisterUserResponse!
+    login(email: String!, password: String!): AuthPayload!
     sendMessage(senderId: ID!, recipientId: ID!, content: String!, isGroupMessage: Boolean): Message!
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!
     respondContactRequest(requestId: ID!, status: String!): ContactRequest!   
@@ -73,8 +73,7 @@ const typeDefs = `
     addGroupMember(groupId: ID!, userId: ID!): Group!
     removeGroupMember(groupId: ID!, userId: ID!): Group!
     deleteMessage(messageId: ID!, forEveryone: Boolean!): Boolean!
-
   }
 `;
 
-module.exports = typeDefs;
+export default typeDefs;

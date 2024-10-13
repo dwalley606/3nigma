@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const encryptionKeySchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   publicKey: { type: String, required: true },
   privateKey: { type: String, required: true }, // Ensure this is stored securely
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("EncryptionKey", encryptionKeySchema);
+export default mongoose.model('EncryptionKey', encryptionKeySchema);

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const MessageSchema = new mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -9,4 +9,4 @@ const MessageSchema = new mongoose.Schema({
   isGroupMessage: { type: Boolean, default: false },
 });
 
-module.exports = mongoose.model('Message', MessageSchema);
+export default mongoose.model('Message', MessageSchema);

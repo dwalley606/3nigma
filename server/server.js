@@ -1,11 +1,16 @@
-const express = require('express');
-const { ApolloServer } = require('@apollo/server');
-const { expressMiddleware } = require('@apollo/server/express4');
-const path = require('path');
-const { authMiddleware } = require('./utils/auth');
+// server/server.js
+import express from 'express';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { authMiddleware } from './utils/auth.js';
+import { typeDefs, resolvers } from './schemas/index.js';
+import db from './config/connection.js';
 
-const { typeDefs, resolvers } = require('./schemas');
-const db = require('./config/connection');
+// Get the directory name of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3001;
 const app = express();

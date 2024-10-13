@@ -1,17 +1,17 @@
-const User = require("../models/User"); // Assuming you've created models
-const Message = require("../models/Message");
-const Group = require("../models/Group");
-const ContactRequest = require("../models/ContactRequest");
-const { registerUser } = require("../controllers/userController"); // Import the user controller
+// server/schemas/resolvers.js
+import User from '../models/User.js'; // Assuming you've created models
+import Message from '../models/Message.js';
+import Group from '../models/Group.js';
+import ContactRequest from '../models/ContactRequest.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const resolvers = {
   Query: {
-    // Get user's contacts
     getContacts: async (_, { userId }) => {
-      return await User.findById(userId).populate("contacts");
+      return await User.findById(userId).populate('contacts');
     },
 
-    // Fetch a conversation between two users
     getMessages: async (_, { senderId, recipientId }) => {
       const messages = await Message.find({
         $or: [
@@ -21,7 +21,7 @@ const resolvers = {
       });
 
       return messages.map((msg) => ({
-        id: msg._id.toString(), // Ensure the ID is correctly mapped
+        id: msg._id.toString(),
         senderId: msg.senderId,
         recipientId: msg.recipientId,
         content: msg.content,
@@ -29,96 +29,102 @@ const resolvers = {
       }));
     },
 
-    // Fetch group conversation
     getGroupMessages: async (_, { groupId }) => {
-      return await Group.findById(groupId).populate("messages");
+      return await Group.findById(groupId).populate('messages');
     },
 
-    // Fetch user details
     getUserById: async (_, { id }) => {
       try {
         const user = await User.findById(id);
         if (!user) {
-          throw new Error("User not found");
+          throw new Error('User not found');
         }
         return {
-          id: user._id.toString(), // Ensure the ID is correctly mapped
+          id: user._id.toString(),
           username: user.username,
           phoneNumber: user.phoneNumber,
           publicKey: user.publicKey,
           // ... other fields ...
         };
       } catch (error) {
-        console.error("Error fetching user by ID:", error);
-        throw new Error("Failed to fetch user");
+        console.error('Error fetching user by ID:', error);
+        throw new Error('Failed to fetch user');
       }
     },
 
     getUsers: async () => {
-      return await User.find(); // Fetch all users directly from the User model
+      return await User.find();
     },
 
-    // Fetch user's encryption keys
     getEncryptionKey: async (_, { userId }) => {
       const user = await User.findById(userId);
       return {
         user: user._id,
         publicKey: user.publicKey,
-        privateKey: user.privateKey, // Should only be returned if this is a client-specific request
+        privateKey: user.privateKey,
       };
     },
   },
 
   Mutation: {
-    // Register a new user
-    registerUser: async (_, { username, phoneNumber }) => {
-      // Delegate user registration to the userController
-      const { user, privateKey } = await registerUser(username, phoneNumber);
+    registerUser: async (_, { username, email, password, phoneNumber }) => {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = new User({
+        username,
+        email,
+        password: hashedPassword,
+        phoneNumber,
+      });
+      await user.save();
 
-      // Return the user and the private key to the client
-      // Ensure the private key is transmitted securely
-      return {
-        user,
-        privateKey, // Return the private key to the client
-      };
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+
+      return { token, user };
     },
 
-    // Send a direct or group message
-    sendMessage: async (
-      _,
-      { senderId, recipientId, content, isGroupMessage }
-    ) => {
-      // Assume content is already encrypted
+    login: async (_, { email, password }) => {
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) {
+        throw new Error('Invalid password');
+      }
+
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+
+      return { token, user };
+    },
+
+    sendMessage: async (_, { senderId, recipientId, content, isGroupMessage }) => {
       const newMessage = new Message({
         senderId,
         recipientId,
-        content, // Store encrypted content
+        content,
         isGroupMessage,
         timestamp: new Date().toISOString(),
       });
       return await newMessage.save();
     },
 
-    // Send contact request for secure connection
     sendContactRequest: async (_, { fromUserId, toUserId }) => {
       try {
-        // Create a new contact request
         const newRequest = new ContactRequest({
           from: fromUserId,
           to: toUserId,
-          status: "pending",
+          status: 'pending',
           createdAt: new Date().toISOString(),
         });
-    
-        // Save the contact request to the database
+
         const savedRequest = await newRequest.save();
-    
-        // Populate the 'from' and 'to' fields with User data
+
         const populatedRequest = await ContactRequest.findById(savedRequest._id)
           .populate('from')
           .populate('to')
           .exec();
-    
+
         return {
           id: populatedRequest._id.toString(),
           from: populatedRequest.from,
@@ -127,25 +133,23 @@ const resolvers = {
           createdAt: populatedRequest.createdAt,
         };
       } catch (error) {
-        console.error("Error sending contact request:", error);
-        throw new Error("Failed to send contact request");
+        console.error('Error sending contact request:', error);
+        throw new Error('Failed to send contact request');
       }
     },
 
-    // Respond to contact request
     respondContactRequest: async (_, { requestId, status }) => {
       try {
         const request = await ContactRequest.findById(requestId);
 
         if (!request) {
-          throw new Error("Contact request not found");
+          throw new Error('Contact request not found');
         }
 
         request.status = status;
         const updatedRequest = await request.save();
 
-        if (status === "accepted") {
-          // Add each user to the other's contact list
+        if (status === 'accepted') {
           await User.findByIdAndUpdate(request.from, {
             $addToSet: { contacts: request.to },
           });
@@ -156,24 +160,21 @@ const resolvers = {
         }
 
         return {
-          id: updatedRequest._id.toString(), // Convert ObjectId to string
+          id: updatedRequest._id.toString(),
           from: {
-            id: updatedRequest.from.toString(), // Convert ObjectId to string
-            // Add other fields if necessary
+            id: updatedRequest.from.toString(),
           },
           to: {
-            id: updatedRequest.to.toString(), // Convert ObjectId to string
-            // Add other fields if necessary
+            id: updatedRequest.to.toString(),
           },
           status: updatedRequest.status,
         };
       } catch (error) {
-        console.error("Error responding to contact request:", error);
-        throw new Error("Failed to respond to contact request");
+        console.error('Error responding to contact request:', error);
+        throw new Error('Failed to respond to contact request');
       }
     },
 
-    // Create a group chat
     createGroup: async (_, { name, memberIds }) => {
       try {
         const newGroup = new Group({
@@ -181,91 +182,82 @@ const resolvers = {
           members: memberIds,
           createdAt: new Date().toISOString(),
         });
- 
+
         const savedGroup = await newGroup.save();
- 
-        // Populate the members field
+
         const populatedGroup = await Group.findById(savedGroup._id)
           .populate('members')
           .exec();
- 
+
         return {
           id: populatedGroup._id.toString(),
           name: populatedGroup.name,
-          members: populatedGroup.members.map(member => ({
-            id: member._id.toString(), // Ensure ID is a string
+          members: populatedGroup.members.map((member) => ({
+            id: member._id.toString(),
             username: member.username,
-            // Add other fields if necessary
           })),
           createdAt: populatedGroup.createdAt,
         };
       } catch (error) {
-        console.error("Error creating group:", error);
-        throw new Error("Failed to create group");
+        console.error('Error creating group:', error);
+        throw new Error('Failed to create group');
       }
     },
 
-    // Add member to group
     addGroupMember: async (_, { groupId, userId }) => {
       try {
-        // Add the user to the group
         const group = await Group.findByIdAndUpdate(
           groupId,
           { $addToSet: { members: userId } },
           { new: true }
         ).populate('members');
- 
+
         if (!group) {
           throw new Error('Group not found');
         }
- 
+
         return {
           id: group._id.toString(),
           name: group.name,
-          members: group.members.map(member => ({
-            id: member._id.toString(), // Ensure ID is a string
+          members: group.members.map((member) => ({
+            id: member._id.toString(),
             username: member.username,
-            // Add other fields if necessary
           })),
           createdAt: group.createdAt,
         };
       } catch (error) {
-        console.error("Error adding group member:", error);
-        throw new Error("Failed to add group member");
+        console.error('Error adding group member:', error);
+        throw new Error('Failed to add group member');
       }
     },
 
-    // Remove member from group
     removeGroupMember: async (_, { groupId, userId }) => {
       try {
-        // Remove the user from the group
         const group = await Group.findByIdAndUpdate(
           groupId,
           { $pull: { members: userId } },
           { new: true }
         ).populate('members');
- 
+
         if (!group) {
           throw new Error('Group not found');
         }
- 
+
         return {
           id: group._id.toString(),
           name: group.name,
-          members: group.members.map(member => ({
-            id: member._id.toString(), // Ensure ID is a string
+          members: group.members.map((member) => ({
+            id: member._id.toString(),
             username: member.username,
-            // Add other fields if necessary
           })),
           createdAt: group.createdAt,
         };
       } catch (error) {
-        console.error("Error removing group member:", error);
-        throw new Error("Failed to remove group member");
+        console.error('Error removing group member:', error);
+        throw new Error('Failed to remove group member');
       }
     },
 
-    // Delete a message (optionally for everyone)
     deleteMessage: async (_, { messageId, forEveryone }) => {
       try {
         if (forEveryone) {
@@ -275,15 +267,13 @@ const resolvers = {
           }
           return true;
         }
-        // If not deleting for everyone, implement logic for individual deletion
-        // For now, return false as a placeholder
         return false;
       } catch (error) {
-        console.error("Error deleting message:", error);
-        throw new Error("Failed to delete message");
+        console.error('Error deleting message:', error);
+        throw new Error('Failed to delete message');
       }
     },
   },
 };
 
-module.exports = resolvers;
+export default resolvers;
