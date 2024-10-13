@@ -2,6 +2,8 @@ const typeDefs = `
   type User {
     id: ID!
     username: String!
+    email: String!
+    password: String!
     phoneNumber: String!
     publicKey: String!
     lastSeen: String!
@@ -46,6 +48,11 @@ const typeDefs = `
   type RegisterUserResponse {
      user: User!
      privateKey: String!
+   }
+
+  type AuthPayload {
+     token: String!
+     user: User!
    }
 
   type Query {
