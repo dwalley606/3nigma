@@ -1,14 +1,43 @@
-   // src/App.jsx
-   import React from 'react';
-   import MessageComponent from './MessageComponent';
+import { Outlet } from 'react-router-dom';
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  createHttpLink,
+} from '@apollo/client';
+import NavBar from './components/NavBar';
+import { setContext } from '@apollo/client/link/context';
 
-   function App() {
-     return (
-       <div className="App">
-         <h1>Vite React Messaging App</h1>
-         <MessageComponent />
-       </div>
-     );
-   }
+const httpLink = createHttpLink({
+  uri: '/graphql',
+});
 
-   export default App;
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
+
+function App() {
+  return (
+    <ApolloProvider client={client}>
+      <div>
+        <NavBar />
+        <main>
+          <Outlet />
+        </main>
+      </div>
+    </ApolloProvider>
+  );
+}
+
+export default App;
