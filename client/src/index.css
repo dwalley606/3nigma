@@ -63,6 +63,36 @@ button:focus-visible {
   box-sizing: border-box; /* Include padding and border in width */
 }
 
+/* src/components/NavBar.css */
+.navbar {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+}
+
+.navbar ul {
+  list-style-type: none;
+  display: flex;
+  justify-content: space-around;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar li {
+  margin: 0 10px;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.navbar a.active {
+  color: #007bff;
+}
+
 .signup-form {
   display: flex;
   flex-direction: column;

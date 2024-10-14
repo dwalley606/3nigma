@@ -1,44 +1,32 @@
 // src/components/NavBar.jsx
-import { NavLink } from "react-router-dom";
-import "./styles.css"; // Optional: Add styles for the NavBar
+import { useState, useEffect } from "react";
+import AuthLinks from "../AuthLinks";
 
-const NavBar = () => {
+const Navbar = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+  };
+
   return (
     <nav className="navbar">
-      <ul>
-        <li>
-          <NavLink to="/" exact activeClassName="active">
-            Home
-          </NavLink>
-        </li>
-        <li>
-          <NavLink to="/profile" activeClassName="active">
-            Profile
-          </NavLink>
-        </li>
-        <li>
-          <NavLink to="/settings" activeClassName="active">
-            Settings
-          </NavLink>
-        </li>
-        <li>
-          <NavLink to="/groups" activeClassName="active">
-            Groups
-          </NavLink>
-        </li>
-        <li>
-          <NavLink to="/Signup" activeClassName="active">
-            Sign Up
-          </NavLink>
-        </li>
-        <li>
-          <NavLink to="/login" activeClassName="active">
-            Login
-          </NavLink>
-        </li>
-      </ul>
+      <AuthLinks user={user} onLogout={handleLogout} />
     </nav>
   );
 };
 
-export default NavBar;
+export default Navbar;
