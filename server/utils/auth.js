@@ -1,37 +1,31 @@
-import { GraphQLError } from 'graphql';
 import jwt from 'jsonwebtoken';
 
-const secret = process.env.JWT_SECRET || 'mysecretssshhhhhhh';
+const secret = process.env.JWT_SECRET || 'yourSecretKey';
 const expiration = '2h';
 
 export const authMiddleware = ({ req }) => {
-  // Allows token to be sent via req.body, req.query, or headers
+  // Extract token from request
   let token = req.body.token || req.query.token || req.headers.authorization;
 
+  // If token is in the authorization header, remove "Bearer" prefix
   if (req.headers.authorization) {
     token = token.split(' ').pop().trim();
   }
 
+  // If no token, return request object as is
   if (!token) {
-    throw new GraphQLError('No token provided.', {
-      extensions: {
-        code: 'UNAUTHENTICATED',
-      },
-    });
+    return req;
   }
 
   try {
+    // Verify token and attach user data to request
     const { data } = jwt.verify(token, secret, { maxAge: expiration });
     req.user = data;
   } catch (error) {
-    console.error('Invalid token:', error);
-    throw new GraphQLError('Invalid token.', {
-      extensions: {
-        code: 'UNAUTHENTICATED',
-      },
-    });
+    console.log('Invalid token:', error.message);
   }
 
+  // Return the request object with user data if available
   return req;
 };
 
