@@ -1,15 +1,16 @@
 // server/schemas/resolvers.js
-import User from '../models/User.js'; // Assuming you've created models
-import Message from '../models/Message.js';
-import Group from '../models/Group.js';
-import ContactRequest from '../models/ContactRequest.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import User from "../models/User.js"; // Assuming you've created models
+import Message from "../models/Message.js";
+import Group from "../models/Group.js";
+import ContactRequest from "../models/ContactRequest.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { generateKeyPairSync } from "crypto"; // Node.js crypto module
 
 const resolvers = {
   Query: {
     getContacts: async (_, { userId }) => {
-      return await User.findById(userId).populate('contacts');
+      return await User.findById(userId).populate("contacts");
     },
 
     getMessages: async (_, { senderId, recipientId }) => {
@@ -30,14 +31,14 @@ const resolvers = {
     },
 
     getGroupMessages: async (_, { groupId }) => {
-      return await Group.findById(groupId).populate('messages');
+      return await Group.findById(groupId).populate("messages");
     },
 
     getUserById: async (_, { id }) => {
       try {
         const user = await User.findById(id);
         if (!user) {
-          throw new Error('User not found');
+          throw new Error("User not found");
         }
         return {
           id: user._id.toString(),
@@ -47,8 +48,8 @@ const resolvers = {
           // ... other fields ...
         };
       } catch (error) {
-        console.error('Error fetching user by ID:', error);
-        throw new Error('Failed to fetch user');
+        console.error("Error fetching user by ID:", error);
+        throw new Error("Failed to fetch user");
       }
     },
 
@@ -68,37 +69,65 @@ const resolvers = {
 
   Mutation: {
     registerUser: async (_, { username, email, password, phoneNumber }) => {
+      console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
+      // Hash the user's password
       const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Generate a public/private key pair
+      const { publicKey, privateKey } = generateKeyPairSync("rsa", {
+        modulusLength: 2048,
+        publicKeyEncoding: {
+          type: "spki",
+          format: "pem",
+        },
+        privateKeyEncoding: {
+          type: "pkcs8",
+          format: "pem",
+        },
+      });
+
+      // Create a new user with the hashed password and public key
       const user = new User({
         username,
         email,
         password: hashedPassword,
         phoneNumber,
+        publicKey, // Store the public key
       });
       await user.save();
 
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+      // Generate a JWT token for authentication
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "2h",
+      });
 
-      return { token, user };
+      // Return the user, private key, and token
+      return { user, privateKey, token };
     },
 
     login: async (_, { email, password }) => {
       const user = await User.findOne({ email });
       if (!user) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
-        throw new Error('Invalid password');
+        throw new Error("Invalid password");
       }
 
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "2h",
+      });
 
       return { token, user };
     },
 
-    sendMessage: async (_, { senderId, recipientId, content, isGroupMessage }) => {
+    sendMessage: async (
+      _,
+      { senderId, recipientId, content, isGroupMessage }
+    ) => {
       const newMessage = new Message({
         senderId,
         recipientId,
@@ -114,15 +143,15 @@ const resolvers = {
         const newRequest = new ContactRequest({
           from: fromUserId,
           to: toUserId,
-          status: 'pending',
+          status: "pending",
           createdAt: new Date().toISOString(),
         });
 
         const savedRequest = await newRequest.save();
 
         const populatedRequest = await ContactRequest.findById(savedRequest._id)
-          .populate('from')
-          .populate('to')
+          .populate("from")
+          .populate("to")
           .exec();
 
         return {
@@ -133,8 +162,8 @@ const resolvers = {
           createdAt: populatedRequest.createdAt,
         };
       } catch (error) {
-        console.error('Error sending contact request:', error);
-        throw new Error('Failed to send contact request');
+        console.error("Error sending contact request:", error);
+        throw new Error("Failed to send contact request");
       }
     },
 
@@ -143,13 +172,13 @@ const resolvers = {
         const request = await ContactRequest.findById(requestId);
 
         if (!request) {
-          throw new Error('Contact request not found');
+          throw new Error("Contact request not found");
         }
 
         request.status = status;
         const updatedRequest = await request.save();
 
-        if (status === 'accepted') {
+        if (status === "accepted") {
           await User.findByIdAndUpdate(request.from, {
             $addToSet: { contacts: request.to },
           });
@@ -170,8 +199,8 @@ const resolvers = {
           status: updatedRequest.status,
         };
       } catch (error) {
-        console.error('Error responding to contact request:', error);
-        throw new Error('Failed to respond to contact request');
+        console.error("Error responding to contact request:", error);
+        throw new Error("Failed to respond to contact request");
       }
     },
 
@@ -186,7 +215,7 @@ const resolvers = {
         const savedGroup = await newGroup.save();
 
         const populatedGroup = await Group.findById(savedGroup._id)
-          .populate('members')
+          .populate("members")
           .exec();
 
         return {
@@ -199,8 +228,8 @@ const resolvers = {
           createdAt: populatedGroup.createdAt,
         };
       } catch (error) {
-        console.error('Error creating group:', error);
-        throw new Error('Failed to create group');
+        console.error("Error creating group:", error);
+        throw new Error("Failed to create group");
       }
     },
 
@@ -210,10 +239,10 @@ const resolvers = {
           groupId,
           { $addToSet: { members: userId } },
           { new: true }
-        ).populate('members');
+        ).populate("members");
 
         if (!group) {
-          throw new Error('Group not found');
+          throw new Error("Group not found");
         }
 
         return {
@@ -226,8 +255,8 @@ const resolvers = {
           createdAt: group.createdAt,
         };
       } catch (error) {
-        console.error('Error adding group member:', error);
-        throw new Error('Failed to add group member');
+        console.error("Error adding group member:", error);
+        throw new Error("Failed to add group member");
       }
     },
 
@@ -237,10 +266,10 @@ const resolvers = {
           groupId,
           { $pull: { members: userId } },
           { new: true }
-        ).populate('members');
+        ).populate("members");
 
         if (!group) {
-          throw new Error('Group not found');
+          throw new Error("Group not found");
         }
 
         return {
@@ -253,8 +282,8 @@ const resolvers = {
           createdAt: group.createdAt,
         };
       } catch (error) {
-        console.error('Error removing group member:', error);
-        throw new Error('Failed to remove group member');
+        console.error("Error removing group member:", error);
+        throw new Error("Failed to remove group member");
       }
     },
 
@@ -263,14 +292,14 @@ const resolvers = {
         if (forEveryone) {
           const deletedMessage = await Message.findByIdAndDelete(messageId);
           if (!deletedMessage) {
-            throw new Error('Message not found');
+            throw new Error("Message not found");
           }
           return true;
         }
         return false;
       } catch (error) {
-        console.error('Error deleting message:', error);
-        throw new Error('Failed to delete message');
+        console.error("Error deleting message:", error);
+        throw new Error("Failed to delete message");
       }
     },
   },

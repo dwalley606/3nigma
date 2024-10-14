@@ -47,6 +47,7 @@ const typeDefs = `
   type RegisterUserResponse {
      user: User!
      privateKey: String!
+     token: String!
    }
 
   type AuthPayload {
@@ -64,7 +65,7 @@ const typeDefs = `
   }
 
   type Mutation {
-    registerUser(username: String!, phoneNumber: String!): RegisterUserResponse!
+    registerUser(username: String!, email: String!, password: String!, phoneNumber: String!): RegisterUserResponse!
     login(email: String!, password: String!): AuthPayload!
     sendMessage(senderId: ID!, recipientId: ID!, content: String!, isGroupMessage: Boolean): Message!
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!

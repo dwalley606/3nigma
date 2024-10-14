@@ -1,6 +1,6 @@
 // src/components/NavBar.jsx
-import { NavLink } from 'react-router-dom';
-import './styles.css'; // Optional: Add styles for the NavBar
+import { NavLink } from "react-router-dom";
+import "./styles.css"; // Optional: Add styles for the NavBar
 
 const NavBar = () => {
   return (
@@ -27,13 +27,13 @@ const NavBar = () => {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/contacts" activeClassName="active">
-            Contacts
+          <NavLink to="/Signup" activeClassName="active">
+            Sign Up
           </NavLink>
         </li>
         <li>
-          <NavLink to="/chat" activeClassName="active">
-            Chat
+          <NavLink to="/login" activeClassName="active">
+            Login
           </NavLink>
         </li>
       </ul>
