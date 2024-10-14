@@ -23,11 +23,14 @@ a:hover {
 }
 
 body {
-  margin: 0;
+  width: 100%; /* Ensure body takes full width */
+  margin: 0; /* Remove auto margin */
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  flex-direction: column;
+  align-items: stretch; /* Allow children to stretch */
+  justify-content: flex-start; /* Align children to the top */
   min-height: 100vh;
+  box-sizing: border-box;
 }
 
 h1 {
@@ -52,6 +55,70 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+.navbar,
+.outlet {
+  width: 100%; /* Ensure full width for navbar and outlet */
+  box-sizing: border-box; /* Include padding and border in width */
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.signup-form input {
+  margin-bottom: 10px;
+  width: 70%;
+  height: 20px;
+}
+
+.signup-form label {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+}
+
+.login-title {
+  font-size: 2em;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.login-form input {
+  margin-bottom: 10px;
+  width: 70%;
+  height: 20px;
+}
+
+.login-form label {
+  margin-bottom: 10px;
+  font-size: 1.5em;
+}
+
+.login-form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Base styles for centering content */
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  body {
+    width: 100%; /* Expands the container to full width on smaller screens */
+  }
 }
 
 @media (prefers-color-scheme: light) {
