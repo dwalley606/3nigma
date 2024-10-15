@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const secret = process.env.JWT_SECRET || 'yourSecretKey';
+const secret = process.env.JWT_SECRET;
 const expiration = '2h';
 
 export const authMiddleware = ({ req }) => {
@@ -29,7 +29,3 @@ export const authMiddleware = ({ req }) => {
   return req;
 };
 
-export const signToken = ({ firstName, email, _id }) => {
-  const payload = { firstName, email, _id };
-  return jwt.sign({ data: payload }, secret, { expiresIn: expiration });
-};

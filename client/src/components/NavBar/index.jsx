@@ -1,5 +1,6 @@
 // src/components/NavBar.jsx
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import AuthLinks from "../AuthLinks";
 
 const Navbar = () => {
@@ -24,7 +25,18 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <AuthLinks user={user} onLogout={handleLogout} />
+      {user ? (
+        <>
+          <Link to="/profile">Profile</Link>
+          <Link to="/settings">Settings</Link>
+          <Link to="/groups">Groups</Link>
+          <Link to="/contacts">Contacts</Link>
+          <Link to="/chat">Chat</Link>
+          <button onClick={handleLogout}>Logout</button>
+        </>
+      ) : (
+        <AuthLinks onLogin={handleLogin} />
+      )}
     </nav>
   );
 };

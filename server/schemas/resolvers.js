@@ -72,7 +72,8 @@ const resolvers = {
       console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
       // Hash the user's password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       // Generate a public/private key pair
       const { publicKey, privateKey } = generateKeyPairSync("rsa", {
@@ -107,21 +108,38 @@ const resolvers = {
     },
 
     login: async (_, { email, password }) => {
-      const user = await User.findOne({ email });
-      if (!user) {
-        throw new Error("User not found");
+      try {
+        console.log('Attempting to log in with email:', email);
+        // Find the user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+          throw new Error('User not found');
+        }
+        console.log('User found:', user);
+
+        // Debugging: Log the entered and stored passwords
+        console.log('Entered Password:', password);
+        console.log('Stored Hashed Password:', user.password);
+
+        // Compare the entered password with the stored hashed password
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+          throw new Error('Incorrect password');
+        }
+        console.log('Password is valid');
+
+        // Generate a JWT token
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+          expiresIn: '2h',
+        });
+        console.log('JWT generated:', token);
+
+        // Return the token and user data
+        return { token, user };
+      } catch (error) {
+        console.error('Error during login:', error.message);
+        throw new Error('Failed to log in');
       }
-
-      const valid = await bcrypt.compare(password, user.password);
-      if (!valid) {
-        throw new Error("Invalid password");
-      }
-
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "2h",
-      });
-
-      return { token, user };
     },
 
     sendMessage: async (
