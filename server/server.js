@@ -1,19 +1,23 @@
-// server/server.js
-import express from "express";
-import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@apollo/server/express4";
+import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { authMiddleware } from "./utils/auth.js";
-import { typeDefs, resolvers } from "./schemas/index.js";
-import connectDB from "./config/connection.js"; // Import the connectDB function
-
-import dotenv from "dotenv";
-dotenv.config();
 
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Explicitly specify the path to the .env file
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
+// server/server.js
+import express from "express";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { authMiddleware } from "./utils/auth.js";
+import { typeDefs, resolvers } from "./schemas/index.js";
+import connectDB from "./config/connection.js"; // Import the connectDB function
 
 const PORT = process.env.PORT || 3001;
 const app = express();

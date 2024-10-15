@@ -14,8 +14,17 @@ const LoginPage = () => {
       const response = await login({
         variables: { email, password },
       });
-      console.log("Login successful:", response.data.login);
-      // Handle successful login, e.g., store token, redirect user
+
+      if (response.data && response.data.login) {
+        const { token, user } = response.data.login;
+        console.log("Login successful:", token, user);
+
+        // Store the token in localStorage
+        localStorage.setItem("id_token", token);
+
+        // Optionally, redirect the user or update the UI
+        // e.g., navigate('/dashboard');
+      }
     } catch (err) {
       console.error("Login error:", err);
     }

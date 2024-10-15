@@ -108,37 +108,38 @@ const resolvers = {
     },
 
     login: async (_, { email, password }) => {
+      console.log("JWT_SECRET:", process.env.JWT_SECRET);
       try {
-        console.log('Attempting to log in with email:', email);
+        console.log("Attempting to log in with email:", email);
         // Find the user by email
         const user = await User.findOne({ email });
         if (!user) {
-          throw new Error('User not found');
+          throw new Error("User not found");
         }
-        console.log('User found:', user);
+        console.log("User found:", user);
 
         // Debugging: Log the entered and stored passwords
-        console.log('Entered Password:', password);
-        console.log('Stored Hashed Password:', user.password);
+        console.log("Entered Password:", password);
+        console.log("Stored Hashed Password:", user.password);
 
         // Compare the entered password with the stored hashed password
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
-          throw new Error('Incorrect password');
+          throw new Error("Incorrect password");
         }
-        console.log('Password is valid');
+        console.log("Password is valid");
 
         // Generate a JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-          expiresIn: '2h',
+          expiresIn: "2h",
         });
-        console.log('JWT generated:', token);
+        console.log("JWT generated:", token);
 
         // Return the token and user data
         return { token, user };
       } catch (error) {
-        console.error('Error during login:', error.message);
-        throw new Error('Failed to log in');
+        console.error("Error during login:", error.message);
+        throw new Error("Failed to log in");
       }
     },
 
