@@ -6,6 +6,15 @@ import ContactRequest from "../models/ContactRequest.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { generateKeyPairSync } from "crypto"; // Node.js crypto module
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const usersFilePath = path.join(__dirname, '../utils/users.json');
+
 
 const resolvers = {
   Query: {
@@ -89,23 +98,32 @@ const resolvers = {
       });
 
       // Create a new user with the hashed password and public key
-      const user = new User({
+      const newUser = new User({
         username,
         email,
         password: hashedPassword,
         phoneNumber,
         publicKey, // Store the public key
       });
-      await user.save();
+      // Read existing users from the file
+      const usersData = fs.existsSync(usersFilePath)
+      ? JSON.parse(fs.readFileSync(usersFilePath, 'utf8'))
+      : [];
 
-      // Generate a JWT token for authentication
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "2h",
-      });
+    // Add the new user to the list
+    usersData.push(newUser);
 
-      // Return the user, private key, and token
-      return { user, privateKey, token };
-    },
+    // Write the updated users list back to the file
+    fs.writeFileSync(usersFilePath, JSON.stringify(usersData, null, 2));
+
+    // Generate a JWT token for authentication
+    const token = jwt.sign({ email: newUser.email }, process.env.JWT_SECRET, {
+      expiresIn: '2h',
+    });
+
+    // Return the user and token
+    return { user: newUser, token };
+},
 
     login: async (_, { email, password }) => {
       console.log("JWT_SECRET:", process.env.JWT_SECRET);

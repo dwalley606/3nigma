@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const SEND_MESSAGE_MUTATION = gql`
+export const SEND_MESSAGE = gql`
   mutation SendMessage(
     $senderId: ID!
     $recipientId: ID!

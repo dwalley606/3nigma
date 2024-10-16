@@ -1,12 +1,12 @@
 // client/src/pages/Login.jsx
 import React, { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { LOGIN_USER_MUTATION } from "../graphql/mutations/loginUser";
+import { LOGIN_USER} from "../graphql/mutations/loginUser";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [login, { data, loading, error }] = useMutation(LOGIN_USER_MUTATION);
+  const [login, { data, loading, error }] = useMutation(LOGIN_USER);
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();

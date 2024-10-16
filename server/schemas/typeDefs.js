@@ -46,8 +46,6 @@ const typeDefs = `
 
   type RegisterUserResponse {
      user: User!
-     privateKey: String!
-     token: String!
    }
 
   type AuthPayload {

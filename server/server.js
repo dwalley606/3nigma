@@ -24,8 +24,6 @@ const app = express();
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  introspection: true, // Ensure introspection is explicitly enabled
-  playground: true, // Enable GraphQL Playground if needed
 });
 
 // Create a new instance of an Apollo server with the GraphQL schema

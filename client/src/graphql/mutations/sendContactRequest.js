@@ -1,6 +1,6 @@
 import { gql } from "@apollo/client";
 
-export const SEND_CONTACT_REQUEST_MUTATION = gql`
+export const SEND_CONTACT_REQUEST = gql`
   mutation SendContactRequest($fromUserId: ID!, $toUserId: ID!) {
     sendContactRequest(fromUserId: $fromUserId, toUserId: $toUserId) {
       id
