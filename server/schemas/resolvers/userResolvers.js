@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../../models/User.js';
+import ContactRequest from '../../models/ContactRequest.js'; // Ensure the path is correct
+
 
 
 export const userResolvers = {

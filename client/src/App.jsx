@@ -9,11 +9,11 @@ import NavBar from "./components/NavBar";
 import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
-  uri: "/graphql",
+  uri: '/graphql',
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("id_token");
+  const token = localStorage.getItem("authToken");
   return {
     headers: {
       ...headers,

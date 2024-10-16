@@ -18,6 +18,7 @@ import { expressMiddleware } from "@apollo/server/express4";
 import { authMiddleware } from "./utils/auth.js";
 import { typeDefs, resolvers } from "./schemas/index.js";
 import connectDB from "./config/connection.js"; // Import the connectDB function
+import cors from 'cors';
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -39,6 +40,12 @@ const startApolloServer = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
+    app.use(cors({
+      origin: '*', // Replace with your client URL
+      credentials: true,
+      methods: ['GET', 'POST'],
+    }));
+
     // Serve up static assets
     app.use(
       "/images",
@@ -52,6 +59,12 @@ const startApolloServer = async () => {
         context: authMiddleware, // Comment out this line to disable authMiddleware
       })
     );
+
+    app.use((req, res, next) => {
+      console.log('Received request:', req.method, req.path);
+      next();
+    });
+    
 
     if (process.env.NODE_ENV === "production") {
       app.use(express.static(path.join(__dirname, "../client/dist")));
