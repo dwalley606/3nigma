@@ -1,7 +1,9 @@
-import jwt from 'jsonwebtoken';
-
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 const secret = process.env.JWT_SECRET;
-const expiration = '2h';
+console.log("JWT Secret:", secret);
+const expiration = "2h";
 
 export const authMiddleware = ({ req }) => {
   // Extract token from request
@@ -9,7 +11,7 @@ export const authMiddleware = ({ req }) => {
 
   // If token is in the authorization header, remove "Bearer" prefix
   if (req.headers.authorization) {
-    token = token.split(' ').pop().trim();
+    token = token.split(" ").pop().trim();
   }
 
   // If no token, return request object as is
@@ -18,14 +20,14 @@ export const authMiddleware = ({ req }) => {
   }
 
   try {
+    console.log("Token received:", token);
     // Verify token and attach user data to request
     const { data } = jwt.verify(token, secret, { maxAge: expiration });
     req.user = data;
   } catch (error) {
-    console.log('Invalid token:', error.message);
+    console.log("Invalid token:", error.message);
   }
 
   // Return the request object with user data if available
   return req;
 };
-

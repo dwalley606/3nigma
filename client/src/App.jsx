@@ -5,12 +5,13 @@ import {
   ApolloProvider,
   createHttpLink,
 } from "@apollo/client";
-import NavBar from "./components/NavBar";
+import NavBar from "./components/NavBar/NavBar";
 import { setContext } from "@apollo/client/link/context";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
-// const httpLink = createHttpLink({
-//   uri: '/graphql',
-// });
+const httpLink = createHttpLink({
+  uri: "/graphql",
+});
 
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("authToken");
@@ -23,19 +24,21 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const client = new ApolloClient({
-  uri: 'http://localhost:3001/graphql',
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
 function App() {
   return (
     <ApolloProvider client={client}>
-      <div>
-        <NavBar />
-        <main>
-          <Outlet />
-        </main>
-      </div>
+      <AuthProvider>
+        <div>
+          <main>
+            <NavBar />
+            <Outlet />
+          </main>
+        </div>
+      </AuthProvider>
     </ApolloProvider>
   );
 }

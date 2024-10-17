@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom"; // Updated import
-import { REGISTER_USER_MUTATION } from "../graphql/mutations/registerUser";
+import { REGISTER_USER } from "../graphql/mutations/registerUser";
 
 const SignUpPage = () => {
   const [username, setUsername] = useState("");
@@ -10,9 +10,7 @@ const SignUpPage = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showAlert, setShowAlert] = useState(false);
   const navigate = useNavigate(); // Updated hook
-  const [registerUser, { data, loading, error }] = useMutation(
-    REGISTER_USER_MUTATION
-  );
+  const [registerUser, { loading, error }] = useMutation(REGISTER_USER);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

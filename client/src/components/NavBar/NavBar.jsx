@@ -1,31 +1,18 @@
 // src/components/NavBar.jsx
-import { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import AuthLinks from "../AuthLinks";
+import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const handleLogin = (userData) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
+  const { state, dispatch } = useAuth();
 
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+    dispatch({ type: "LOGOUT" });
   };
 
   return (
     <nav className="navbar">
-      {user ? (
+      {state.user ? (
         <>
           <Link to="/profile">Profile</Link>
           <Link to="/settings">Settings</Link>
@@ -35,7 +22,10 @@ const Navbar = () => {
           <button onClick={handleLogout}>Logout</button>
         </>
       ) : (
-        <AuthLinks onLogin={handleLogin} />
+        <>
+          <Link to="/login">Login</Link>
+          <Link to="/signup">Sign Up</Link>
+        </>
       )}
     </nav>
   );
