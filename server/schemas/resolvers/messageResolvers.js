@@ -31,6 +31,25 @@ export const messageResolvers = {
         isGroupMessage: msg.isGroupMessage,
       }));
     },
+    getConversation: async (_, { userId, otherUserId }) => {
+      const messages = await Message.find({
+        $or: [
+          { senderId: userId, recipientId: otherUserId },
+          { senderId: otherUserId, recipientId: userId },
+        ],
+      }).sort({ timestamp: 1 }); // Sort by timestamp
+
+      return messages.map((msg) => ({
+        id: msg._id.toString(),
+        senderId: msg.senderId,
+        senderName: msg.senderName,
+        recipientId: msg.recipientId,
+        content: msg.content,
+        timestamp: msg.timestamp,
+        read: msg.read !== undefined ? msg.read : false,
+        isGroupMessage: msg.isGroupMessage,
+      }));
+    },
   },
   Mutation: {
     sendMessage: async (

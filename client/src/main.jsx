@@ -6,13 +6,12 @@ import App from "./App.jsx";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Groups from "./pages/Groups";
 import Contacts from "./pages/Contacts";
-import Chat from "./pages/Chat";
 import Error from "./pages/Error";
 import Dashboard from "./pages/Dashboard";
+import Chat from "./components/Chat/Chat";
 
 const router = createBrowserRouter([
   {
@@ -25,35 +24,31 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/login",
+        path: "login",
         element: <Login />,
       },
       {
-        path: "/signup",
+        path: "signup",
         element: <Signup />,
       },
       {
-        path: "/dashboard",
+        path: "dashboard",
         element: <Dashboard />,
       },
       {
-        path: "/dashboard",
-        element: <Dashboard/>,
-      },
-      {
-        path: "/settings",
+        path: "settings",
         element: <Settings />,
       },
       {
-        path: "/groups",
+        path: "groups",
         element: <Groups />,
       },
       {
-        path: "/Contacts",
+        path: "contacts",
         element: <Contacts />,
       },
       {
-        path: "/Chat",
+        path: "chat/:otherUserId",
         element: <Chat />,
       },
     ],

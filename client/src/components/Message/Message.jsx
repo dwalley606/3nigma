@@ -3,13 +3,15 @@ import PropTypes from "prop-types";
 import "./Message.css";
 
 const Message = ({ message }) => {
+  const formattedTimestamp = new Date(
+    parseInt(message.timestamp, 10)
+  ).toLocaleString();
+
   return (
     <div className={`message ${message.read ? "read" : "unread"}`}>
       <div className="message-header">
         <span className="sender">{message.senderName}</span>
-        <span className="timestamp">
-          {new Date(message.timestamp).toLocaleString()}
-        </span>
+        <span className="timestamp">{formattedTimestamp}</span>
       </div>
       <div className="message-content">{message.content}</div>
     </div>

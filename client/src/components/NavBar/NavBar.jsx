@@ -22,7 +22,6 @@ const Navbar = () => {
           <Link to="/settings">Settings</Link>
           <Link to="/groups">Groups</Link>
           <Link to="/contacts">Contacts</Link>
-          <Link to="/chat">Chat</Link>
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (

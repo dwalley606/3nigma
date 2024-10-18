@@ -57,6 +57,7 @@ const typeDefs = `
   type Query {
     getContacts(userId: ID!): [User!]!
     getMessages(recipientId: ID!): [Message!]!
+    getConversation(userId: ID!, otherUserId: ID!): [Message!]!
     getGroupMessages(groupID: ID!): [Message!]!
     getUserById(id: ID!): User
     getUsers: [User!]
