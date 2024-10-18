@@ -17,7 +17,10 @@ export const SEND_MESSAGE = gql`
       content
       timestamp
       senderId
+      senderName
       recipientId
+      read
+      isGroupMessage
     }
   }
 `;

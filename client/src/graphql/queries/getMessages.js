@@ -1,10 +1,12 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
+// GraphQL query to fetch messages for a specific recipient
 export const GET_MESSAGES = gql`
-  query getMessages($senderId: ID!, $recipientId: ID!) {
-    getMessages(senderId: $senderId, recipientId: $recipientId) {
+  query GetMessages($recipientId: ID!) {
+    getMessages(recipientId: $recipientId) {
       id
       senderId
+      senderName
       recipientId
       content
       timestamp
@@ -13,4 +15,3 @@ export const GET_MESSAGES = gql`
     }
   }
 `;
-

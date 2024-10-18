@@ -21,6 +21,7 @@ const typeDefs = `
   type Message {
     id: ID!
     senderId: ID!
+    senderName: String!
     recipientId: ID!
     content: String!
     timestamp: String!
@@ -55,7 +56,7 @@ const typeDefs = `
 
   type Query {
     getContacts(userId: ID!): [User!]!
-    getMessages(senderId: ID!, recipientId: ID!): [Message!]!
+    getMessages(recipientId: ID!): [Message!]!
     getGroupMessages(groupID: ID!): [Message!]!
     getUserById(id: ID!): User
     getUsers: [User!]

@@ -1,0 +1,28 @@
+/* src/components/Message/Message.css */
+.message {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.message.read {
+  background-color: #f0f0f0;
+}
+
+.message.unread {
+  background-color: #fff;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.message-content {
+  margin-top: 5px;
+  font-size: 1em;
+  color: black;
+}
