@@ -57,6 +57,7 @@ const Dashboard = () => {
               : message.senderId;
           return (
             <div
+              className="dash-bubble"
               key={message.id}
               onClick={() => handleMessageClick(otherUserId)}
             >

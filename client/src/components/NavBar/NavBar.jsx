@@ -1,27 +1,41 @@
 // src/components/NavBar.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import "./NavBar.css";
 
 const Navbar = () => {
   const { state, dispatch } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     dispatch({ type: "LOGOUT" });
     navigate("/"); // Redirect to Home page
   };
 
+  const handleBackToDashboard = () => {
+    navigate("/dashboard");
+  };
+
   return (
     <nav className="navbar">
+      {(location.pathname.startsWith("/chat") || 
+        location.pathname === "/groups" || 
+        location.pathname === "/settings") && (
+        <button className="back-button" onClick={handleBackToDashboard}>
+          ← Back to Dashboard
+        </button>
+      )}
       {state.user ? (
         <div className="AuthNavMenu">
-          <Link to="/dashboard">Dashboard</Link>
           <Link to="/settings">Settings</Link>
-          <Link to="/groups">Groups</Link>
-          <Link to="/contacts">Contacts</Link>
+          {location.pathname === "/dashboard" && (
+            <>
+              <Link to="/groups">Groups</Link>
+              <Link to="/contacts">Contacts</Link>
+            </>
+          )}
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (

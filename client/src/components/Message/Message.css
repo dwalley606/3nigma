@@ -1,9 +1,12 @@
 /* src/components/Message/Message.css */
 .message {
-  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  width: 100%; /* Extend across the available space */
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
+  box-sizing: border-box; /* Include padding and border in width */
 }
 
 .message.read {
@@ -11,7 +14,7 @@
 }
 
 .message.unread {
-  background-color: #fff;
+  background-color: #f18f8f;
 }
 
 .message-header {
@@ -25,4 +28,15 @@
   margin-top: 5px;
   font-size: 1em;
   color: black;
+}
+
+/* Responsive text size for mobile screens */
+@media (max-width: 768px) {
+  .message-content {
+    font-size: 1.2em; /* Increase text size for mobile */
+  }
+
+  .message-header {
+    font-size: 1em; /* Adjust header size for mobile */
+  }
 }
