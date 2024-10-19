@@ -1,10 +1,10 @@
 // client/src/components/Chat/Chat.jsx
-import React from "react";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
-import MessageInput from "../MessageInput/MessageInput";
+import { MARK_MESSAGES_AS_READ } from "../../graphql/mutations/markMessagesAsRead";
 import "./Chat.css";
 
 const Chat = () => {
@@ -16,34 +16,33 @@ const Chat = () => {
     skip: !state.user || !otherUserId,
   });
 
+  const [markMessagesAsRead] = useMutation(MARK_MESSAGES_AS_READ);
+
+  useEffect(() => {
+    if (data && data.getConversation) {
+      // Mark messages as read when the conversation is loaded
+      markMessagesAsRead({ variables: { conversationId: otherUserId } });
+    }
+  }, [data, markMessagesAsRead, otherUserId]);
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error fetching conversation: {error.message}</p>;
 
-  // Determine if this is a group message
-  const isGroupMessage = false; // Set this based on your application's logic
-
   return (
     <div className="chat">
-      {data.getConversation.map((message) => {
-        const formattedTimestamp = new Date(
-          parseInt(message.timestamp, 10)
-        ).toLocaleString();
-
-        return (
-          <div
-            key={message.id}
-            className={`chatMessage ${
-              message.senderId === state.user.id ? "sent" : "received"
-            }`}
-          >
-            <div className="chatMessage-content">{message.content}</div>
-            <div className="chatMessage-timestamp">{formattedTimestamp}</div>
+      {data.getConversation.map((message) => (
+        <div
+          key={message.id}
+          className={`message ${
+            message.senderId === state.user.id ? "sent" : "received"
+          }`}
+        >
+          <div className="message-content">{message.content}</div>
+          <div className="message-timestamp">
+            {new Date(parseInt(message.timestamp, 10)).toLocaleString()}
           </div>
-        );
-      })}
-      <div className="messageInputContainer">
-        <MessageInput recipientId={otherUserId} isGroupMessage={isGroupMessage} />
-      </div>
+        </div>
+      ))}
     </div>
   );
 };

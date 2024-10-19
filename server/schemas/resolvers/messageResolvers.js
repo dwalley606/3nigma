@@ -123,5 +123,12 @@ export const messageResolvers = {
         throw new Error("Failed to delete message");
       }
     },
+    markMessagesAsRead: async (_, { conversationId }) => {
+      await Message.updateMany(
+        { conversationId, read: false },
+        { $set: { read: true } }
+      );
+      return true;
+    },
   },
 };

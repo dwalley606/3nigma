@@ -74,6 +74,7 @@ const typeDefs = `
     addGroupMember(groupId: ID!, userId: ID!): Group!
     removeGroupMember(groupId: ID!, userId: ID!): Group!
     deleteMessage(messageId: ID!, forEveryone: Boolean!): Boolean!
+    markMessagesAsRead(conversationId: ID!): Boolean!
   }
 `;
 
