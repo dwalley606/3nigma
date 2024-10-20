@@ -1,4 +1,4 @@
-:root {
+/* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -24,11 +24,11 @@ a:hover {
 
 body {
   width: 100%; /* Ensure body takes full width */
-  margin: 0; /* Remove auto margin */
+  /* margin: 0; Remove auto margin
   display: flex;
   flex-direction: column;
   align-items: stretch; /* Allow children to stretch */
-  justify-content: flex-start; /* Align children to the top */
+  /* justify-content: flex-start; Align children to the top
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -55,7 +55,7 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+} */ */ */
 
 .signup-form {
   display: flex;
@@ -104,13 +104,13 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-}
+} */
 
 /* .dash-bubble {
   display: flex;
   justify-content: center;
   width: 100%;
-} */
+}
 
 /* Base styles for centering content */
 
@@ -132,4 +132,53 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  max-width: 100%; /* Ensure it doesn't exceed the viewport width */
+}
+
+.message-list {
+  width: 100%;
+  max-width: 600px; /* Optional: Limit the width of the message list */
+  margin: 0 auto;
+}
+
+.dash-bubble {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  background-color: #f1f1f1;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.dash-bubble:hover {
+  background-color: #e0e0e0;
+}
+
+.navbar {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
 import { MARK_MESSAGES_AS_READ } from "../../graphql/mutations/markMessagesAsRead";
+import MessageInput from "../MessageInput/MessageInput";
 import "./Chat.css";
 
 const Chat = () => {
@@ -28,6 +29,9 @@ const Chat = () => {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error fetching conversation: {error.message}</p>;
 
+  // Determine if this is a group message
+  const isGroupMessage = false; // Set this based on your application's logic
+
   return (
     <div className="chat">
       {data.getConversation.map((message) => (
@@ -43,6 +47,9 @@ const Chat = () => {
           </div>
         </div>
       ))}
+      <div className="messageInputContainer">
+        <MessageInput recipientId={otherUserId} isGroupMessage={isGroupMessage} />
+      </div>
     </div>
   );
 };

@@ -8,7 +8,7 @@ import {
 import NavBar from "./components/NavBar/NavBar";
 import { setContext } from "@apollo/client/link/context";
 import { AuthProvider } from "./context/AuthContext.jsx";
-
+import CssBaseline from '@mui/material/CssBaseline';
 const httpLink = createHttpLink({
   uri: "/graphql",
 });
@@ -32,6 +32,7 @@ function App() {
   return (
     <ApolloProvider client={client}>
       <AuthProvider>
+      <CssBaseline /> 
         <div>
           <main>
             <NavBar />

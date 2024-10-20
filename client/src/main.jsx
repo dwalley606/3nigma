@@ -1,6 +1,11 @@
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+
 
 import App from "./App.jsx";
 import Home from "./pages/Home";
@@ -10,7 +15,7 @@ import Settings from "./pages/Settings";
 import Groups from "./pages/Groups";
 import Contacts from "./pages/Contacts";
 import Error from "./pages/Error";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import Chat from "./components/Chat/Chat";
 
 const router = createBrowserRouter([

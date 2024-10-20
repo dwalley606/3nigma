@@ -1,8 +1,8 @@
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
-import { GET_MESSAGES } from "../graphql/queries/getMessages.js";
-import Message from "../components/Message/Message";
+import { GET_MESSAGES } from "../../graphql/queries/getMessages.js";
+import Message from "../Message/Message";
 
 const Dashboard = () => {
   const { state } = useAuth();
