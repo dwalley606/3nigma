@@ -48,7 +48,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <h2>Recent Conversations</h2>
+      <h2>Recent</h2>
       <div className="message-list">
         {sortedRecentMessages.map((message) => {
           const otherUserId =
