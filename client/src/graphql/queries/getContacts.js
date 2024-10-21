@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_CONTACTS = gql`
   query getContacts($userId: ID!) {
@@ -7,10 +7,7 @@ export const GET_CONTACTS = gql`
       username
       email
       phoneNumber
-      publicKey
-      lastSeen
       profilePicUrl
     }
   }
 `;
-

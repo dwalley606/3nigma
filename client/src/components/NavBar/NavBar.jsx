@@ -3,15 +3,15 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/auth/AuthContext";
 import "./NavBar.css";
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import IconButton from "@mui/material/IconButton";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import MenuItem from "@mui/material/MenuItem";
+import Menu from "@mui/material/Menu";
 
 const Navbar = () => {
   const { state, dispatch } = useAuth();
@@ -53,12 +53,22 @@ const Navbar = () => {
     return "3NIGMA"; // Default title
   };
 
+  // Determine if the back arrow should be displayed
+  const shouldShowBackArrow = () => {
+    return (
+      location.pathname.startsWith("/chat") ||
+      location.pathname === "/groups" ||
+      location.pathname === "/settings" ||
+      location.pathname === "/contacts"
+    );
+  };
+
   return (
     <nav className="navbar">
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static">
           <Toolbar>
-            {location.pathname.startsWith("/chat") && (
+            {shouldShowBackArrow() && (
               <IconButton
                 size="large"
                 edge="start"
@@ -88,26 +98,45 @@ const Navbar = () => {
                 id="menu-appbar"
                 anchorEl={anchorEl}
                 anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
+                  vertical: "top",
+                  horizontal: "right",
                 }}
                 keepMounted
                 transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
+                  vertical: "top",
+                  horizontal: "right",
                 }}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
                 {state.user ? (
                   [
-                    <MenuItem key="settings" onClick={() => handleNavigation("/settings")}>Settings</MenuItem>,
-                    <MenuItem key="groups" onClick={() => handleNavigation("/groups")}>Groups</MenuItem>,
-                    <MenuItem key="contacts" onClick={() => handleNavigation("/contacts")}>Contacts</MenuItem>,
-                    <MenuItem key="logout" onClick={handleLogout}>Logout</MenuItem>
+                    <MenuItem
+                      key="settings"
+                      onClick={() => handleNavigation("/settings")}
+                    >
+                      Settings
+                    </MenuItem>,
+                    <MenuItem
+                      key="groups"
+                      onClick={() => handleNavigation("/groups")}
+                    >
+                      Groups
+                    </MenuItem>,
+                    <MenuItem
+                      key="contacts"
+                      onClick={() => handleNavigation("/contacts")}
+                    >
+                      Contacts
+                    </MenuItem>,
+                    <MenuItem key="logout" onClick={handleLogout}>
+                      Logout
+                    </MenuItem>,
                   ]
                 ) : (
-                  <MenuItem onClick={() => handleNavigation("/login")}>Login</MenuItem>
+                  <MenuItem onClick={() => handleNavigation("/login")}>
+                    Login
+                  </MenuItem>
                 )}
               </Menu>
             </div>

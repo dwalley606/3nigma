@@ -62,6 +62,7 @@ const typeDefs = `
     getUserById(id: ID!): User
     getUsers: [User!]
     getEncryptionKey(userId: ID!): EncryptionKey!
+    getContactRequests(userId: ID!): [ContactRequest!]!
   }
 
   type Mutation {

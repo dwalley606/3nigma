@@ -1,15 +1,13 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import User from '../../models/User.js';
-import ContactRequest from '../../models/ContactRequest.js'; // Ensure the path is correct
-
-
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import User from "../../models/User.js";
+import ContactRequest from "../../models/ContactRequest.js"; // Ensure the path is correct
 
 export const userResolvers = {
   Query: {
     getUserById: async (_, { id }) => {
       try {
-        const user = await User.findById(id).populate('contacts');
+        const user = await User.findById(id).populate("contacts");
         if (!user) {
           throw new Error("User not found");
         }
@@ -20,10 +18,36 @@ export const userResolvers = {
       }
     },
     getUsers: async () => {
-      return await User.find();
+      try {
+        const users = await User.find();
+        return users; // Ensure this returns an array
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        throw new Error("Failed to fetch users");
+      }
     },
     getContacts: async (_, { userId }) => {
-      return await User.findById(userId).populate("contacts");
+      try {
+        const user = await User.findById(userId).populate("contacts");
+        return user.contacts || []; // Ensure it returns an array
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+        throw new Error("Failed to fetch contacts");
+      }
+    },
+    getContactRequests: async (_, { userId }) => {
+      try {
+        const requests = await ContactRequest.find({
+          to: userId,
+          status: "pending",
+        })
+          .populate("from")
+          .exec();
+        return requests;
+      } catch (error) {
+        console.error("Error fetching contact requests:", error);
+        throw new Error("Failed to fetch contact requests");
+      }
     },
   },
   Mutation: {
@@ -43,31 +67,31 @@ export const userResolvers = {
         // Return the user data
         return { user: savedUser };
       } catch (error) {
-        console.error('Error registering user:', error.message);
-        throw new Error('Failed to register user');
+        console.error("Error registering user:", error.message);
+        throw new Error("Failed to register user");
       }
     },
     login: async (_, { email, password }) => {
       try {
         const user = await User.findOne({ email });
         if (!user) {
-          throw new Error('User not found');
+          throw new Error("User not found");
         }
         console.log(user);
 
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
-          throw new Error('Incorrect password');
+          throw new Error("Incorrect password");
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-          expiresIn: '2h',
+          expiresIn: "2h",
         });
 
         return { token, user };
       } catch (error) {
-        console.error('Error during login:', error.message);
-        throw new Error('Failed to log in');
+        console.error("Error during login:", error.message);
+        throw new Error("Failed to log in");
       }
     },
     sendContactRequest: async (_, { fromUserId, toUserId }) => {

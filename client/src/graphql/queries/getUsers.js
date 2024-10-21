@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_USERS = gql`
   query getUsers {
@@ -7,14 +7,7 @@ export const GET_USERS = gql`
       username
       email
       phoneNumber
-      publicKey
-      lastSeen
       profilePicUrl
-      contacts {
-        id
-        username
-      }
     }
   }
 `;
-
