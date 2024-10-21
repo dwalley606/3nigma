@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { SEND_MESSAGE } from '../../graphql/mutations/sendMessage';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth/AuthContext';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 
@@ -30,7 +30,8 @@ const MessageInput = ({ recipientId, isGroupMessage }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+    <form onSubmit={handleSubmit} 
+          style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
       <TextField
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -38,7 +39,7 @@ const MessageInput = ({ recipientId, isGroupMessage }) => {
         multiline
         minRows={1}
         maxRows={10}
-        variant="outlined"
+        variant="filled"
         fullWidth
         style={{ marginRight: '10px' }}
       />

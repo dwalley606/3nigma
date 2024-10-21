@@ -9,19 +9,14 @@ export const userResolvers = {
   Query: {
     getUserById: async (_, { id }) => {
       try {
-        const user = await User.findById(id);
+        const user = await User.findById(id).populate('contacts');
         if (!user) {
-          throw new Error('User not found');
+          throw new Error("User not found");
         }
-        return {
-          id: user._id.toString(),
-          username: user.username,
-          phoneNumber: user.phoneNumber,
-          publicKey: user.publicKey,
-        };
+        return user;
       } catch (error) {
-        console.error('Error fetching user by ID:', error);
-        throw new Error('Failed to fetch user');
+        console.error("Error fetching user:", error);
+        throw new Error("Failed to fetch user");
       }
     },
     getUsers: async () => {

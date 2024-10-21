@@ -1,72 +1,52 @@
-import { useAuth } from "../../context/AuthContext";
+import React from "react";
+import { useAuth } from "../../context/auth/AuthContext";
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom"; // Use useNavigate instead of useHistory
-import { GET_MESSAGES } from "../../graphql/queries/getMessages.js";
-import Message from "../Message/Message";
+import { useNavigate } from "react-router-dom";
+import { GET_MESSAGES } from "../../graphql/queries/getMessages";
+import MessageList from "../MessageList/MessageList";
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 const Dashboard = () => {
   const { state } = useAuth();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const { loading, error, data } = useQuery(GET_MESSAGES, {
     variables: { recipientId: state.user.id },
     skip: !state.user,
   });
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error fetching messages: {error.message}</p>;
+  if (loading) return <Typography>Loading messages...</Typography>;
+  if (error) return <Typography>Error fetching messages: {error.message}</Typography>;
 
-  // Log the messages to verify data
-  console.log("Fetched messages:", data.getMessages);
+  // Group messages by senderId and include senderName
+  const groupedMessages = data.getMessages.reduce((acc, message) => {
+    const otherUserId =
+      message.senderId === state.user.id
+        ? message.recipientId
+        : message.senderId;
+    if (!acc[otherUserId]) {
+      acc[otherUserId] = {
+        messages: [],
+        senderName: message.senderName || "Unknown User", // Ensure senderName is set
+      };
+    }
+    acc[otherUserId].messages.push(message);
+    return acc;
+  }, {});
 
-  // Group messages by senderId and get the most recent message from each sender
-  const recentMessages = Object.values(
-    data.getMessages.reduce((acc, message) => {
-      const otherUserId =
-        message.senderId === state.user.id
-          ? message.recipientId
-          : message.senderId;
-      if (
-        !acc[otherUserId] ||
-        new Date(message.timestamp) > new Date(acc[otherUserId].timestamp)
-      ) {
-        acc[otherUserId] = message;
-      }
-      return acc;
-    }, {})
-  );
-
-  // Sort the recent messages by timestamp
-  const sortedRecentMessages = recentMessages.sort(
-    (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-  );
-
-  // Handle message click to navigate to the chat component
-  const handleMessageClick = (otherUserId) => {
-    navigate(`/chat/${otherUserId}`); // Use navigate instead of history.push
-  };
+  console.log("Grouped Messages:", groupedMessages); // Debugging line
 
   return (
-    <div className="dashboard">
-      <h2>Recent</h2>
-      <div className="message-list">
-        {sortedRecentMessages.map((message) => {
-          const otherUserId =
-            message.senderId === state.user.id
-              ? message.recipientId
-              : message.senderId;
-          return (
-            <div
-              className="dash-bubble"
-              key={message.id}
-              onClick={() => handleMessageClick(otherUserId)}
-            >
-              <Message message={message} />
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    <Box sx={{ padding: 2 }}>
+      <MessageList
+        groupedMessages={groupedMessages}
+        onMessageClick={(otherUserId) => {
+          const senderName = groupedMessages[otherUserId]?.senderName || "Unknown User";
+          navigate(`/chat/${otherUserId}`, { state: { senderName } });
+        }}
+      />
+    </Box>
   );
 };
 

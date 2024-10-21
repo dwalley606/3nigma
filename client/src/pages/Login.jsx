@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../graphql/mutations/loginUser";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // Import the useAuth hook
+import { useAuth } from "../context/auth/AuthContext"; // Import the useAuth hook
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");

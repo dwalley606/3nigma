@@ -1,27 +1,11 @@
 import { createContext, useReducer, useContext, useEffect } from "react";
+import authReducer from "./authReducer"; // Import the reducer from authReducer.js
+import { LOGIN, LOGOUT, UPDATE_USER, REFRESH_TOKEN, SET_ERROR, CLEAR_ERROR } from "./authActions"; // Import action types
 
 const initialState = {
   authToken: localStorage.getItem("authToken") || null,
   user: JSON.parse(localStorage.getItem("user")) || null,
-};
-
-const authReducer = (state, action) => {
-  switch (action.type) {
-    case "LOGIN":
-      return {
-        ...state,
-        authToken: action.payload.token,
-        user: action.payload.user,
-      };
-    case "LOGOUT":
-      return {
-        ...state,
-        authToken: null,
-        user: null,
-      };
-    default:
-      return state;
-  }
+  error: null, // Include error in the initial state
 };
 
 const AuthContext = createContext();

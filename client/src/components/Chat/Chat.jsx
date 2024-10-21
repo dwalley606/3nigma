@@ -1,12 +1,15 @@
 // client/src/components/Chat/Chat.jsx
-import { useEffect } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useQuery, useMutation } from "@apollo/client";
+import { useAuth } from "../../context/auth/AuthContext";
+import { useQuery } from "@apollo/client";
 import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
-import { MARK_MESSAGES_AS_READ } from "../../graphql/mutations/markMessagesAsRead";
 import MessageInput from "../MessageInput/MessageInput";
-import "./Chat.css";
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import { styled } from '@mui/system';
 
 const Chat = () => {
   const { state } = useAuth();
@@ -17,40 +20,48 @@ const Chat = () => {
     skip: !state.user || !otherUserId,
   });
 
-  const [markMessagesAsRead] = useMutation(MARK_MESSAGES_AS_READ);
+  if (loading) return <p>Loading conversation...</p>;
+  if (error) return <p>Error loading conversation: {error.message}</p>;
 
-  useEffect(() => {
-    if (data && data.getConversation) {
-      // Mark messages as read when the conversation is loaded
-      markMessagesAsRead({ variables: { conversationId: otherUserId } });
-    }
-  }, [data, markMessagesAsRead, otherUserId]);
+  const messages = data?.getConversation || [];
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error fetching conversation: {error.message}</p>;
+  // Styled components for messages
+  const MessageListItem = styled(ListItem)(({ theme, isSender }) => ({
+    justifyContent: isSender ? 'flex-end' : 'flex-start',
+    display: 'flex',
+    padding: theme.spacing(1),
+  }));
 
-  // Determine if this is a group message
-  const isGroupMessage = false; // Set this based on your application's logic
+  const MessageBubble = styled('div')(({ theme, isSender }) => ({
+    maxWidth: '60%',
+    padding: theme.spacing(1),
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: isSender ? theme.palette.primary.main : theme.palette.grey[300],
+    color: isSender ? theme.palette.primary.contrastText : theme.palette.text.primary,
+  }));
 
   return (
-    <div className="chat">
-      {data.getConversation.map((message) => (
-        <div
-          key={message.id}
-          className={`message ${
-            message.senderId === state.user.id ? "sent" : "received"
-          }`}
-        >
-          <div className="message-content">{message.content}</div>
-          <div className="message-timestamp">
-            {new Date(parseInt(message.timestamp, 10)).toLocaleString()}
-          </div>
-        </div>
-      ))}
-      <div className="messageInputContainer">
-        <MessageInput recipientId={otherUserId} isGroupMessage={isGroupMessage} />
-      </div>
-    </div>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '80vh' }}>
+      <List sx={{ flexGrow: 1, overflowY: 'auto', padding: 2 }}>
+        {messages.map((message) => (
+          <MessageListItem key={message.id} isSender={message.senderId === state.user.id}>
+            <MessageBubble isSender={message.senderId === state.user.id}>
+              <ListItemText primary={message.content} />
+            </MessageBubble>
+          </MessageListItem>
+        ))}
+      </List>
+      <Box sx={{ 
+        position: 'fixed', 
+        bottom: 0, 
+        width: '100%', 
+        backgroundColor: 'white', 
+        padding: 1,
+        display: 'flex', 
+        alignItems: 'center' // Center items vertically
+      }}>        <MessageInput recipientId={otherUserId} />
+      </Box>
+    </Box>
   );
 };
 
