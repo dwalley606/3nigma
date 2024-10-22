@@ -94,6 +94,15 @@ export const userResolvers = {
         throw new Error("Failed to log in");
       }
     },
+    refreshToken: async (_, { refreshToken }) => {
+      try {
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        return { token: newToken };
+      } catch (error) {
+        throw new Error('Invalid or expired refresh token');
+      }
+    },
     sendContactRequest: async (_, { fromUserId, toUserId }) => {
       try {
         const newRequest = new ContactRequest({

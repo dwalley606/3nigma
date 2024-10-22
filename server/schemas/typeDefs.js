@@ -76,6 +76,7 @@ const typeDefs = `
     removeGroupMember(groupId: ID!, userId: ID!): Group!
     deleteMessage(messageId: ID!, forEveryone: Boolean!): Boolean!
     markMessagesAsRead(conversationId: ID!): Boolean!
+    refreshToken(refreshToken: String!): AuthPayload
   }
 `;
 
