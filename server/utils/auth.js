@@ -13,16 +13,14 @@ export const authMiddleware = ({ req }) => {
   }
 
   if (!token) {
-    return req;
+    return { user: null }; // Explicitly return null user if no token is found
   }
 
   try {
     const { data } = jwt.verify(token, secret, { maxAge: expiration });
-    req.user = data;
+    return { user: data }; // Return the user data if token is valid
   } catch (error) {
     console.log("Invalid token:", error.message);
-    req.user = null; // Explicitly set user to null on error
+    return { user: null }; // Return null user if token verification fails
   }
-
-  return req;
 };

@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { useMutation } from '@apollo/client';
-import { SEND_MESSAGE } from '../../graphql/mutations/sendMessage';
-import { useAuth } from '../../context/auth/AuthContext';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import React, { useState } from "react";
+import { useMutation } from "@apollo/client";
+import { SEND_MESSAGE } from "../../graphql/mutations/sendMessage";
+import { useAuth } from "../../context/auth/AuthContext";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 
 const MessageInput = ({ recipientId, isGroupMessage }) => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const { state } = useAuth();
   const [sendMessage] = useMutation(SEND_MESSAGE);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (message.trim() === '') return;
+    if (message.trim() === "") return;
 
     try {
       await sendMessage({
@@ -20,18 +20,20 @@ const MessageInput = ({ recipientId, isGroupMessage }) => {
           senderId: state.user.id,
           recipientId,
           content: message,
-          isGroupMessage,
+          isGroupMessage: false,
         },
       });
-      setMessage(''); // Clear the input field after sending
+      setMessage(""); // Clear the input field after sending
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} 
-          style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: "flex", alignItems: "center", width: "100%" }}
+    >
       <TextField
         value={message}
         onChange={(e) => setMessage(e.target.value)}
@@ -41,7 +43,7 @@ const MessageInput = ({ recipientId, isGroupMessage }) => {
         maxRows={10}
         variant="filled"
         fullWidth
-        style={{ marginRight: '10px' }}
+        style={{ marginRight: "10px" }}
       />
       <Button type="submit" variant="contained" color="primary">
         Send

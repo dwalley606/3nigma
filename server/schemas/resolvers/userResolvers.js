@@ -5,7 +5,10 @@ import ContactRequest from "../../models/ContactRequest.js"; // Ensure the path 
 
 export const userResolvers = {
   Query: {
-    getUserById: async (_, { id }) => {
+    getUserById: async (_, { id }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view user details.");
+      }
       try {
         const user = await User.findById(id).populate("contacts");
         if (!user) {
@@ -17,7 +20,10 @@ export const userResolvers = {
         throw new Error("Failed to fetch user");
       }
     },
-    getUsers: async () => {
+    getUsers: async (_, __, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view users.");
+      }
       try {
         const users = await User.find();
         return users; // Ensure this returns an array
@@ -26,7 +32,10 @@ export const userResolvers = {
         throw new Error("Failed to fetch users");
       }
     },
-    getContacts: async (_, { userId }) => {
+    getContacts: async (_, { userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view contacts.");
+      }
       try {
         const user = await User.findById(userId).populate("contacts");
         return user.contacts || []; // Ensure it returns an array
@@ -35,7 +44,10 @@ export const userResolvers = {
         throw new Error("Failed to fetch contacts");
       }
     },
-    getContactRequests: async (_, { userId }) => {
+    getContactRequests: async (_, { userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view contact requests.");
+      }
       try {
         const requests = await ContactRequest.find({
           to: userId,
@@ -53,7 +65,6 @@ export const userResolvers = {
   Mutation: {
     registerUser: async (_, { username, email, password, phoneNumber }) => {
       try {
-        // Create a new user object
         const newUser = new User({
           username,
           email,
@@ -61,10 +72,8 @@ export const userResolvers = {
           phoneNumber,
         });
 
-        // Save the new user to the database
         const savedUser = await newUser.save();
 
-        // Return the user data
         return { user: savedUser };
       } catch (error) {
         console.error("Error registering user:", error.message);
@@ -77,7 +86,6 @@ export const userResolvers = {
         if (!user) {
           throw new Error("User not found");
         }
-        console.log(user);
 
         const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
@@ -96,14 +104,22 @@ export const userResolvers = {
     },
     refreshToken: async (_, { refreshToken }) => {
       try {
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-        const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const decoded = jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET
+        );
+        const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
+          expiresIn: "15m",
+        });
         return { token: newToken };
       } catch (error) {
-        throw new Error('Invalid or expired refresh token');
+        throw new Error("Invalid or expired refresh token");
       }
     },
-    sendContactRequest: async (_, { fromUserId, toUserId }) => {
+    sendContactRequest: async (_, { fromUserId, toUserId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to send a contact request.");
+      }
       try {
         const newRequest = new ContactRequest({
           from: fromUserId,
@@ -131,7 +147,12 @@ export const userResolvers = {
         throw new Error("Failed to send contact request");
       }
     },
-    respondContactRequest: async (_, { requestId, status }) => {
+    respondContactRequest: async (_, { requestId, status }, context) => {
+      if (!context.user) {
+        throw new Error(
+          "You must be logged in to respond to a contact request."
+        );
+      }
       try {
         const request = await ContactRequest.findById(requestId);
 
