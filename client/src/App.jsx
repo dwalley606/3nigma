@@ -1,67 +1,45 @@
-import React from 'react';
-import { Outlet } from "react-router-dom";
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloProvider,
-  createHttpLink,
-} from "@apollo/client";
+import { useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
 import NavBar from "./components/NavBar/NavBar";
-import { setContext } from "@apollo/client/link/context";
-import { AuthProvider } from "./context/auth/AuthContext.jsx";
+import { useAuth } from "./context/auth/AuthContext.jsx";
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { loggedIn, refreshToken } from './utils/auth';
 
 // Define your custom theme
 const theme = createTheme({
   palette: {
-    primary: {
-      main: '#1976d2', // Example primary color
-    },
-    secondary: {
-      main: '#dc004e', // Example secondary color
-    },
+    primary: { main: '#1976d2' },
+    secondary: { main: '#dc004e' },
   },
-  typography: {
-    fontFamily: 'Roboto, sans-serif',
-  },
-  // Add more customizations as needed
-});
-
-const httpLink = createHttpLink({
-  uri: "/graphql",
-});
-
-const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("authToken");
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : "",
-    },
-  };
-});
-
-const client = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
+  typography: { fontFamily: 'Roboto, sans-serif' },
 });
 
 function App() {
+  const { state, dispatch } = useAuth();
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = state.authToken;
+      if (!loggedIn(token)) {
+        try {
+          await refreshToken(dispatch);
+        } catch (error) {
+          console.error("Token refresh failed:", error);
+          dispatch({ type: 'LOGOUT' });
+        }
+      }
+    };
+
+    checkToken();
+  }, [state.authToken, dispatch]);
+
   return (
-    <ApolloProvider client={client}>
-      <AuthProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <div>
-            <main>
-              <NavBar />
-              <Outlet />
-            </main>
-          </div>
-        </ThemeProvider>
-      </AuthProvider>
-    </ApolloProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <NavBar />
+      <Outlet /> {/* Render child routes */}
+    </ThemeProvider>
   );
 }
 

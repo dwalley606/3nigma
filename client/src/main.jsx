@@ -16,6 +16,39 @@ import Contacts from "./components/Contacts/Contacts";
 import Error from "./pages/Error";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import Chat from "./components/Chat/Chat";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute.jsx";
+import { AuthProvider } from "./context/auth/AuthContext.jsx";
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  createHttpLink,
+} from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { loggedIn, refreshToken } from './utils/auth';
+
+// Apollo Client setup
+const httpLink = createHttpLink({
+  uri: "/graphql",
+});
+
+const authLink = setContext(async (_, { headers }) => {
+  const token = localStorage.getItem("authToken");
+  if (!loggedIn(token)) {
+    await refreshToken();
+  }
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache: new InMemoryCache(),
+});
 
 const router = createBrowserRouter([
   {
@@ -23,42 +56,57 @@ const router = createBrowserRouter([
     element: <App />,
     error: <Error />,
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: "login",
-        element: <Login />,
-      },
-      {
-        path: "signup",
-        element: <Signup />,
-      },
+      { index: true, element: <Home /> },
+      { path: "login", element: <Login /> },
+      { path: "signup", element: <Signup /> },
       {
         path: "dashboard",
-        element: <Dashboard />,
+        element: (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "settings",
-        element: <Settings />,
+        element: (
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "groups",
-        element: <Groups />,
+        element: (
+          <ProtectedRoute>
+            <Groups />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "contacts",
-        element: <Contacts />,
+        element: (
+          <ProtectedRoute>
+            <Contacts />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "chat/:otherUserId",
-        element: <Chat />,
+        element: (
+          <ProtectedRoute>
+            <Chat />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <RouterProvider router={router} />
+  <ApolloProvider client={client}>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  </ApolloProvider>
 );
