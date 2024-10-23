@@ -34,7 +34,7 @@ const Dashboard = () => {
     return acc;
   }, {});
 
-  console.log("Grouped Messages:", groupedMessages); // Debugging line
+  // console.log("Grouped Messages:", groupedMessages); // Debugging line
 
   return (
     <Box sx={{ padding: 2 }}>

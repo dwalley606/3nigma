@@ -3,14 +3,15 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../graphql/mutations/loginUser";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/auth/AuthContext"; // Import the useAuth hook
+import { useAuth } from "../context/auth/AuthContext";
+import { Container, TextField, Button, Typography, Box } from "@mui/material";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [login, { loading, error }] = useMutation(LOGIN_USER);
   const navigate = useNavigate();
-  const { dispatch } = useAuth(); // Use the dispatch function from AuthContext
+  const { dispatch } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,7 +19,6 @@ const LoginForm = () => {
       const { data } = await login({ variables: { email, password } });
       console.log("Login successful:", data);
 
-      // Dispatch the LOGIN action to update the context state
       dispatch({
         type: "LOGIN",
         payload: {
@@ -27,11 +27,9 @@ const LoginForm = () => {
         },
       });
 
-      // Store the token in local storage
       localStorage.setItem("authToken", data.login.token);
       localStorage.setItem("user", JSON.stringify(data.login.user));
 
-      // Redirect to the dashboard
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
@@ -39,31 +37,57 @@ const LoginForm = () => {
   };
 
   return (
-    <div>
-      <h2 className="login-title">Login</h2>
-      <form onSubmit={handleSubmit} className="login-form">
-        <label htmlFor="email">Email:</label>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <label htmlFor="password">Password:</label>
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-        {error && <p>Error: {error.message}</p>}
-      </form>
-    </div>
+    <Container maxWidth="xs">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          mt: 8,
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          Login
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+          {error && <Typography color="error">Error: {error.message}</Typography>}
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

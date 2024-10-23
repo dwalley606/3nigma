@@ -33,6 +33,7 @@ export const userResolvers = {
       }
     },
     getContacts: async (_, { userId }, context) => {
+      console.log("getContacts: context.user", context.user);
       if (!context.user) {
         throw new Error("You must be logged in to view contacts.");
       }
@@ -45,6 +46,8 @@ export const userResolvers = {
       }
     },
     getContactRequests: async (_, { userId }, context) => {
+      console.log("getContactRequests: context.user", context.user); // Log the user context
+
       if (!context.user) {
         throw new Error("You must be logged in to view contact requests.");
       }

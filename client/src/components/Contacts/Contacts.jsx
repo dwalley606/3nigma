@@ -1,5 +1,6 @@
 // client/src/components/Contacts/Contacts.jsx
-import { useState } from "react";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/auth/AuthContext";
 import { useQuery } from "@apollo/client";
 import { GET_CONTACTS } from "../../graphql/queries/getContacts";
@@ -17,6 +18,16 @@ import {
 
 const Contacts = () => {
   const { state } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("Contacts: state.user", state.user); // Log the user state
+
+    if (!state.user) {
+      navigate('/login');
+    }
+  }, [state.user, navigate]);
+
   const {
     loading: contactsLoading,
     error: contactsError,

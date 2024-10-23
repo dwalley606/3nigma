@@ -6,20 +6,6 @@ export const messageResolvers = {
     getMessages: async (_, { recipientId }) => {
       const messages = await Message.find({ recipientId });
 
-      // Log each message to verify senderName
-      messages.forEach((msg) => {
-        console.log("Message:", {
-          id: msg._id.toString(),
-          senderId: msg.senderId,
-          senderName: msg.senderName, // Log senderName
-          recipientId: msg.recipientId,
-          content: msg.content,
-          timestamp: msg.timestamp,
-          read: msg.read !== undefined ? msg.read : false,
-          isGroupMessage: msg.isGroupMessage,
-        });
-      });
-
       return messages.map((msg) => ({
         id: msg._id.toString(),
         senderId: msg.senderId,
