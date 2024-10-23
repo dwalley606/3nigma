@@ -11,7 +11,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
-import Groups from "./pages/Groups";
+import GroupList from "./components/GroupList/GroupList";
 import Contacts from "./components/Contacts/Contacts";
 import Error from "./pages/Error";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
@@ -25,7 +25,7 @@ import {
   createHttpLink,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
-import { loggedIn, refreshToken } from './utils/auth';
+import { loggedIn, refreshToken } from "./utils/auth";
 
 // Apollo Client setup
 const httpLink = createHttpLink({
@@ -76,7 +76,7 @@ const router = createBrowserRouter([
         path: "groups",
         element: (
           <ProtectedRoute>
-            <Groups />
+            <GroupList />
           </ProtectedRoute>
         ),
       },

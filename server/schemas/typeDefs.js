@@ -4,6 +4,7 @@ const typeDefs = `
     username: String!
     email: String!
     phoneNumber: String!
+    groups: [Group]
     publicKey: String!
     lastSeen: String!
     profilePicUrl: String
@@ -33,9 +34,9 @@ const typeDefs = `
     id: ID!
     name: String!
     members: [User!]!
-    messages: [Message!]!
     admins: [User!]!
     createdAt: String!
+    updatedAt: String!
   }
 
   type EncryptionKey {
@@ -63,6 +64,7 @@ const typeDefs = `
     getUsers: [User!]
     getEncryptionKey(userId: ID!): EncryptionKey!
     getContactRequests(userId: ID!): [ContactRequest!]!
+    getUserGroups(userId: ID!): [Group]
   }
 
   type Mutation {
@@ -72,7 +74,7 @@ const typeDefs = `
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!
     respondContactRequest(requestId: ID!, status: String!): ContactRequest!   
     createGroup(name: String!, memberIds: [ID!]!): Group!
-    addGroupMember(groupId: ID!, userId: ID!): Group!
+    addUserToGroup(groupId: ID!, userId: ID!): Group!
     removeGroupMember(groupId: ID!, userId: ID!): Group!
     deleteMessage(messageId: ID!, forEveryone: Boolean!): Boolean!
     markMessagesAsRead(conversationId: ID!): Boolean!

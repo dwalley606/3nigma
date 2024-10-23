@@ -3,24 +3,28 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/auth/AuthContext";
 import { useQuery } from "@apollo/client";
 import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
+import { GET_GROUP_MESSAGES } from "../../graphql/queries/getGroupMessages";
 import MessageInput from "../MessageInput/MessageInput";
 import Message from "../Message/Message";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 
-const Chat = () => {
+const Chat = ({ groupId }) => {
   const { state } = useAuth();
   const { otherUserId } = useParams();
 
-  const { loading, error, data } = useQuery(GET_CONVERSATION, {
-    variables: { userId: state.user.id, otherUserId },
-    skip: !state.user || !otherUserId,
-  });
+  const { loading, error, data } = useQuery(
+    groupId ? GET_GROUP_MESSAGES : GET_CONVERSATION,
+    {
+      variables: groupId ? { groupId } : { userId: state.user.id, otherUserId },
+      skip: !state.user || (!otherUserId && !groupId),
+    }
+  );
 
   if (loading) return <p>Loading conversation...</p>;
   if (error) return <p>Error loading conversation: {error.message}</p>;
 
-  const messages = data?.getConversation || [];
+  const messages = data?.getConversation || data?.getGroupMessages || [];
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "80vh" }}>
@@ -41,10 +45,10 @@ const Chat = () => {
           backgroundColor: "white",
           padding: 1,
           display: "flex",
-          alignItems: "center", // Center items vertically
+          alignItems: "center",
         }}
       >
-        <MessageInput recipientId={otherUserId} />
+        <MessageInput recipientId={groupId || otherUserId} />
       </Box>
     </Box>
   );

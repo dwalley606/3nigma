@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
 import ContactRequest from "../../models/ContactRequest.js"; // Ensure the path is correct
+import Group from "../../models/Group.js";
 
 export const userResolvers = {
   Query: {
@@ -62,6 +63,20 @@ export const userResolvers = {
       } catch (error) {
         console.error("Error fetching contact requests:", error);
         throw new Error("Failed to fetch contact requests");
+      }
+    },
+    getUserGroups: async (_, { userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view your groups.");
+      }
+      try {
+        const groups = await Group.find({ members: userId }).populate(
+          "members admins"
+        );
+        return groups;
+      } catch (error) {
+        console.error("Error fetching user groups:", error);
+        throw new Error("Failed to fetch user groups");
       }
     },
   },
