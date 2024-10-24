@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/auth/AuthContext";
 import { useQuery } from "@apollo/client";
 import { GET_CONTACTS } from "../../graphql/queries/getContacts";
-import { GET_CONTACT_REQUESTS } from "../../graphql/queries/getContactRequests";
 import AddContact from "../AddContact/AddContact";
 import ContactRequests from "./ContactRequests";
 import {
@@ -37,39 +36,19 @@ const Contacts = () => {
     skip: !state.user,
   });
 
-  const {
-    loading: requestsLoading,
-    error: requestsError,
-    data: requestsData,
-  } = useQuery(GET_CONTACT_REQUESTS, {
-    variables: { userId: state.user.id },
-    skip: !state.user,
-  });
-
   const [showAddContact, setShowAddContact] = useState(false);
 
-  if (contactsLoading || requestsLoading)
-    return <Typography>Loading...</Typography>;
+  if (contactsLoading) return <Typography>Loading...</Typography>;
   if (contactsError)
     return (
       <Typography>Error loading contacts: {contactsError.message}</Typography>
     );
-  if (requestsError)
-    return (
-      <Typography>Error loading requests: {requestsError.message}</Typography>
-    );
 
   const contacts = contactsData?.getContacts || [];
-  const contactRequests = requestsData?.getContactRequests || [];
-
-  // Extract the IDs of users to whom contact requests have been sent
-  const requestedUserIds = new Set(
-    contactRequests.map((request) => request.to.id)
-  );
 
   return (
     <Box sx={{ padding: 2 }}>
-      {contactRequests.length > 0 && <ContactRequests userId={state.user.id} />}
+      <ContactRequests userId={state.user.id} />
       {contacts.length === 0 ? (
         <Typography>No Current Contacts</Typography>
       ) : (
@@ -94,7 +73,7 @@ const Contacts = () => {
       {showAddContact && (
         <AddContact
           existingContacts={contacts}
-          requestedUserIds={requestedUserIds}
+          requestedUserIds={new Set()} // Adjust as needed
         />
       )}
     </Box>

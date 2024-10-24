@@ -3,7 +3,10 @@ import User from "../../models/User.js";
 
 export const messageResolvers = {
   Query: {
-    getMessages: async (_, { recipientId }) => {
+    getMessages: async (_, { recipientId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view messages.");
+      }
       const messages = await Message.find({ recipientId });
 
       return messages.map((msg) => ({
@@ -17,7 +20,10 @@ export const messageResolvers = {
         isGroupMessage: msg.isGroupMessage,
       }));
     },
-    getConversation: async (_, { userId, otherUserId }) => {
+    getConversation: async (_, { userId, otherUserId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view conversations.");
+      }
       const messages = await Message.find({
         $or: [
           { senderId: userId, recipientId: otherUserId },
@@ -40,8 +46,12 @@ export const messageResolvers = {
   Mutation: {
     sendMessage: async (
       _,
-      { senderId, recipientId, content, isGroupMessage }
+      { senderId, recipientId, content, isGroupMessage },
+      context
     ) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to send messages.");
+      }
       try {
         // Log the input parameters
         console.log("sendMessage called with:", {
@@ -94,7 +104,10 @@ export const messageResolvers = {
         throw new Error("Failed to send message");
       }
     },
-    deleteMessage: async (_, { messageId, forEveryone }) => {
+    deleteMessage: async (_, { messageId, forEveryone }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to delete messages.");
+      }
       try {
         if (forEveryone) {
           const deletedMessage = await Message.findByIdAndDelete(messageId);
@@ -109,7 +122,10 @@ export const messageResolvers = {
         throw new Error("Failed to delete message");
       }
     },
-    markMessagesAsRead: async (_, { conversationId }) => {
+    markMessagesAsRead: async (_, { conversationId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to mark messages as read.");
+      }
       await Message.updateMany(
         { conversationId, read: false },
         { $set: { read: true } }
