@@ -1,7 +1,8 @@
 import { useAuth } from "../../context/auth/AuthContext";
 import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { GET_MESSAGES } from "../../graphql/queries/getMessages";
+import { GET_DIRECT_MESSAGES } from "../../graphql/queries/getDirectMessages";
+import { GET_GROUP_MESSAGES } from "../../graphql/queries/getGroupMessages";
 import MessageList from "../MessageList/MessageList";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -10,17 +11,50 @@ const Dashboard = () => {
   const { state } = useAuth();
   const navigate = useNavigate();
 
-  const { loading, error, data } = useQuery(GET_MESSAGES, {
-    variables: { recipientId: state.user.id },
-    skip: !state.user,
+  // Ensure userId is available
+  const userId = state.user?.id;
+
+  const {
+    loading: loadingDirect,
+    error: errorDirect,
+    data: dataDirect,
+  } = useQuery(GET_DIRECT_MESSAGES, {
+    variables: { userId },
+    skip: !userId, // Skip query if userId is not available
   });
 
-  if (loading) return <Typography>Loading messages...</Typography>;
-  if (error)
-    return <Typography>Error fetching messages: {error.message}</Typography>;
+  const {
+    loading: loadingGroup,
+    error: errorGroup,
+    data: dataGroup,
+  } = useQuery(GET_GROUP_MESSAGES, {
+    variables: { userId },
+    skip: !userId, // Skip query if userId is not available
+  });
+
+  if (loadingDirect || loadingGroup)
+    return <Typography>Loading messages...</Typography>;
+  if (errorDirect)
+    return (
+      <Typography>
+        Error fetching direct messages: {errorDirect.message}
+      </Typography>
+    );
+  if (errorGroup)
+    return (
+      <Typography>
+        Error fetching group messages: {errorGroup.message}
+      </Typography>
+    );
+
+  // Combine direct and group messages
+  const allMessages = [
+    ...(dataDirect?.getDirectMessages || []),
+    ...(dataGroup?.getGroupMessages || []),
+  ];
 
   // Group messages by senderId or groupId and include senderName or groupName
-  const groupedMessages = data.getMessages.reduce((acc, message) => {
+  const groupedMessages = allMessages.reduce((acc, message) => {
     const key = message.isGroupMessage ? message.recipientId : message.senderId;
     const name = message.isGroupMessage
       ? message.groupName
@@ -47,13 +81,23 @@ const Dashboard = () => {
     return acc;
   }, {});
 
+  // Convert groupedMessages to an array and sort by name and timestamp
+  const sortedMessages = Object.values(groupedMessages).sort((a, b) => {
+    if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+    if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+    return (
+      new Date(b.mostRecentMessage.timestamp) -
+      new Date(a.mostRecentMessage.timestamp)
+    );
+  });
+
   return (
     <Box sx={{ padding: 2 }}>
       <MessageList
-        groupedMessages={groupedMessages}
+        groupedMessages={sortedMessages}
         onMessageClick={(key, isGroupMessage) => {
           if (isGroupMessage) {
-            navigate(`/groupChat/${key}`);
+            navigate(`/groupChat/${key}`); // Use the correct groupId
           } else {
             const senderName = groupedMessages[key]?.name || "Unknown User";
             navigate(`/chat/${key}`, { state: { senderName } });

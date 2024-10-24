@@ -16,6 +16,7 @@ import Contacts from "./components/Contacts/Contacts";
 import Error from "./pages/Error";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import Chat from "./components/Chat/Chat";
+import GroupChat from "./components/GroupChat/GroupChat"; // Import GroupChat component
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute.jsx";
 import { AuthProvider } from "./context/auth/AuthContext.jsx";
 import {
@@ -93,6 +94,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Chat />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "groupChat/:groupId", // Add route for group chats
+        element: (
+          <ProtectedRoute>
+            <GroupChat />
           </ProtectedRoute>
         ),
       },

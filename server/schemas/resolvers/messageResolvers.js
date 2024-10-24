@@ -1,52 +1,79 @@
 import Message from "../../models/Message.js";
 import User from "../../models/User.js";
+import Group from "../../models/Group.js"; // Ensure Group model is imported
+import mongoose from "mongoose";
 
 export const messageResolvers = {
   Query: {
-    getMessages: async (_, { recipientId }, context) => {
+    getDirectMessages: async (_, { userId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view messages.");
       }
       try {
-        // Find groups where the user is a member
-        const groups = await Group.find({ members: recipientId });
-        const groupIds = groups.map((group) => group._id);
-
-        // Fetch both individual and group messages
+        // Fetch direct messages where the user is the recipient
         const messages = await Message.find({
-          $or: [
-            { recipientId, isGroupMessage: false }, // Direct messages to the user
-            { recipientId: { $in: groupIds }, isGroupMessage: true }, // Group messages
-          ],
+          recipientId: userId,
+          isGroupMessage: false,
         });
 
         return messages;
       } catch (error) {
-        console.error("Error fetching messages:", error);
-        throw new Error("Failed to fetch messages");
+        console.error("Error fetching direct messages:", error);
+        throw new Error("Failed to fetch direct messages");
+      }
+    },
+    getGroupMessages: async (_, { userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view group messages.");
+      }
+      try {
+        // Find groups where the user is a member
+        const groups = await Group.find({ members: userId });
+        const groupIds = groups.map((group) => group._id);
+
+        // Fetch group messages for those groups
+        const messages = await Message.find({
+          recipientId: { $in: groupIds },
+          isGroupMessage: true,
+        });
+
+        return messages;
+      } catch (error) {
+        console.error("Error fetching group messages:", error);
+        throw new Error("Failed to fetch group messages");
       }
     },
     getConversation: async (_, { userId, otherUserId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view conversations.");
       }
-      const messages = await Message.find({
-        $or: [
-          { senderId: userId, recipientId: otherUserId },
-          { senderId: otherUserId, recipientId: userId },
-        ],
-      }).sort({ timestamp: 1 }); // Sort by timestamp
 
-      return messages.map((msg) => ({
-        id: msg._id.toString(),
-        senderId: msg.senderId,
-        senderName: msg.senderName,
-        recipientId: msg.recipientId,
-        content: msg.content,
-        timestamp: msg.timestamp,
-        read: msg.read !== undefined ? msg.read : false,
-        isGroupMessage: msg.isGroupMessage,
-      }));
+      try {
+        // Convert string IDs to ObjectId
+        const userObjectId = mongoose.Types.ObjectId(userId);
+        const otherUserObjectId = mongoose.Types.ObjectId(otherUserId);
+
+        const messages = await Message.find({
+          $or: [
+            { senderId: userObjectId, recipientId: otherUserObjectId },
+            { senderId: otherUserObjectId, recipientId: userObjectId },
+          ],
+        }).sort({ timestamp: 1 }); // Sort by timestamp
+
+        return messages.map((msg) => ({
+          id: msg._id.toString(),
+          senderId: msg.senderId,
+          senderName: msg.senderName,
+          recipientId: msg.recipientId,
+          content: msg.content,
+          timestamp: msg.timestamp,
+          read: msg.read !== undefined ? msg.read : false,
+          isGroupMessage: msg.isGroupMessage,
+        }));
+      } catch (error) {
+        console.error("Error fetching conversation:", error);
+        throw new Error("Failed to fetch conversation");
+      }
     },
   },
   Mutation: {

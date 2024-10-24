@@ -6,7 +6,7 @@ import { useAuth } from "../../context/auth/AuthContext";
 import MessageInput from "../MessageInput/MessageInput";
 import Message from "../Message/Message";
 
-const GroupChat = ({ groupId, onBack }) => {
+const GroupChat = ({ groupId }) => {
   const { state } = useAuth();
   const { loading, error, data } = useQuery(GET_GROUP_MESSAGES, {
     variables: { groupID: groupId },
