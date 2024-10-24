@@ -1,20 +1,22 @@
 import Group from "../../models/Group.js";
 import User from "../../models/User.js";
+import Message from "../../models/Message.js";
 
 export const groupResolvers = {
   Query: {
-    getGroupMessages: async (_, { groupId }, context) => {
+    getGroupMessages: async (_, { groupID }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group messages.");
       }
       try {
-        const group = await Group.findById(groupId).populate("messages");
-        if (!group) {
-          throw new Error("Group not found");
-        }
-        return group.messages;
+        // Ensure the query condition matches your data structure
+        const messages = await Message.find({
+          recipientId: groupID,
+          isGroupMessage: true,
+        });
+        return messages;
       } catch (error) {
-        console.error("Error fetching group messages:", error);
+        console.error("Error fetching group messages:", error); // Log the error for debugging
         throw new Error("Failed to fetch group messages");
       }
     },

@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
-const User = require("../models/User");
-const ContactRequest = require("../models/ContactRequest");
-const Message = require("../models/Message");
-const Group = require("../models/Group");
-const EncryptionKey = require("../models/EncryptionKey");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import User from "../models/User.js";
+import ContactRequest from "../models/ContactRequest.js";
+import Message from "../models/Message.js";
+import Group from "../models/Group.js";
 
 // Connect to your MongoDB database
 mongoose.connect("mongodb://localhost:27017/3nigma", {
@@ -18,68 +18,105 @@ const seedDatabase = async () => {
     await ContactRequest.deleteMany({});
     await Message.deleteMany({});
     await Group.deleteMany({});
-    await EncryptionKey.deleteMany({});
 
-    // Create sample users
-    const user1 = new User({
-      username: "Alice",
-      phoneNumber: "1234567890",
-      publicKey: "publicKeyAlice",
-      lastSeen: new Date().toISOString(),
+    // Create multiple sample users
+    const users = [];
+    for (let i = 0; i < 50; i++) {
+      const hashedPassword = await bcrypt.hash("password", 10); // Hash the password
+      const user = new User({
+        username: `User${i}`,
+        email: `user${i}@example.com`, // Generate email
+        password: hashedPassword, // Use hashed password
+        phoneNumber: `12345678${i}`,
+        publicKey: `publicKeyUser${i}`,
+        lastSeen: new Date().toISOString(),
+      });
+      users.push(user);
+    }
+    await User.insertMany(users);
+
+    // Verify users are inserted
+    console.log("Users inserted:", users.length);
+
+    // Create groups and assign users to them
+    const groups = [];
+    const usersPerGroup = 5;
+    for (let i = 0; i < 30; i++) {
+      const startIndex = (i * usersPerGroup) % users.length;
+      const endIndex = startIndex + usersPerGroup;
+      const groupMembers = users.slice(startIndex, endIndex);
+
+      // Debugging log
+      console.log(
+        `Group ${i} members:`,
+        groupMembers.map((user) => user.username)
+      );
+
+      if (groupMembers.length < usersPerGroup) {
+        console.error(`Not enough users to form group ${i}`);
+        continue;
+      }
+
+      const group = new Group({
+        name: `Group${i}`,
+        members: groupMembers.map((user) => user._id),
+        admins: [groupMembers[0]._id], // Assign the first user as admin
+        createdAt: new Date().toISOString(),
+      });
+      groups.push(group);
+    }
+    await Group.insertMany(groups);
+
+    // Create group messages
+    const groupMessages = [];
+    groups.forEach((group, groupIndex) => {
+      const groupMembers = users.slice(
+        (groupIndex * usersPerGroup) % users.length,
+        ((groupIndex + 1) * usersPerGroup) % users.length
+      );
+      groupMembers.forEach((user) => {
+        for (let j = 0; j < 3; j++) {
+          // Each user sends 3 messages per group
+          const message = new Message({
+            senderId: user._id,
+            senderName: user.username,
+            recipientId: group._id, // Use group ID as recipient
+            content: `Message ${j} from ${user.username} to Group${groupIndex}`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            isGroupMessage: true, // Mark as group message
+          });
+          groupMessages.push(message);
+        }
+      });
     });
+    await Message.insertMany(groupMessages);
 
-    const user2 = new User({
-      username: "Bob",
-      phoneNumber: "0987654321",
-      publicKey: "publicKeyBob",
-      lastSeen: new Date().toISOString(),
+    // Create one-on-one conversations
+    const directMessages = [];
+    users.forEach((user, userIndex) => {
+      const otherUsers = users
+        .filter((_, index) => index !== userIndex)
+        .slice(0, 3); // Select 3 other users
+      otherUsers.forEach((otherUser) => {
+        for (let k = 0; k < 3; k++) {
+          // Each user sends 3 messages to each of the 3 other users
+          const message = new Message({
+            senderId: user._id,
+            senderName: user.username,
+            recipientId: otherUser._id,
+            content: `Direct message ${k} from ${user.username} to ${otherUser.username}`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            isGroupMessage: false, // Mark as direct message
+          });
+          directMessages.push(message);
+        }
+      });
     });
+    await Message.insertMany(directMessages);
 
-    await user1.save();
-    await user2.save();
-
-    // Create a sample contact request
-    const contactRequest = new ContactRequest({
-      from: user1._id,
-      to: user2._id,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    });
-
-    await contactRequest.save();
-
-    // Create a sample message
-    const message = new Message({
-      sender: user1._id,
-      recipient: user2._id,
-      content: "Hello, Bob!",
-      timestamp: new Date().toISOString(),
-      read: false,
-    });
-
-    await message.save();
-
-    // Create a sample group
-    const group = new Group({
-      name: "Friends",
-      members: [user1._id, user2._id],
-      messages: [message._id],
-      admins: [user1._id],
-      createdAt: new Date().toISOString(),
-    });
-
-    await group.save();
-
-    // Create a sample encryption key
-    const encryptionKey = new EncryptionKey({
-      user: user1._id,
-      publicKey: "publicKeyAlice",
-      privateKey: "privateKeyAlice",
-    });
-
-    await encryptionKey.save();
-
-    console.log("Database seeded successfully!");
+    console.log("Database seeded successfully with large data!");
   } catch (error) {
     console.error("Error seeding database:", error);
   } finally {

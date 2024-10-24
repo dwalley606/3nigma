@@ -3,8 +3,8 @@ import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { GET_MESSAGES } from "../../graphql/queries/getMessages";
 import MessageList from "../MessageList/MessageList";
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 const Dashboard = () => {
   const { state } = useAuth();
@@ -16,33 +16,48 @@ const Dashboard = () => {
   });
 
   if (loading) return <Typography>Loading messages...</Typography>;
-  if (error) return <Typography>Error fetching messages: {error.message}</Typography>;
+  if (error)
+    return <Typography>Error fetching messages: {error.message}</Typography>;
 
-  // Group messages by senderId and include senderName
+  // Group messages by senderId or groupId and include senderName or groupName
   const groupedMessages = data.getMessages.reduce((acc, message) => {
-    const otherUserId =
-      message.senderId === state.user.id
-        ? message.recipientId
-        : message.senderId;
-    if (!acc[otherUserId]) {
-      acc[otherUserId] = {
+    const key = message.isGroupMessage ? message.recipientId : message.senderId;
+    const name = message.isGroupMessage
+      ? message.groupName
+      : message.senderName;
+
+    if (!acc[key]) {
+      acc[key] = {
         messages: [],
-        senderName: message.senderName || "Unknown User", // Ensure senderName is set
+        name: name || "Unknown",
+        mostRecentMessage: message,
       };
     }
-    acc[otherUserId].messages.push(message);
+
+    acc[key].messages.push(message);
+
+    // Update the most recent message if the current message is newer
+    if (
+      new Date(message.timestamp) >
+      new Date(acc[key].mostRecentMessage.timestamp)
+    ) {
+      acc[key].mostRecentMessage = message;
+    }
+
     return acc;
   }, {});
-
-  // console.log("Grouped Messages:", groupedMessages); // Debugging line
 
   return (
     <Box sx={{ padding: 2 }}>
       <MessageList
         groupedMessages={groupedMessages}
-        onMessageClick={(otherUserId) => {
-          const senderName = groupedMessages[otherUserId]?.senderName || "Unknown User";
-          navigate(`/chat/${otherUserId}`, { state: { senderName } });
+        onMessageClick={(key, isGroupMessage) => {
+          if (isGroupMessage) {
+            navigate(`/groupChat/${key}`);
+          } else {
+            const senderName = groupedMessages[key]?.name || "Unknown User";
+            navigate(`/chat/${key}`, { state: { senderName } });
+          }
         }}
       />
     </Box>

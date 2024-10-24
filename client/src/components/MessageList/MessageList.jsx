@@ -1,33 +1,37 @@
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
+import React from "react";
+import { List, ListItem, ListItemText, Typography } from "@mui/material";
 
 const MessageList = ({ groupedMessages, onMessageClick }) => {
   return (
-    <Box className="message-list" sx={{ padding: 2 }}>
-      {Object.entries(groupedMessages).map(([otherUserId, { messages, senderName }]) => {
-        const lastMessage = messages[messages.length - 1];
-        return (
-          <Paper 
-            key={otherUserId} 
-            onClick={() => onMessageClick(otherUserId)}
-            sx={{ 
-              padding: 2, 
-              marginBottom: 2, 
-              cursor: 'pointer', 
-              '&:hover': { backgroundColor: 'grey.100' } 
-            }}
+    <List>
+      {Object.entries(groupedMessages).map(
+        ([key, { name, mostRecentMessage }]) => (
+          <ListItem
+            key={key}
+            button
+            onClick={() =>
+              onMessageClick(key, mostRecentMessage.isGroupMessage)
+            }
           >
-            <Typography variant="h6" component="h3">
-              {senderName || "Unknown User"}
+            <ListItemText
+              primary={name}
+              secondary={mostRecentMessage.content}
+            />
+            <Typography variant="caption">
+              {new Date(
+                parseInt(mostRecentMessage.timestamp, 10)
+              ).toLocaleString(undefined, {
+                year: "2-digit",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
-              {lastMessage.content}
-            </Typography>
-          </Paper>
-        );
-      })}
-    </Box>
+          </ListItem>
+        )
+      )}
+    </List>
   );
 };
 

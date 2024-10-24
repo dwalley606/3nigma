@@ -7,18 +7,24 @@ export const messageResolvers = {
       if (!context.user) {
         throw new Error("You must be logged in to view messages.");
       }
-      const messages = await Message.find({ recipientId });
+      try {
+        // Find groups where the user is a member
+        const groups = await Group.find({ members: recipientId });
+        const groupIds = groups.map((group) => group._id);
 
-      return messages.map((msg) => ({
-        id: msg._id.toString(),
-        senderId: msg.senderId,
-        senderName: msg.senderName, // Ensure this is included
-        recipientId: msg.recipientId,
-        content: msg.content,
-        timestamp: msg.timestamp,
-        read: msg.read !== undefined ? msg.read : false,
-        isGroupMessage: msg.isGroupMessage,
-      }));
+        // Fetch both individual and group messages
+        const messages = await Message.find({
+          $or: [
+            { recipientId, isGroupMessage: false }, // Direct messages to the user
+            { recipientId: { $in: groupIds }, isGroupMessage: true }, // Group messages
+          ],
+        });
+
+        return messages;
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        throw new Error("Failed to fetch messages");
+      }
     },
     getConversation: async (_, { userId, otherUserId }, context) => {
       if (!context.user) {

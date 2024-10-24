@@ -14,6 +14,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
 import Chat from "../Chat/Chat";
+import GroupChat from "../GroupChat/GroupChat";
 
 const GroupList = () => {
   const { state } = useAuth();
@@ -29,55 +30,44 @@ const GroupList = () => {
     return <Typography>Error loading groups: {error.message}</Typography>;
 
   const groups = data?.getUserGroups || [];
+  console.log("Groups data:", groups); // Debugging log
 
   const handleGroupClick = (groupId) => {
+    console.log("Clicked groupId:", groupId); // Log the clicked groupId
     setSelectedGroupId(groupId);
     setShowAddUser(false); // Hide add user component when opening chat
   };
 
-  const handleAddUserClick = (groupId) => {
-    setSelectedGroupId(groupId);
-    setShowAddUser(true);
+  const handleBack = () => {
+    setSelectedGroupId(null);
   };
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h6">Your Groups</Typography>
-      <List>
-        {groups.map((group) => (
-          <ListItem
-            key={group.id}
-            sx={{ display: "flex", justifyContent: "space-between" }}
-            onClick={() => handleGroupClick(group.id)}
-          >
-            <ListItemText
-              primary={group.name}
-              secondary={
-                <>
-                  <Typography variant="body2">
-                    Admins:{" "}
-                    {group.admins.map((admin) => admin.username).join(", ")}
-                  </Typography>
-                  <Typography variant="body2">
-                    {group.mostRecentMessage?.content || "No messages yet"}
-                  </Typography>
-                </>
-              }
-            />
-            <IconButton
-              color="primary"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent triggering the group click
-                handleAddUserClick(group.id);
-              }}
-            >
-              <AddIcon />
-            </IconButton>
-          </ListItem>
-        ))}
-      </List>
-      {selectedGroupId && !showAddUser && <Chat groupId={selectedGroupId} />}
-      {showAddUser && <AddUserToGroup groupId={selectedGroupId} />}
+      {selectedGroupId ? (
+        <GroupChat groupId={selectedGroupId} onBack={handleBack} />
+      ) : (
+        <>
+          <Typography variant="h6">Your Groups</Typography>
+          <List>
+            {groups.map((group) => (
+              <ListItem
+                key={group.id}
+                button
+                onClick={() => handleGroupClick(group.id)}
+              >
+                <ListItemText primary={group.name} />
+                <Typography variant="caption">ID: {group.id}</Typography>{" "}
+                {/* Display the group ID */}
+              </ListItem>
+            ))}
+          </List>
+          {selectedGroupId && !showAddUser && (
+            <Chat groupId={selectedGroupId} />
+          )}
+          {showAddUser && <AddUserToGroup groupId={selectedGroupId} />}
+        </>
+      )}
     </Box>
   );
 };
