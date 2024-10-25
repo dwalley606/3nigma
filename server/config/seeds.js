@@ -30,6 +30,7 @@ const seedDatabase = async () => {
         phoneNumber: `12345678${i}`,
         publicKey: `publicKeyUser${i}`,
         lastSeen: new Date().toISOString(),
+        groups: [], // Initialize groups array
       });
       users.push(user);
     }
@@ -64,6 +65,12 @@ const seedDatabase = async () => {
         createdAt: new Date().toISOString(),
       });
       groups.push(group);
+
+      // Update each user's groups array
+      for (const member of groupMembers) {
+        member.groups.push(group._id);
+        await member.save();
+      }
     }
     await Group.insertMany(groups);
 

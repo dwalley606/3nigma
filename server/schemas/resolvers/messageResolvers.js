@@ -5,6 +5,43 @@ import mongoose from "mongoose";
 
 export const messageResolvers = {
   Query: {
+    getAllMessages: async (_, { userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view messages.");
+      }
+      try {
+        // Fetch direct messages
+        const directMessages = await Message.find({
+          recipientId: userId,
+          isGroupMessage: false,
+        });
+
+        // Find groups where the user is a member
+        const groups = await Group.find({ members: userId });
+        const groupIds = groups.map((group) => group._id);
+
+        // Fetch group messages
+        const groupMessages = await Message.find({
+          recipientId: { $in: groupIds },
+          isGroupMessage: true,
+        }).populate('recipientId', 'name'); // Populate group name
+
+        // Combine direct and group messages
+        const allMessages = [...directMessages, ...groupMessages];
+
+        // Add groupName to group messages
+        return allMessages.map(message => {
+          const groupName = message.isGroupMessage && message.recipientId ? message.recipientId.name : null;
+          return {
+            ...message.toObject(),
+            groupName
+          };
+        });
+      } catch (error) {
+        console.error("Error fetching all messages:", error);
+        throw new Error("Failed to fetch all messages");
+      }
+    },
     getDirectMessages: async (_, { userId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view messages.");

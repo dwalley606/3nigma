@@ -28,6 +28,7 @@ const typeDefs = `
     timestamp: String!
     read: Boolean!
     isGroupMessage: Boolean
+    groupName: String
   }
 
   type Group {
@@ -57,6 +58,7 @@ const typeDefs = `
 
   type Query {
     getContacts(userId: ID!): [User!]!
+    getAllMessages(userId: ID!): [Message!]!
     getDirectMessages(userId: ID!): [Message!]!
     getGroupMessages(userId: ID!): [Message!]!
     getConversation(userId: ID!, otherUserId: ID!): [Message!]!
