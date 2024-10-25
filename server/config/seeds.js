@@ -92,6 +92,7 @@ const seedDatabase = async () => {
             timestamp: new Date().toISOString(),
             read: false,
             isGroupMessage: true, // Mark as group message
+            groupName: group.name, // Add groupName field
           });
           groupMessages.push(message);
         }

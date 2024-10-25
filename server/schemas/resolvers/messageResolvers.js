@@ -24,17 +24,27 @@ export const messageResolvers = {
         const groupMessages = await Message.find({
           recipientId: { $in: groupIds },
           isGroupMessage: true,
-        }).populate('recipientId', 'name'); // Populate group name
+        }).populate("recipientId", "name"); // Populate group name
 
         // Combine direct and group messages
         const allMessages = [...directMessages, ...groupMessages];
 
         // Add groupName to group messages
-        return allMessages.map(message => {
-          const groupName = message.isGroupMessage && message.recipientId ? message.recipientId.name : null;
+        return allMessages.map((message) => {
+          const groupName =
+            message.isGroupMessage && message.recipientId
+              ? message.recipientId.name
+              : null;
           return {
-            ...message.toObject(),
-            groupName
+            id: message._id.toString(), // Ensure id is a string
+            senderId: message.senderId,
+            senderName: message.senderName || "Unknown", // Ensure senderName is not null
+            recipientId: message.recipientId || "Unknown", // Ensure recipientId is not null
+            content: message.content,
+            timestamp: message.timestamp,
+            read: message.read !== undefined ? message.read : false,
+            isGroupMessage: message.isGroupMessage,
+            groupName,
           };
         });
       } catch (error) {
@@ -86,9 +96,9 @@ export const messageResolvers = {
       }
 
       try {
-        // Convert string IDs to ObjectId
-        const userObjectId = mongoose.Types.ObjectId(userId);
-        const otherUserObjectId = mongoose.Types.ObjectId(otherUserId);
+        // Correctly instantiate ObjectId with 'new'
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+        const otherUserObjectId = new mongoose.Types.ObjectId(otherUserId);
 
         const messages = await Message.find({
           $or: [

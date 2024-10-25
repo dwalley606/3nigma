@@ -16,6 +16,7 @@ const MessageSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
   read: { type: Boolean, default: false },
   isGroupMessage: { type: Boolean, default: false },
+  groupName: { type: String },
 });
 
 export default mongoose.model("Message", MessageSchema);
