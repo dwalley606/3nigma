@@ -24,9 +24,9 @@ const Dashboard = () => {
       <Typography>Error fetching messages: {error.message}</Typography>
     );
 
-  // Group messages by senderId or groupId and include senderName or groupName
+  // Group messages by senderId or groupRecipientId and include senderName or groupName
   const groupedMessages = data.getAllMessages.reduce((acc, message) => {
-    const key = message.isGroupMessage ? message.recipientId : message.senderId;
+    const key = message.isGroupMessage ? message.groupRecipientId : message.senderId;
     const name = message.isGroupMessage
       ? message.groupName // Use groupName for group messages
       : message.senderName;
@@ -52,10 +52,8 @@ const Dashboard = () => {
     return acc;
   }, {});
 
-  // Convert groupedMessages to an array and sort by name and timestamp
+  // Convert groupedMessages to an array and sort by most recent message timestamp
   const sortedMessages = Object.values(groupedMessages).sort((a, b) => {
-    if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
-    if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
     return (
       new Date(b.mostRecentMessage.timestamp) -
       new Date(a.mostRecentMessage.timestamp)

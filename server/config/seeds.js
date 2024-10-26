@@ -87,12 +87,11 @@ const seedDatabase = async () => {
           const message = new Message({
             senderId: user._id,
             senderName: user.username,
-            recipientId: group._id, // Use group ID as recipient
+            groupRecipientId: group._id, // Use group ID as recipient
             content: `Message ${j} from ${user.username} to Group${groupIndex}`,
             timestamp: new Date().toISOString(),
             read: false,
             isGroupMessage: true, // Mark as group message
-            groupName: group.name, // Add groupName field
           });
           groupMessages.push(message);
         }
@@ -112,7 +111,7 @@ const seedDatabase = async () => {
           const message = new Message({
             senderId: user._id,
             senderName: user.username,
-            recipientId: otherUser._id,
+            userRecipientId: otherUser._id, // Use user ID as recipient
             content: `Direct message ${k} from ${user.username} to ${otherUser.username}`,
             timestamp: new Date().toISOString(),
             read: false,

@@ -23,12 +23,13 @@ const typeDefs = `
     id: ID!
     senderId: ID!
     senderName: String!
-    recipientId: ID!
+    userRecipientId: ID  # Nullable, used for direct messages
+    groupRecipientId: ID  # Nullable, used for group messages
     content: String!
     timestamp: String!
     read: Boolean!
-    isGroupMessage: Boolean
-    groupName: String
+    isGroupMessage: Boolean!
+    groupName: String  # Nullable, only present for group messages
   }
 
   type Group {

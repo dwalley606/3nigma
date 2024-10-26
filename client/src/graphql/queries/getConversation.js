@@ -7,7 +7,7 @@ export const GET_CONVERSATION = gql`
       id
       senderId
       senderName
-      recipientId
+      userRecipientId
       content
       timestamp
       read

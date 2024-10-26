@@ -1,5 +1,4 @@
 // client/src/components/Chat/Chat.jsx
-import React from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useAuth } from "../../context/auth/AuthContext";
 import { useQuery } from "@apollo/client";

@@ -7,11 +7,8 @@ const MessageSchema = new mongoose.Schema({
     required: true,
   },
   senderName: { type: String, required: true }, // Ensure this field is present
-  recipientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
+  userRecipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // For direct messages
+  groupRecipientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' }, // For group messages
   content: { type: String, required: true }, // Encrypted message content
   timestamp: { type: Date, default: Date.now },
   read: { type: Boolean, default: false },

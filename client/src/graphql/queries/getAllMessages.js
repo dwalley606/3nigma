@@ -6,7 +6,8 @@ export const GET_ALL_MESSAGES = gql`
       id
       senderId
       senderName
-      recipientId
+      userRecipientId
+      groupRecipientId
       content
       timestamp
       read

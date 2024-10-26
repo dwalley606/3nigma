@@ -12,7 +12,7 @@ export const messageResolvers = {
       try {
         // Fetch direct messages
         const directMessages = await Message.find({
-          recipientId: userId,
+          userRecipientId: userId,
           isGroupMessage: false,
         });
 
@@ -22,29 +22,27 @@ export const messageResolvers = {
 
         // Fetch group messages
         const groupMessages = await Message.find({
-          recipientId: { $in: groupIds },
+          groupRecipientId: { $in: groupIds },
           isGroupMessage: true,
-        }).populate("recipientId", "name"); // Populate group name
+        }).populate('groupRecipientId', 'name'); // Populate group name
 
         // Combine direct and group messages
         const allMessages = [...directMessages, ...groupMessages];
 
         // Add groupName to group messages
-        return allMessages.map((message) => {
-          const groupName =
-            message.isGroupMessage && message.recipientId
-              ? message.recipientId.name
-              : null;
+        return allMessages.map(message => {
+          const groupName = message.isGroupMessage && message.groupRecipientId ? message.groupRecipientId.name : null;
           return {
-            id: message._id.toString(), // Ensure id is a string
-            senderId: message.senderId,
-            senderName: message.senderName || "Unknown", // Ensure senderName is not null
-            recipientId: message.recipientId || "Unknown", // Ensure recipientId is not null
+            id: message._id.toString(), // Ensure ID is a string
+            senderId: message.senderId.toString(), // Ensure ID is a string
+            senderName: message.senderName,
+            userRecipientId: message.userRecipientId ? message.userRecipientId.toString() : null,
+            groupRecipientId: message.groupRecipientId ? message.groupRecipientId.toString() : null,
             content: message.content,
             timestamp: message.timestamp,
             read: message.read !== undefined ? message.read : false,
             isGroupMessage: message.isGroupMessage,
-            groupName,
+            groupName: message.isGroupMessage ? groupName : undefined,
           };
         });
       } catch (error) {
@@ -59,7 +57,7 @@ export const messageResolvers = {
       try {
         // Fetch direct messages where the user is the recipient
         const messages = await Message.find({
-          recipientId: userId,
+          userRecipientId: userId,
           isGroupMessage: false,
         });
 
@@ -80,7 +78,7 @@ export const messageResolvers = {
 
         // Fetch group messages for those groups
         const messages = await Message.find({
-          recipientId: { $in: groupIds },
+          groupRecipientId: { $in: groupIds },
           isGroupMessage: true,
         });
 
@@ -96,22 +94,28 @@ export const messageResolvers = {
       }
 
       try {
-        // Correctly instantiate ObjectId with 'new'
+        // Validate and convert string IDs to ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(otherUserId)) {
+          throw new Error("Invalid user ID format");
+        }
+        
         const userObjectId = new mongoose.Types.ObjectId(userId);
         const otherUserObjectId = new mongoose.Types.ObjectId(otherUserId);
 
+        // Fetch messages between the two users
         const messages = await Message.find({
           $or: [
-            { senderId: userObjectId, recipientId: otherUserObjectId },
-            { senderId: otherUserObjectId, recipientId: userObjectId },
+            { senderId: userObjectId, userRecipientId: otherUserObjectId },
+            { senderId: otherUserObjectId, userRecipientId: userObjectId },
           ],
+          isGroupMessage: false, // Ensure it's a direct message
         }).sort({ timestamp: 1 }); // Sort by timestamp
 
         return messages.map((msg) => ({
           id: msg._id.toString(),
-          senderId: msg.senderId,
+          senderId: msg.senderId.toString(),
           senderName: msg.senderName,
-          recipientId: msg.recipientId,
+          userRecipientId: msg.userRecipientId.toString(),
           content: msg.content,
           timestamp: msg.timestamp,
           read: msg.read !== undefined ? msg.read : false,
@@ -155,7 +159,8 @@ export const messageResolvers = {
         const newMessage = new Message({
           senderId,
           senderName: sender.username || "Unknown", // Ensure senderName is not null
-          recipientId,
+          userRecipientId: isGroupMessage ? null : recipientId,
+          groupRecipientId: isGroupMessage ? recipientId : null,
           content,
           isGroupMessage,
           read: false,
@@ -173,7 +178,8 @@ export const messageResolvers = {
           id: savedMessage._id.toString(),
           senderId: savedMessage.senderId,
           senderName: savedMessage.senderName, // Ensure this is returned
-          recipientId: savedMessage.recipientId,
+          userRecipientId: savedMessage.userRecipientId,
+          groupRecipientId: savedMessage.groupRecipientId,
           content: savedMessage.content,
           timestamp: savedMessage.timestamp,
           read: savedMessage.read,
