@@ -47,6 +47,9 @@ const Navbar = () => {
       const senderName = location.state?.senderName || "Unknown User";
       return `${senderName}`;
     }
+    if (location.pathname.startsWith("/groupChat")) {
+      return "Group Chat";
+    }
     if (location.pathname === "/groups") return "Groups";
     if (location.pathname === "/settings") return "Settings";
     if (location.pathname === "/contacts") return "Contacts";
@@ -57,6 +60,7 @@ const Navbar = () => {
   const shouldShowBackArrow = () => {
     return (
       location.pathname.startsWith("/chat") ||
+      location.pathname.startsWith("/groupChat") || // Include groupChat path
       location.pathname === "/groups" ||
       location.pathname === "/settings" ||
       location.pathname === "/contacts"

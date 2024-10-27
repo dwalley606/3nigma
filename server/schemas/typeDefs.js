@@ -23,13 +23,13 @@ const typeDefs = `
     id: ID!
     senderId: ID!
     senderName: String!
-    userRecipientId: ID  # Nullable, used for direct messages
-    groupRecipientId: ID  # Nullable, used for group messages
+    userRecipientId: ID
+    groupRecipientId: ID
     content: String!
     timestamp: String!
     read: Boolean!
     isGroupMessage: Boolean!
-    groupName: String  # Nullable, only present for group messages
+    groupName: String
   }
 
   type Group {
@@ -61,7 +61,7 @@ const typeDefs = `
     getContacts(userId: ID!): [User!]!
     getAllMessages(userId: ID!): [Message!]!
     getDirectMessages(userId: ID!): [Message!]!
-    getGroupMessages(userId: ID!): [Message!]!
+    getGroupMessages(groupId: ID!): [Message!]!
     getConversation(userId: ID!, otherUserId: ID!): [Message!]!
     getUserById(id: ID!): User
     getUsers: [User!]

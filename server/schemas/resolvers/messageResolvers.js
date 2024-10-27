@@ -24,20 +24,27 @@ export const messageResolvers = {
         const groupMessages = await Message.find({
           groupRecipientId: { $in: groupIds },
           isGroupMessage: true,
-        }).populate('groupRecipientId', 'name'); // Populate group name
+        }).populate("groupRecipientId", "name"); // Populate group name
 
         // Combine direct and group messages
         const allMessages = [...directMessages, ...groupMessages];
 
         // Add groupName to group messages
-        return allMessages.map(message => {
-          const groupName = message.isGroupMessage && message.groupRecipientId ? message.groupRecipientId.name : null;
+        return allMessages.map((message) => {
+          const groupName =
+            message.isGroupMessage && message.groupRecipientId
+              ? message.groupRecipientId.name
+              : null;
           return {
             id: message._id.toString(), // Ensure ID is a string
             senderId: message.senderId.toString(), // Ensure ID is a string
             senderName: message.senderName,
-            userRecipientId: message.userRecipientId ? message.userRecipientId.toString() : null,
-            groupRecipientId: message.groupRecipientId ? message.groupRecipientId.toString() : null,
+            userRecipientId: message.userRecipientId
+              ? message.userRecipientId.toString()
+              : null,
+            groupRecipientId: message.isGroupMessage
+              ? message.groupRecipientId._id.toString() // Extract _id as string
+              : null,
             content: message.content,
             timestamp: message.timestamp,
             read: message.read !== undefined ? message.read : false,
@@ -67,22 +74,37 @@ export const messageResolvers = {
         throw new Error("Failed to fetch direct messages");
       }
     },
-    getGroupMessages: async (_, { userId }, context) => {
+    getGroupMessages: async (_, { groupId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group messages.");
       }
       try {
-        // Find groups where the user is a member
-        const groups = await Group.find({ members: userId });
-        const groupIds = groups.map((group) => group._id);
+        // Validate groupId
+        if (!mongoose.Types.ObjectId.isValid(groupId)) {
+          throw new Error("Invalid group ID format");
+        }
 
-        // Fetch group messages for those groups
+        // Fetch group messages for the specified group
         const messages = await Message.find({
-          groupRecipientId: { $in: groupIds },
+          groupRecipientId: groupId,
           isGroupMessage: true,
-        });
+        }).populate("groupRecipientId", "name"); // Populate group name
 
-        return messages;
+        // Map messages to include groupName and ensure groupRecipientId is a string
+        return messages.map((message) => ({
+          id: message._id.toString(),
+          senderId: message.senderId.toString(),
+          senderName: message.senderName,
+          userRecipientId: message.userRecipientId
+            ? message.userRecipientId.toString()
+            : null,
+          groupRecipientId: message.groupRecipientId._id.toString(), // Extract _id as string
+          content: message.content,
+          timestamp: message.timestamp,
+          read: message.read !== undefined ? message.read : false,
+          isGroupMessage: message.isGroupMessage,
+          groupName: message.groupRecipientId.name, // Use populated name
+        }));
       } catch (error) {
         console.error("Error fetching group messages:", error);
         throw new Error("Failed to fetch group messages");
@@ -94,35 +116,52 @@ export const messageResolvers = {
       }
 
       try {
-        // Validate and convert string IDs to ObjectId
-        console.log("User ID:", userId);
-        console.log("Other User ID:", otherUserId);
+        // Log the incoming IDs for debugging
+        console.log("Received userId:", userId);
+        console.log("Received otherUserId:", otherUserId);
 
-        if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(otherUserId)) {
+        // Validate user IDs
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+          console.error("Invalid userId format:", userId);
+          throw new Error("Invalid user ID format");
+        }
+        if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
+          console.error("Invalid otherUserId format:", otherUserId);
           throw new Error("Invalid user ID format");
         }
 
+        // Convert IDs to ObjectId using 'new'
         const userObjectId = new mongoose.Types.ObjectId(userId);
         const otherUserObjectId = new mongoose.Types.ObjectId(otherUserId);
 
+        console.log(
+          "Fetching conversation between:",
+          userObjectId,
+          "and",
+          otherUserObjectId
+        ); // Debugging log
+
         // Fetch messages between the two users
-        const messages = await Message.find({
+        const conversation = await Message.find({
           $or: [
             { senderId: userObjectId, userRecipientId: otherUserObjectId },
             { senderId: otherUserObjectId, userRecipientId: userObjectId },
           ],
-          isGroupMessage: false, // Ensure it's a direct message
-        }).sort({ timestamp: 1 }); // Sort by timestamp
+        }).sort({ timestamp: 1 });
 
-        return messages.map((msg) => ({
-          id: msg._id.toString(),
-          senderId: msg.senderId.toString(),
-          senderName: msg.senderName,
-          userRecipientId: msg.userRecipientId.toString(),
-          content: msg.content,
-          timestamp: msg.timestamp,
-          read: msg.read !== undefined ? msg.read : false,
-          isGroupMessage: msg.isGroupMessage,
+        console.log("Messages found:", conversation.length); // Debugging log
+
+        return conversation.map((message) => ({
+          id: message._id.toString(),
+          senderId: message.senderId.toString(),
+          senderName: message.senderName,
+          userRecipientId: message.userRecipientId
+            ? message.userRecipientId.toString()
+            : null,
+          content: message.content,
+          timestamp: message.timestamp,
+          read: message.read !== undefined ? message.read : false,
+          isGroupMessage: message.isGroupMessage,
         }));
       } catch (error) {
         console.error("Error fetching conversation:", error);

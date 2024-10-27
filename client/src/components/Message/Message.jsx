@@ -44,7 +44,6 @@ Message.propTypes = {
     id: PropTypes.string.isRequired,
     senderId: PropTypes.string.isRequired,
     senderName: PropTypes.string.isRequired,
-    recipientId: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     timestamp: PropTypes.string.isRequired,
     read: PropTypes.bool.isRequired,

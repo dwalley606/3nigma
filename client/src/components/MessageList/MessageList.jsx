@@ -3,10 +3,14 @@ import { List, ListItem, ListItemText, Typography } from "@mui/material";
 const MessageList = ({ groupedMessages, onMessageClick }) => {
   return (
     <List>
-      {Object.entries(groupedMessages).map(
-        ([key, { name, mostRecentMessage }]) => (
+      {groupedMessages.map(({ name, mostRecentMessage, messages }, index) => {
+        const key = mostRecentMessage.isGroupMessage
+          ? mostRecentMessage.groupRecipientId
+          : mostRecentMessage.senderId;
+
+        return (
           <ListItem
-            key={key}
+            key={key} // Use the actual ID as the key
             button
             onClick={() =>
               onMessageClick(key, mostRecentMessage.isGroupMessage)
@@ -28,8 +32,8 @@ const MessageList = ({ groupedMessages, onMessageClick }) => {
               })}
             </Typography>
           </ListItem>
-        )
-      )}
+        );
+      })}
     </List>
   );
 };

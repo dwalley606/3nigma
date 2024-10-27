@@ -20,13 +20,19 @@ const Dashboard = () => {
 
   if (loading) return <Typography>Loading messages...</Typography>;
   if (error)
-    return (
-      <Typography>Error fetching messages: {error.message}</Typography>
-    );
+    return <Typography>Error fetching messages: {error.message}</Typography>;
 
   // Group messages by senderId or groupRecipientId and include senderName or groupName
   const groupedMessages = data.getAllMessages.reduce((acc, message) => {
-    const key = message.isGroupMessage ? message.groupRecipientId : message.senderId;
+    const key = message.isGroupMessage
+      ? message.groupRecipientId // Safely access _id and convert to string
+      : message.senderId; // Safely convert to string
+
+    if (!key) {
+      console.warn("Message key is undefined:", message);
+      return acc; // Skip this message if key is undefined
+    }
+
     const name = message.isGroupMessage
       ? message.groupName // Use groupName for group messages
       : message.senderName;
@@ -65,11 +71,14 @@ const Dashboard = () => {
       <MessageList
         groupedMessages={sortedMessages}
         onMessageClick={(key, isGroupMessage) => {
+          const stringKey = key.toString(); // Ensure key is a string
           if (isGroupMessage) {
-            navigate(`/groupChat/${key}`); // Use the correct groupId
+            navigate(`/groupChat/${stringKey}`); // Use the correct groupId
           } else {
-            const senderName = groupedMessages[key]?.name || "Unknown User";
-            navigate(`/chat/${key}`, { state: { senderName } });
+            const otherUserId = stringKey; // Ensure this is the correct userId
+            const senderName =
+              groupedMessages[stringKey]?.name || "Unknown User";
+            navigate(`/chat/${otherUserId}`, { state: { senderName } });
           }
         }}
       />

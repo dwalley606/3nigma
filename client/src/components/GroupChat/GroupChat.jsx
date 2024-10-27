@@ -1,15 +1,20 @@
 import { useQuery } from "@apollo/client";
+import { useParams } from "react-router-dom";
 import { GET_GROUP_MESSAGES } from "../../graphql/queries/getGroupMessages";
-import { Typography, Box, Button } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import { useAuth } from "../../context/auth/AuthContext";
 
 import MessageInput from "../MessageInput/MessageInput";
 import Message from "../Message/Message";
 
-const GroupChat = ({ groupId }) => {
+const GroupChat = () => {
   const { state } = useAuth();
+  const { groupId } = useParams(); // Extract groupId from URL
+
+  console.log("Rendering GroupChat with groupId:", groupId); // Debugging log
+
   const { loading, error, data } = useQuery(GET_GROUP_MESSAGES, {
-    variables: { groupID: groupId },
+    variables: { groupId }, // Ensure the variable name matches the query
     skip: !groupId,
   });
 
