@@ -15,6 +15,7 @@ import AddIcon from "@mui/icons-material/Add";
 import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
 import Chat from "../Chat/Chat";
 import GroupChat from "../GroupChat/GroupChat";
+import { useNavigate } from "react-router-dom";
 
 const GroupList = () => {
   const { state } = useAuth();
@@ -22,6 +23,7 @@ const GroupList = () => {
     variables: { userId: state.user.id },
   });
 
+  const navigate = useNavigate();
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [showAddUser, setShowAddUser] = useState(false);
 
@@ -34,40 +36,26 @@ const GroupList = () => {
 
   const handleGroupClick = (groupId) => {
     console.log("Clicked groupId:", groupId); // Log the clicked groupId
-    setSelectedGroupId(groupId);
-    setShowAddUser(false); // Hide add user component when opening chat
-  };
-
-  const handleBack = () => {
-    setSelectedGroupId(null);
+    navigate(`/groupChat/${groupId}`); // Navigate to GroupChat with groupId
   };
 
   return (
     <Box sx={{ padding: 2 }}>
-      {selectedGroupId ? (
-        <GroupChat groupId={selectedGroupId} onBack={handleBack} />
-      ) : (
-        <>
-          <Typography variant="h6">Your Groups</Typography>
-          <List>
-            {groups.map((group) => (
-              <ListItem
-                key={group.id}
-                button
-                onClick={() => handleGroupClick(group.id)}
-              >
-                <ListItemText primary={group.name} />
-                <Typography variant="caption">ID: {group.id}</Typography>{" "}
-                {/* Display the group ID */}
-              </ListItem>
-            ))}
-          </List>
-          {selectedGroupId && !showAddUser && (
-            <Chat groupId={selectedGroupId} />
-          )}
-          {showAddUser && <AddUserToGroup groupId={selectedGroupId} />}
-        </>
-      )}
+      <Typography variant="h6">Your Groups</Typography>
+      <List>
+        {groups.map((group) => (
+          <ListItem
+            key={group.id}
+            button
+            onClick={() => handleGroupClick(group.id)}
+          >
+            <ListItemText primary={group.name} />
+            <Typography variant="caption">ID: {group.id}</Typography>{" "}
+            {/* Display the group ID */}
+          </ListItem>
+        ))}
+      </List>
+      {showAddUser && <AddUserToGroup groupId={selectedGroupId} />}
     </Box>
   );
 };
