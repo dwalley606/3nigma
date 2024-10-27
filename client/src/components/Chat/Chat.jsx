@@ -10,8 +10,6 @@ import Message from "../Message/Message";
 const Chat = () => {
   const { state } = useAuth();
   const { otherUserId } = useParams();
-  const location = useLocation();
-  const { senderName } = location.state || { senderName: "Unknown User" };
 
   console.log("Rendering Chat with otherUserId:", otherUserId); // Debugging log
 

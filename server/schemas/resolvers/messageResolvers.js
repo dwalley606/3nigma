@@ -95,10 +95,13 @@ export const messageResolvers = {
 
       try {
         // Validate and convert string IDs to ObjectId
+        console.log("User ID:", userId);
+        console.log("Other User ID:", otherUserId);
+
         if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(otherUserId)) {
           throw new Error("Invalid user ID format");
         }
-        
+
         const userObjectId = new mongoose.Types.ObjectId(userId);
         const otherUserObjectId = new mongoose.Types.ObjectId(otherUserId);
 
