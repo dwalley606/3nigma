@@ -25,6 +25,8 @@ import {
   ApolloProvider,
   createHttpLink,
 } from "@apollo/client";
+import { MessageProvider } from "./context/message/MessageContext";
+
 import { setContext } from "@apollo/client/link/context";
 import { loggedIn, refreshToken } from "./utils/auth";
 
@@ -112,7 +114,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <ApolloProvider client={client}>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <MessageProvider>
+        <RouterProvider router={router} />
+      </MessageProvider>
     </AuthProvider>
   </ApolloProvider>
 );

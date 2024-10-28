@@ -3,12 +3,14 @@ import { useMutation } from "@apollo/client";
 import { SEND_DIRECT_MESSAGE } from "../../graphql/mutations/sendDirectMessage";
 import { SEND_GROUP_MESSAGE } from "../../graphql/mutations/sendGroupMessage";
 import { useAuth } from "../../context/auth/AuthContext";
+import { useMessages } from "../../context/message/MessageContext"; // Import the useMessages hook
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
-const MessageInput = ({ recipientId, isGroupMessage }) => {
+const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
   const [message, setMessage] = useState("");
-  const { state } = useAuth();
+  const { state: authState } = useAuth();
+  const { dispatch } = useMessages(); // Use the message context
   const [sendDirectMessage] = useMutation(SEND_DIRECT_MESSAGE);
   const [sendGroupMessage] = useMutation(SEND_GROUP_MESSAGE);
 
@@ -16,11 +18,21 @@ const MessageInput = ({ recipientId, isGroupMessage }) => {
     e.preventDefault();
     if (message.trim() === "") return;
 
+    const newMessage = {
+      id: Date.now().toString(), // Temporary ID
+      senderId: authState.user.id,
+      content: message,
+      timestamp: new Date().toISOString(),
+    };
+
+    onSendMessage(newMessage); // Optimistically update the UI
+    dispatch({ type: "ADD_MESSAGE", payload: newMessage }); // Update global state
+
     try {
       if (isGroupMessage) {
         await sendGroupMessage({
           variables: {
-            senderId: state.user.id,
+            senderId: authState.user.id,
             groupId: recipientId,
             content: message,
           },
@@ -28,7 +40,7 @@ const MessageInput = ({ recipientId, isGroupMessage }) => {
       } else {
         await sendDirectMessage({
           variables: {
-            senderId: state.user.id,
+            senderId: authState.user.id,
             recipientId,
             content: message,
           },

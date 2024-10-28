@@ -13,14 +13,12 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
-import Chat from "../Chat/Chat";
-import GroupChat from "../GroupChat/GroupChat";
 import { useNavigate } from "react-router-dom";
 
 const GroupList = () => {
-  const { state } = useAuth();
+  const { state: authState } = useAuth();
   const { loading, error, data } = useQuery(GET_USER_GROUPS, {
-    variables: { userId: state.user.id },
+    variables: { userId: authState.user.id },
   });
 
   const navigate = useNavigate();
@@ -39,19 +37,29 @@ const GroupList = () => {
     navigate(`/groupChat/${groupId}`); // Navigate to GroupChat with groupId
   };
 
+  const handleAddUserClick = (groupId) => {
+    setSelectedGroupId(groupId);
+    setShowAddUser((prev) => !prev); // Toggle the visibility of AddUserToGroup
+  };
+
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h6">Your Groups</Typography>
       <List>
         {groups.map((group) => (
-          <ListItem
-            key={group.id}
-            button
-            onClick={() => handleGroupClick(group.id)}
-          >
-            <ListItemText primary={group.name} />
-            <Typography variant="caption">ID: {group.id}</Typography>{" "}
-            {/* Display the group ID */}
+          <ListItem key={group.id} button>
+            <ListItemText
+              primary={group.name}
+              onClick={() => handleGroupClick(group.id)}
+            />
+            <Typography variant="caption">ID: {group.id}</Typography>
+            <IconButton
+              edge="end"
+              aria-label="add user"
+              onClick={() => handleAddUserClick(group.id)}
+            >
+              <AddIcon />
+            </IconButton>
           </ListItem>
         ))}
       </List>
