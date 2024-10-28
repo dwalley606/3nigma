@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { SEND_MESSAGE } from "../../graphql/mutations/sendMessage";
+import { SEND_DIRECT_MESSAGE } from "../../graphql/mutations/sendDirectMessage";
+import { SEND_GROUP_MESSAGE } from "../../graphql/mutations/sendGroupMessage";
 import { useAuth } from "../../context/auth/AuthContext";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -8,21 +9,31 @@ import Button from "@mui/material/Button";
 const MessageInput = ({ recipientId, isGroupMessage }) => {
   const [message, setMessage] = useState("");
   const { state } = useAuth();
-  const [sendMessage] = useMutation(SEND_MESSAGE);
+  const [sendDirectMessage] = useMutation(SEND_DIRECT_MESSAGE);
+  const [sendGroupMessage] = useMutation(SEND_GROUP_MESSAGE);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (message.trim() === "") return;
 
     try {
-      await sendMessage({
-        variables: {
-          senderId: state.user.id,
-          recipientId,
-          content: message,
-          isGroupMessage: false,
-        },
-      });
+      if (isGroupMessage) {
+        await sendGroupMessage({
+          variables: {
+            senderId: state.user.id,
+            groupId: recipientId,
+            content: message,
+          },
+        });
+      } else {
+        await sendDirectMessage({
+          variables: {
+            senderId: state.user.id,
+            recipientId,
+            content: message,
+          },
+        });
+      }
       setMessage(""); // Clear the input field after sending
     } catch (error) {
       console.error("Error sending message:", error);

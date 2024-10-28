@@ -73,7 +73,8 @@ const typeDefs = `
   type Mutation {
     registerUser(username: String!, email: String!, password: String!, phoneNumber: String!): RegisterUserResponse!
     login(email: String!, password: String!): AuthPayload!
-    sendMessage(senderId: ID!, recipientId: ID!, content: String!, isGroupMessage: Boolean): Message!
+    sendDirectMessage(senderId: ID!, recipientId: ID!, content: String!): Message!
+    sendGroupMessage(senderId: ID!, groupId: ID!, content: String!): Message!
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!
     respondContactRequest(requestId: ID!, status: String!): ContactRequest!   
     createGroup(name: String!, memberIds: [ID!]!): Group!

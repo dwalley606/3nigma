@@ -170,21 +170,19 @@ export const messageResolvers = {
     },
   },
   Mutation: {
-    sendMessage: async (
+    sendDirectMessage: async (
       _,
-      { senderId, recipientId, content, isGroupMessage },
+      { senderId, recipientId, content },
       context
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to send messages.");
       }
       try {
-        // Log the input parameters
-        console.log("sendMessage called with:", {
+        console.log("sendDirectMessage called with:", {
           senderId,
           recipientId,
           content,
-          isGroupMessage,
         });
 
         // Find the sender
@@ -194,33 +192,78 @@ export const messageResolvers = {
           throw new Error("Sender not found");
         }
 
-        // Log the sender information
-        console.log("Sender found:", sender);
-
-        // Create a new message
+        // Create a new direct message
         const newMessage = new Message({
           senderId,
-          senderName: sender.username || "Unknown", // Ensure senderName is not null
-          userRecipientId: isGroupMessage ? null : recipientId,
-          groupRecipientId: isGroupMessage ? recipientId : null,
+          senderName: sender.username || "Unknown",
+          userRecipientId: recipientId,
           content,
-          isGroupMessage,
+          isGroupMessage: false,
           read: false,
           timestamp: new Date().toISOString(),
         });
 
         // Save the message
         const savedMessage = await newMessage.save();
+        console.log("Direct message saved:", savedMessage);
 
-        // Log the saved message
-        console.log("Message saved:", savedMessage);
-
-        // Return the message with senderName included
         return {
           id: savedMessage._id.toString(),
           senderId: savedMessage.senderId,
-          senderName: savedMessage.senderName, // Ensure this is returned
+          senderName: savedMessage.senderName,
           userRecipientId: savedMessage.userRecipientId,
+          content: savedMessage.content,
+          timestamp: savedMessage.timestamp,
+          read: savedMessage.read,
+          isGroupMessage: savedMessage.isGroupMessage,
+        };
+      } catch (error) {
+        console.error("Error in sendDirectMessage:", error);
+        throw new Error("Failed to send direct message");
+      }
+    },
+
+    sendGroupMessage: async (
+      _,
+      { senderId, groupId, content },
+      context
+    ) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to send messages.");
+      }
+      try {
+        console.log("sendGroupMessage called with:", {
+          senderId,
+          groupId,
+          content,
+        });
+
+        // Find the sender
+        const sender = await User.findById(senderId);
+        if (!sender) {
+          console.error("Sender not found for ID:", senderId);
+          throw new Error("Sender not found");
+        }
+
+        // Create a new group message
+        const newMessage = new Message({
+          senderId,
+          senderName: sender.username || "Unknown",
+          groupRecipientId: groupId,
+          content,
+          isGroupMessage: true,
+          read: false,
+          timestamp: new Date().toISOString(),
+        });
+
+        // Save the message
+        const savedMessage = await newMessage.save();
+        console.log("Group message saved:", savedMessage);
+
+        return {
+          id: savedMessage._id.toString(),
+          senderId: savedMessage.senderId,
+          senderName: savedMessage.senderName,
           groupRecipientId: savedMessage.groupRecipientId,
           content: savedMessage.content,
           timestamp: savedMessage.timestamp,
@@ -228,8 +271,8 @@ export const messageResolvers = {
           isGroupMessage: savedMessage.isGroupMessage,
         };
       } catch (error) {
-        console.error("Error in sendMessage:", error);
-        throw new Error("Failed to send message");
+        console.error("Error in sendGroupMessage:", error);
+        throw new Error("Failed to send group message");
       }
     },
     deleteMessage: async (_, { messageId, forEveryone }, context) => {
