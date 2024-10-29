@@ -56,9 +56,9 @@ const Dashboard = () => {
 
     acc[key].messages.push(message);
 
-    // Convert timestamps to numbers for comparison
-    const currentTimestamp = Number(message.timestamp);
-    const mostRecentTimestamp = Number(acc[key].mostRecentMessage.timestamp);
+    // Update the most recent message if the current message is newer
+    const currentTimestamp = new Date(message.timestamp).getTime();
+    const mostRecentTimestamp = new Date(acc[key].mostRecentMessage.timestamp).getTime();
 
     if (currentTimestamp > mostRecentTimestamp) {
       acc[key].mostRecentMessage = message;

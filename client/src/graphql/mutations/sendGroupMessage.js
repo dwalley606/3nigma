@@ -1,25 +1,15 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 
 export const SEND_GROUP_MESSAGE = gql`
-  mutation SendGroupMessage(
-    $senderId: ID!
-    $groupId: ID!
-    $content: String!
-  ) {
-    sendGroupMessage(
-      senderId: $senderId
-      groupId: $groupId
-      content: $content
-    ) {
+  mutation sendGroupMessage($senderId: ID!, $groupId: ID!, $content: String!) {
+    sendGroupMessage(senderId: $senderId, groupId: $groupId, content: $content) {
       id
       content
+      sender {
+        id
+        username
+      }
       timestamp
-      senderId
-      senderName
-      groupRecipientId
-      read
-      isGroupMessage
-      groupName
     }
   }
 `;

@@ -10,7 +10,7 @@ const MessageList = ({ groupedMessages, onMessageClick }) => {
 
         return (
           <ListItem
-            key={key} // Use the actual ID as the key
+            key={mostRecentMessage.id}
             button
             onClick={() =>
               onMessageClick(key, mostRecentMessage.isGroupMessage)

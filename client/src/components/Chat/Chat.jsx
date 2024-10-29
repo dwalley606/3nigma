@@ -13,8 +13,6 @@ const Chat = () => {
   const { state: authState } = useAuth();
   const { state: messageState, dispatch } = useMessages(); // Use the message context
   const { otherUserId } = useParams(); // Extract otherUserId from URL
-  const location = useLocation();
-  const senderName = location.state?.senderName || "Unknown User";
 
   console.log("Rendering Chat with otherUserId:", otherUserId); // Debugging log
 

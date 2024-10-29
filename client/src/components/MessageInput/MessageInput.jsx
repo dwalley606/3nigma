@@ -28,6 +28,9 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
     onSendMessage(newMessage); // Optimistically update the UI
     dispatch({ type: "ADD_MESSAGE", payload: newMessage }); // Update global state
 
+      // In MessageInput.jsx
+    console.log("Dispatching new message:", newMessage);
+
     try {
       if (isGroupMessage) {
         await sendGroupMessage({

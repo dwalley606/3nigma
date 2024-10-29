@@ -1,72 +1,42 @@
 import Message from "../../models/Message.js";
 import User from "../../models/User.js";
-import Group from "../../models/Group.js"; // Ensure Group model is imported
+import Group from "../../models/Group.js";
+import Conversation from "../../models/Conversation.js";
 import mongoose from "mongoose";
 
 export const messageResolvers = {
   Query: {
-    getAllMessages: async (_, { userId }, context) => {
+    getConversations: async (_, { userId }, context) => {
       if (!context.user) {
-        throw new Error("You must be logged in to view messages.");
+        throw new Error("You must be logged in to view conversations.");
       }
+
       try {
-        // Fetch direct messages
-        const directMessages = await Message.find({
-          userRecipientId: userId,
-          isGroupMessage: false,
-        });
+        const conversations = await Conversation.find({
+          participants: userId,
+        })
+          .populate('participants', 'username email')
+          .populate({
+            path: 'lastMessage',
+            populate: { path: 'sender', select: 'username' },
+          });
 
-        // Find groups where the user is a member
-        const groups = await Group.find({ members: userId });
-        const groupIds = groups.map((group) => group._id);
-
-        // Fetch group messages
-        const groupMessages = await Message.find({
-          groupRecipientId: { $in: groupIds },
-          isGroupMessage: true,
-        }).populate("groupRecipientId", "name"); // Populate group name
-
-        // Combine direct and group messages
-        const allMessages = [...directMessages, ...groupMessages];
-
-        // Add groupName to group messages
-        return allMessages.map((message) => {
-          const groupName =
-            message.isGroupMessage && message.groupRecipientId
-              ? message.groupRecipientId.name
-              : null;
-          return {
-            id: message._id.toString(), // Ensure ID is a string
-            senderId: message.senderId.toString(), // Ensure ID is a string
-            senderName: message.senderName,
-            userRecipientId: message.userRecipientId
-              ? message.userRecipientId.toString()
-              : null,
-            groupRecipientId: message.isGroupMessage
-              ? message.groupRecipientId._id.toString() // Extract _id as string
-              : null,
-            content: message.content,
-            timestamp: message.timestamp,
-            read: message.read !== undefined ? message.read : false,
-            isGroupMessage: message.isGroupMessage,
-            groupName: message.isGroupMessage ? groupName : undefined,
-          };
-        });
+        return conversations;
       } catch (error) {
-        console.error("Error fetching all messages:", error);
-        throw new Error("Failed to fetch all messages");
+        console.error("Error fetching conversations:", error);
+        throw new Error("Failed to fetch conversations");
       }
     },
+
     getDirectMessages: async (_, { userId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view messages.");
       }
       try {
-        // Fetch direct messages where the user is the recipient
         const messages = await Message.find({
           userRecipientId: userId,
           isGroupMessage: false,
-        });
+        }).populate('sender', 'username');
 
         return messages;
       } catch (error) {
@@ -74,207 +44,122 @@ export const messageResolvers = {
         throw new Error("Failed to fetch direct messages");
       }
     },
+
     getGroupMessages: async (_, { groupId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group messages.");
       }
       try {
-        // Validate groupId
         if (!mongoose.Types.ObjectId.isValid(groupId)) {
           throw new Error("Invalid group ID format");
         }
 
-        // Fetch group messages for the specified group
         const messages = await Message.find({
           groupRecipientId: groupId,
           isGroupMessage: true,
-        }).populate("groupRecipientId", "name"); // Populate group name
+        }).populate('sender', 'username');
 
-        // Map messages to include groupName and ensure groupRecipientId is a string
-        return messages.map((message) => ({
-          id: message._id.toString(),
-          senderId: message.senderId.toString(),
-          senderName: message.senderName,
-          userRecipientId: message.userRecipientId
-            ? message.userRecipientId.toString()
-            : null,
-          groupRecipientId: message.groupRecipientId._id.toString(), // Extract _id as string
-          content: message.content,
-          timestamp: message.timestamp,
-          read: message.read !== undefined ? message.read : false,
-          isGroupMessage: message.isGroupMessage,
-          groupName: message.groupRecipientId.name, // Use populated name
-        }));
+        return messages;
       } catch (error) {
         console.error("Error fetching group messages:", error);
         throw new Error("Failed to fetch group messages");
       }
     },
+
     getConversation: async (_, { userId, otherUserId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view conversations.");
       }
 
       try {
-        // Log the incoming IDs for debugging
-        console.log("Received userId:", userId);
-        console.log("Received otherUserId:", otherUserId);
-
-        // Validate user IDs
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-          console.error("Invalid userId format:", userId);
-          throw new Error("Invalid user ID format");
-        }
-        if (!mongoose.Types.ObjectId.isValid(otherUserId)) {
-          console.error("Invalid otherUserId format:", otherUserId);
+        if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(otherUserId)) {
           throw new Error("Invalid user ID format");
         }
 
-        // Convert IDs to ObjectId using 'new'
-        const userObjectId = new mongoose.Types.ObjectId(userId);
-        const otherUserObjectId = new mongoose.Types.ObjectId(otherUserId);
-
-        console.log(
-          "Fetching conversation between:",
-          userObjectId,
-          "and",
-          otherUserObjectId
-        ); // Debugging log
-
-        // Fetch messages between the two users
         const conversation = await Message.find({
           $or: [
-            { senderId: userObjectId, userRecipientId: otherUserObjectId },
-            { senderId: otherUserObjectId, userRecipientId: userObjectId },
+            { senderId: userId, userRecipientId: otherUserId },
+            { senderId: otherUserId, userRecipientId: userId },
           ],
-        }).sort({ timestamp: 1 });
+        }).sort({ timestamp: 1 }).populate('sender', 'username');
 
-        console.log("Messages found:", conversation.length); // Debugging log
-
-        return conversation.map((message) => ({
-          id: message._id.toString(),
-          senderId: message.senderId.toString(),
-          senderName: message.senderName,
-          userRecipientId: message.userRecipientId
-            ? message.userRecipientId.toString()
-            : null,
-          content: message.content,
-          timestamp: message.timestamp,
-          read: message.read !== undefined ? message.read : false,
-          isGroupMessage: message.isGroupMessage,
-        }));
+        return conversation;
       } catch (error) {
         console.error("Error fetching conversation:", error);
         throw new Error("Failed to fetch conversation");
       }
     },
   },
+
   Mutation: {
-    sendDirectMessage: async (
-      _,
-      { senderId, recipientId, content },
-      context
-    ) => {
+    sendDirectMessage: async (_, { senderId, recipientId, content }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to send messages.");
       }
       try {
-        console.log("sendDirectMessage called with:", {
-          senderId,
-          recipientId,
-          content,
-        });
-
-        // Find the sender
         const sender = await User.findById(senderId);
         if (!sender) {
-          console.error("Sender not found for ID:", senderId);
           throw new Error("Sender not found");
         }
 
-        // Create a new direct message
         const newMessage = new Message({
-          senderId,
-          senderName: sender.username || "Unknown",
+          sender: senderId,
           userRecipientId: recipientId,
           content,
           isGroupMessage: false,
-          read: false,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
         });
 
-        // Save the message
         const savedMessage = await newMessage.save();
-        console.log("Direct message saved:", savedMessage);
 
-        return {
-          id: savedMessage._id.toString(),
-          senderId: savedMessage.senderId,
-          senderName: savedMessage.senderName,
-          userRecipientId: savedMessage.userRecipientId,
-          content: savedMessage.content,
-          timestamp: savedMessage.timestamp,
-          read: savedMessage.read,
-          isGroupMessage: savedMessage.isGroupMessage,
-        };
+        // Update the conversation with the new message
+        await Conversation.findOneAndUpdate(
+          { participants: { $all: [senderId, recipientId] } },
+          { $set: { lastMessage: savedMessage._id }, $push: { messages: savedMessage._id } },
+          { upsert: true, new: true }
+        );
+
+        return savedMessage;
       } catch (error) {
         console.error("Error in sendDirectMessage:", error);
         throw new Error("Failed to send direct message");
       }
     },
 
-    sendGroupMessage: async (
-      _,
-      { senderId, groupId, content },
-      context
-    ) => {
+    sendGroupMessage: async (_, { senderId, groupId, content }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to send messages.");
       }
       try {
-        console.log("sendGroupMessage called with:", {
-          senderId,
-          groupId,
-          content,
-        });
-
-        // Find the sender
         const sender = await User.findById(senderId);
         if (!sender) {
-          console.error("Sender not found for ID:", senderId);
           throw new Error("Sender not found");
         }
 
-        // Create a new group message
         const newMessage = new Message({
-          senderId,
-          senderName: sender.username || "Unknown",
+          sender: senderId,
           groupRecipientId: groupId,
           content,
           isGroupMessage: true,
-          read: false,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
         });
 
-        // Save the message
         const savedMessage = await newMessage.save();
-        console.log("Group message saved:", savedMessage);
 
-        return {
-          id: savedMessage._id.toString(),
-          senderId: savedMessage.senderId,
-          senderName: savedMessage.senderName,
-          groupRecipientId: savedMessage.groupRecipientId,
-          content: savedMessage.content,
-          timestamp: savedMessage.timestamp,
-          read: savedMessage.read,
-          isGroupMessage: savedMessage.isGroupMessage,
-        };
+        // Update the conversation with the new message
+        await Conversation.findOneAndUpdate(
+          { participants: groupId, isGroup: true },
+          { $set: { lastMessage: savedMessage._id }, $push: { messages: savedMessage._id } },
+          { upsert: true, new: true }
+        );
+
+        return savedMessage;
       } catch (error) {
         console.error("Error in sendGroupMessage:", error);
         throw new Error("Failed to send group message");
       }
     },
+
     deleteMessage: async (_, { messageId, forEveryone }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to delete messages.");
@@ -293,15 +178,21 @@ export const messageResolvers = {
         throw new Error("Failed to delete message");
       }
     },
+
     markMessagesAsRead: async (_, { conversationId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to mark messages as read.");
       }
-      await Message.updateMany(
-        { conversationId, read: false },
-        { $set: { read: true } }
-      );
-      return true;
+      try {
+        await Message.updateMany(
+          { conversationId, read: false },
+          { $set: { read: true } }
+        );
+        return true;
+      } catch (error) {
+        console.error("Error marking messages as read:", error);
+        throw new Error("Failed to mark messages as read");
+      }
     },
   },
 };

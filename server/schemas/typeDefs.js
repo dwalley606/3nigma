@@ -11,25 +11,23 @@ const typeDefs = `
     contacts: [User!]!
   }
 
-  type ContactRequest {
-    id: ID!
-    from: User!
-    to: User!
-    status: String!
-    createdAt: String!
-  }
-  
   type Message {
     id: ID!
-    senderId: ID!
-    senderName: String!
-    userRecipientId: ID
-    groupRecipientId: ID
     content: String!
+    sender: User!
     timestamp: String!
-    read: Boolean!
     isGroupMessage: Boolean!
-    groupName: String
+    groupRecipientId: ID
+  }
+
+  type Conversation {
+    id: ID!
+    participants: [User!]!
+    messages: [Message!]!
+    lastMessage: Message
+    isGroup: Boolean!
+    name: String
+    unreadCount: Int
   }
 
   type Group {
@@ -41,6 +39,14 @@ const typeDefs = `
     updatedAt: String!
   }
 
+  type ContactRequest {
+    id: ID!
+    from: User!
+    to: User!
+    status: String!
+    createdAt: String!
+  }
+
   type EncryptionKey {
     id: ID!
     user: User!
@@ -49,25 +55,25 @@ const typeDefs = `
   }
 
   type RegisterUserResponse {
-     user: User!
-   }
+    user: User!
+  }
 
   type AuthPayload {
-     token: String!
-     user: User!
-   }
+    token: String!
+    user: User!
+  }
 
   type Query {
     getContacts(userId: ID!): [User!]!
-    getAllMessages(userId: ID!): [Message!]!
+    getConversations(userId: ID!): [Conversation!]!
     getDirectMessages(userId: ID!): [Message!]!
     getGroupMessages(groupId: ID!): [Message!]!
-    getConversation(userId: ID!, otherUserId: ID!): [Message!]!
     getUserById(id: ID!): User
     getUsers: [User!]
     getEncryptionKey(userId: ID!): EncryptionKey!
     getContactRequests(userId: ID!): [ContactRequest!]!
     getUserGroups(userId: ID!): [Group]
+    getConversation(userId: ID!, otherUserId: ID!): [Message!]!
   }
 
   type Mutation {

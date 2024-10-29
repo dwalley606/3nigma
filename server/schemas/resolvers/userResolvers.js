@@ -1,8 +1,8 @@
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
-import ContactRequest from "../../models/ContactRequest.js"; // Ensure the path is correct
+import ContactRequest from "../../models/ContactRequest.js";
 import Group from "../../models/Group.js";
+import bcrypt from "bcrypt";
 
 export const userResolvers = {
   Query: {
@@ -11,7 +11,7 @@ export const userResolvers = {
         throw new Error("You must be logged in to view user details.");
       }
       try {
-        const user = await User.findById(id).populate("contacts");
+        const user = await User.findById(id).populate("contacts", "username email");
         if (!user) {
           throw new Error("User not found");
         }
@@ -26,29 +26,26 @@ export const userResolvers = {
         throw new Error("You must be logged in to view users.");
       }
       try {
-        const users = await User.find();
-        return users; // Ensure this returns an array
+        const users = await User.find().select("username email");
+        return users;
       } catch (error) {
         console.error("Error fetching users:", error);
         throw new Error("Failed to fetch users");
       }
     },
     getContacts: async (_, { userId }, context) => {
-      console.log("getContacts: context.user", context.user);
       if (!context.user) {
         throw new Error("You must be logged in to view contacts.");
       }
       try {
-        const user = await User.findById(userId).populate("contacts");
-        return user.contacts || []; // Ensure it returns an array
+        const user = await User.findById(userId).populate("contacts", "username email");
+        return user.contacts || [];
       } catch (error) {
         console.error("Error fetching contacts:", error);
         throw new Error("Failed to fetch contacts");
       }
     },
     getContactRequests: async (_, { userId }, context) => {
-      console.log("getContactRequests: context.user", context.user); // Log the user context
-
       if (!context.user) {
         throw new Error("You must be logged in to view contact requests.");
       }
@@ -56,9 +53,7 @@ export const userResolvers = {
         const requests = await ContactRequest.find({
           to: userId,
           status: "pending",
-        })
-          .populate("from")
-          .exec();
+        }).populate("from", "username email");
         return requests;
       } catch (error) {
         console.error("Error fetching contact requests:", error);
@@ -70,9 +65,7 @@ export const userResolvers = {
         throw new Error("You must be logged in to view your groups.");
       }
       try {
-        const groups = await Group.find({ members: userId }).populate(
-          "members admins"
-        );
+        const groups = await Group.find({ members: userId }).populate("members", "username email").populate("admins", "username email");
         return groups;
       } catch (error) {
         console.error("Error fetching user groups:", error);
@@ -86,7 +79,7 @@ export const userResolvers = {
         const newUser = new User({
           username,
           email,
-          password, // Pass the plain password; it will be hashed by the pre-save middleware
+          password,
           phoneNumber,
         });
 
@@ -122,15 +115,13 @@ export const userResolvers = {
     },
     refreshToken: async (_, { refreshToken }) => {
       try {
-        const decoded = jwt.verify(
-          refreshToken,
-          process.env.REFRESH_TOKEN_SECRET
-        );
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
         const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
           expiresIn: "15m",
         });
         return { token: newToken };
       } catch (error) {
+        console.error("Error refreshing token:", error.message);
         throw new Error("Invalid or expired refresh token");
       }
     },
@@ -149,17 +140,10 @@ export const userResolvers = {
         const savedRequest = await newRequest.save();
 
         const populatedRequest = await ContactRequest.findById(savedRequest._id)
-          .populate("from")
-          .populate("to")
-          .exec();
+          .populate("from", "username email")
+          .populate("to", "username email");
 
-        return {
-          id: populatedRequest._id.toString(),
-          from: populatedRequest.from,
-          to: populatedRequest.to,
-          status: populatedRequest.status,
-          createdAt: populatedRequest.createdAt,
-        };
+        return populatedRequest;
       } catch (error) {
         console.error("Error sending contact request:", error);
         throw new Error("Failed to send contact request");
@@ -167,9 +151,7 @@ export const userResolvers = {
     },
     respondContactRequest: async (_, { requestId, status }, context) => {
       if (!context.user) {
-        throw new Error(
-          "You must be logged in to respond to a contact request."
-        );
+        throw new Error("You must be logged in to respond to a contact request.");
       }
       try {
         const request = await ContactRequest.findById(requestId);
@@ -191,16 +173,7 @@ export const userResolvers = {
           });
         }
 
-        return {
-          id: updatedRequest._id.toString(),
-          from: {
-            id: updatedRequest.from.toString(),
-          },
-          to: {
-            id: updatedRequest.to.toString(),
-          },
-          status: updatedRequest.status,
-        };
+        return updatedRequest;
       } catch (error) {
         console.error("Error responding to contact request:", error);
         throw new Error("Failed to respond to contact request");

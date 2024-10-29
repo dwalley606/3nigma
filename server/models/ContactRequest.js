@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const ContactRequestSchema = new mongoose.Schema({
+const contactRequestSchema = new mongoose.Schema({
   from: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',      // Reference to the User who sent the request
@@ -23,4 +23,4 @@ const ContactRequestSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model('ContactRequest', ContactRequestSchema);
+export default mongoose.model('ContactRequest', contactRequestSchema);

@@ -1,24 +1,15 @@
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 
 export const SEND_DIRECT_MESSAGE = gql`
-  mutation SendDirectMessage(
-    $senderId: ID!
-    $recipientId: ID!
-    $content: String!
-  ) {
-    sendDirectMessage(
-      senderId: $senderId
-      recipientId: $recipientId
-      content: $content
-    ) {
+  mutation sendDirectMessage($senderId: ID!, $recipientId: ID!, $content: String!) {
+    sendDirectMessage(senderId: $senderId, recipientId: $recipientId, content: $content) {
       id
       content
+      sender {
+        id
+        username
+      }
       timestamp
-      senderId
-      senderName
-      userRecipientId 
-      read
-      isGroupMessage
     }
   }
 `;
