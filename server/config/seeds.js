@@ -20,7 +20,7 @@ const seedDatabase = async () => {
     await Group.deleteMany({});
     await Conversation.deleteMany({});
 
-    // Create 10 sample users
+    // Create and save 10 sample users individually
     const users = [];
     for (let i = 0; i < 10; i++) {
       const user = new User({
@@ -33,9 +33,9 @@ const seedDatabase = async () => {
         profilePicUrl: `https://example.com/user${i}.jpg`,
         contacts: [],
       });
+      await user.save(); // This will trigger the pre-save middleware
       users.push(user);
     }
-    await User.insertMany(users);
 
     console.log("Users inserted:", users.length);
 

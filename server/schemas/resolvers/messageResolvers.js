@@ -6,24 +6,62 @@ import mongoose from "mongoose";
 
 export const messageResolvers = {
   Query: {
-    getConversations: async (_, { userId }, context) => {
-      if (!context.user) {
-        throw new Error("You must be logged in to view conversations.");
-      }
-
+    getConversations: async (_, { userId }) => {
       try {
-        const conversations = await Conversation.find({
-          participants: userId,
-        })
-          .populate('participants', 'username email')
+        const conversations = await Conversation.find({ participants: userId })
+          .populate('participants', 'id username')
+          .populate({
+            path: 'messages',
+            populate: {
+              path: 'sender',
+              select: 'id username',
+            },
+          })
           .populate({
             path: 'lastMessage',
-            populate: { path: 'sender', select: 'username' },
+            populate: {
+              path: 'sender',
+              select: 'id username',
+            },
           });
 
-        return conversations;
+        // Debugging: Log the populated conversations
+        console.log("Populated Conversations:", JSON.stringify(conversations, null, 2));
+
+        // Ensure IDs are strings and handle null participants
+        return conversations.map(conversation => ({
+          ...conversation.toObject(),
+          id: conversation._id.toString(),
+          participants: conversation.participants.map(participant => {
+            if (!participant) {
+              console.warn("Missing participant in conversation:", conversation._id);
+              return null;
+            }
+            return {
+              ...participant.toObject(),
+              id: participant._id.toString(),
+            };
+          }),
+          messages: conversation.messages.map(message => ({
+            ...message.toObject(),
+            id: message._id.toString(),
+            sender: {
+              ...message.sender.toObject(),
+              id: message.sender._id.toString(),
+            },
+          })),
+          lastMessage: conversation.lastMessage ? {
+            ...conversation.lastMessage.toObject(),
+            id: conversation.lastMessage._id.toString(),
+            sender: conversation.lastMessage.sender ? {
+              ...conversation.lastMessage.sender.toObject(),
+              id: conversation.lastMessage.sender._id.toString(),
+            } : null,
+          } : null,
+        }));
       } catch (error) {
-        console.error("Error fetching conversations:", error);
+        console.error("Error fetching conversations:", error.message);
+        console.error("Stack trace:", error.stack);
         throw new Error("Failed to fetch conversations");
       }
     },
