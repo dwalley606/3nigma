@@ -80,14 +80,15 @@ const seedDatabase = async () => {
 
     // Update messages and lastMessage for group conversation
     if (insertedGroupMessages.length > 0) {
-      groupConversation.messages = insertedGroupMessages.map(msg => msg._id);
-      groupConversation.lastMessage = insertedGroupMessages[insertedGroupMessages.length - 1]._id;
+      groupConversation.messages = insertedGroupMessages.map((msg) => msg._id);
+      groupConversation.lastMessage =
+        insertedGroupMessages[insertedGroupMessages.length - 1]._id;
       await groupConversation.save();
     }
 
     // Create non-group (direct) conversations and messages
     for (let i = 0; i < users.length; i++) {
-      for (let j = i + 1; j < users.length && j < i + 3; j++) {
+      for (let j = i + 1; j < users.length; j++) {
         const conversation = new Conversation({
           participants: [users[i]._id, users[j]._id],
           isGroup: false,
@@ -114,14 +115,17 @@ const seedDatabase = async () => {
 
         // Update messages and lastMessage for direct conversation
         if (insertedDirectMessages.length > 0) {
-          conversation.messages = insertedDirectMessages.map(msg => msg._id);
-          conversation.lastMessage = insertedDirectMessages[insertedDirectMessages.length - 1]._id;
+          conversation.messages = insertedDirectMessages.map((msg) => msg._id);
+          conversation.lastMessage =
+            insertedDirectMessages[insertedDirectMessages.length - 1]._id;
           await conversation.save();
         }
       }
     }
 
-    console.log("Database seeded successfully with conversations and messages!");
+    console.log(
+      "Database seeded successfully with conversations and messages!"
+    );
   } catch (error) {
     console.error("Error seeding database:", error);
   } finally {

@@ -6,35 +6,38 @@ import mongoose from "mongoose";
 
 export const messageResolvers = {
   Query: {
-    getConversations: async (_, { userId }) => {
+    getConversations: async (_, { userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view conversations.");
+      }
       try {
         const conversations = await Conversation.find({ participants: userId })
-          .populate('participants', 'id username')
+          .populate("participants", "id username")
           .populate({
-            path: 'messages',
+            path: "messages",
             populate: {
-              path: 'sender',
-              select: 'id username',
+              path: "sender",
+              select: "id username",
             },
           })
           .populate({
-            path: 'lastMessage',
+            path: "lastMessage",
             populate: {
-              path: 'sender',
-              select: 'id username',
+              path: "sender",
+              select: "id username",
             },
           });
 
-        // Debugging: Log the populated conversations
-        console.log("Populated Conversations:", JSON.stringify(conversations, null, 2));
-
         // Ensure IDs are strings and handle null participants
-        return conversations.map(conversation => ({
+        return conversations.map((conversation) => ({
           ...conversation.toObject(),
           id: conversation._id.toString(),
-          participants: conversation.participants.map(participant => {
+          participants: conversation.participants.map((participant) => {
             if (!participant) {
-              console.warn("Missing participant in conversation:", conversation._id);
+              console.warn(
+                "Missing participant in conversation:",
+                conversation._id
+              );
               return null;
             }
             return {
@@ -42,7 +45,7 @@ export const messageResolvers = {
               id: participant._id.toString(),
             };
           }),
-          messages: conversation.messages.map(message => ({
+          messages: conversation.messages.map((message) => ({
             ...message.toObject(),
             id: message._id.toString(),
             sender: {
@@ -50,14 +53,18 @@ export const messageResolvers = {
               id: message.sender._id.toString(),
             },
           })),
-          lastMessage: conversation.lastMessage ? {
-            ...conversation.lastMessage.toObject(),
-            id: conversation.lastMessage._id.toString(),
-            sender: conversation.lastMessage.sender ? {
-              ...conversation.lastMessage.sender.toObject(),
-              id: conversation.lastMessage.sender._id.toString(),
-            } : null,
-          } : null,
+          lastMessage: conversation.lastMessage
+            ? {
+                ...conversation.lastMessage.toObject(),
+                id: conversation.lastMessage._id.toString(),
+                sender: conversation.lastMessage.sender
+                  ? {
+                      ...conversation.lastMessage.sender.toObject(),
+                      id: conversation.lastMessage.sender._id.toString(),
+                    }
+                  : null,
+              }
+            : null,
         }));
       } catch (error) {
         console.error("Error fetching conversations:", error.message);
@@ -74,7 +81,7 @@ export const messageResolvers = {
         const messages = await Message.find({
           userRecipientId: userId,
           isGroupMessage: false,
-        }).populate('sender', 'username');
+        }).populate("sender", "username");
 
         return messages;
       } catch (error) {
@@ -92,12 +99,28 @@ export const messageResolvers = {
           throw new Error("Invalid group ID format");
         }
 
+        // Find messages that are group messages and belong to the specified groupId
         const messages = await Message.find({
           groupRecipientId: groupId,
           isGroupMessage: true,
-        }).populate('sender', 'username');
+        }).populate("sender", "id username");
 
-        return messages;
+        if (!messages.length) {
+          throw new Error("No messages found for this group.");
+        }
+
+        // Map the messages to the desired structure
+        return messages.map((message) => ({
+          id: message._id.toString(),
+          content: message.content,
+          sender: {
+            id: message.sender._id.toString(),
+            username: message.sender.username,
+          },
+          timestamp: message.timestamp,
+          isGroupMessage: message.isGroupMessage,
+          groupRecipientId: message.groupRecipientId.toString(),
+        }));
       } catch (error) {
         console.error("Error fetching group messages:", error);
         throw new Error("Failed to fetch group messages");
@@ -110,18 +133,50 @@ export const messageResolvers = {
       }
 
       try {
-        if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(otherUserId)) {
+        if (
+          !mongoose.Types.ObjectId.isValid(userId) ||
+          !mongoose.Types.ObjectId.isValid(otherUserId)
+        ) {
           throw new Error("Invalid user ID format");
         }
 
-        const conversation = await Message.find({
-          $or: [
-            { senderId: userId, userRecipientId: otherUserId },
-            { senderId: otherUserId, userRecipientId: userId },
-          ],
-        }).sort({ timestamp: 1 }).populate('sender', 'username');
+        const conversation = await Conversation.findOne({
+          participants: { $all: [userId, otherUserId] },
+          isGroup: false,
+        })
+          .populate({
+            path: "messages",
+            populate: {
+              path: "sender",
+              select: "id username",
+            },
+          })
+          .exec();
 
-        return conversation;
+        if (!conversation) {
+          return []; // Return empty array if no conversation exists
+        }
+
+        return conversation.messages
+          .map((message) => {
+            if (!message) return null;
+
+            return {
+              id: message._id?.toString() || null,
+              content: message.content || "",
+              sender: message.sender
+                ? {
+                    id: message.sender._id?.toString() || null,
+                    username: message.sender.username || "",
+                  }
+                : null,
+              userRecipientId: message.userRecipientId?.toString() || null,
+              timestamp: message.timestamp || null,
+              read: message.read || false,
+              isGroupMessage: message.isGroupMessage || false,
+            };
+          })
+          .filter(Boolean); // Remove any null values
       } catch (error) {
         console.error("Error fetching conversation:", error);
         throw new Error("Failed to fetch conversation");
@@ -130,16 +185,15 @@ export const messageResolvers = {
   },
 
   Mutation: {
-    sendDirectMessage: async (_, { senderId, recipientId, content }, context) => {
+    sendDirectMessage: async (_, { recipientId, content }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to send messages.");
       }
-      try {
-        const sender = await User.findById(senderId);
-        if (!sender) {
-          throw new Error("Sender not found");
-        }
 
+      try {
+        const senderId = context.user.id;
+
+        // Create the new message
         const newMessage = new Message({
           sender: senderId,
           userRecipientId: recipientId,
@@ -150,30 +204,56 @@ export const messageResolvers = {
 
         const savedMessage = await newMessage.save();
 
-        // Update the conversation with the new message
-        await Conversation.findOneAndUpdate(
-          { participants: { $all: [senderId, recipientId] } },
-          { $set: { lastMessage: savedMessage._id }, $push: { messages: savedMessage._id } },
-          { upsert: true, new: true }
-        );
+        // Find existing conversation or create a new one
+        let conversation = await Conversation.findOne({
+          participants: { $all: [senderId, recipientId] },
+          isGroup: false,
+        });
 
-        return savedMessage;
+        if (!conversation) {
+          conversation = new Conversation({
+            participants: [senderId, recipientId],
+            messages: [savedMessage._id],
+            lastMessage: savedMessage._id,
+            isGroup: false,
+          });
+        } else {
+          conversation.messages.push(savedMessage._id);
+          conversation.lastMessage = savedMessage._id;
+        }
+
+        await conversation.save();
+
+        // Populate the sender information before returning
+        await savedMessage.populate("sender", "id username");
+
+        return {
+          id: savedMessage._id.toString(),
+          content: savedMessage.content,
+          sender: {
+            id: savedMessage.sender._id.toString(),
+            username: savedMessage.sender.username,
+          },
+          userRecipientId: savedMessage.userRecipientId.toString(),
+          timestamp: savedMessage.timestamp,
+          read: savedMessage.read,
+          isGroupMessage: savedMessage.isGroupMessage,
+        };
       } catch (error) {
         console.error("Error in sendDirectMessage:", error);
         throw new Error("Failed to send direct message");
       }
     },
 
-    sendGroupMessage: async (_, { senderId, groupId, content }, context) => {
+    sendGroupMessage: async (_, { groupId, content }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to send messages.");
       }
-      try {
-        const sender = await User.findById(senderId);
-        if (!sender) {
-          throw new Error("Sender not found");
-        }
 
+      try {
+        const senderId = context.user.id;
+
+        // Create the new message
         const newMessage = new Message({
           sender: senderId,
           groupRecipientId: groupId,
@@ -185,13 +265,38 @@ export const messageResolvers = {
         const savedMessage = await newMessage.save();
 
         // Update the conversation with the new message
-        await Conversation.findOneAndUpdate(
-          { participants: groupId, isGroup: true },
-          { $set: { lastMessage: savedMessage._id }, $push: { messages: savedMessage._id } },
-          { upsert: true, new: true }
-        );
+        let conversation = await Conversation.findOne({
+          participants: groupId,
+          isGroup: true,
+        });
 
-        return savedMessage;
+        if (!conversation) {
+          conversation = new Conversation({
+            participants: [senderId], // Assuming groupId is an array of participant IDs
+            messages: [savedMessage._id],
+            lastMessage: savedMessage._id,
+            isGroup: true,
+          });
+        } else {
+          conversation.messages.push(savedMessage._id);
+          conversation.lastMessage = savedMessage._id;
+        }
+
+        await conversation.save();
+
+        // Populate the sender information before returning
+        await savedMessage.populate("sender", "id username");
+
+        return {
+          id: savedMessage._id.toString(),
+          content: savedMessage.content,
+          sender: {
+            id: savedMessage.sender._id.toString(),
+            username: savedMessage.sender.username,
+          },
+          timestamp: savedMessage.timestamp,
+          isGroupMessage: savedMessage.isGroupMessage,
+        };
       } catch (error) {
         console.error("Error in sendGroupMessage:", error);
         throw new Error("Failed to send group message");

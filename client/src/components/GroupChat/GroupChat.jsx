@@ -45,13 +45,21 @@ const GroupChat = () => {
         {messageState.messages.length === 0 ? (
           <Typography>No messages in this group yet.</Typography>
         ) : (
-          messageState.messages.map((message) => (
-            <Message
-              key={message.id}
-              message={message}
-              isOwner={message.senderId === authState.user.id}
-            />
-          ))
+          messageState.messages.map((message) => {
+            // Defensive check for sender
+            if (!message.sender) {
+              console.warn("Message sender is undefined:", message);
+              return null; // Skip rendering if sender is undefined
+            }
+
+            return (
+              <Message
+                key={message.id}
+                message={message}
+                isOwner={message.sender.id === authState.user.id} // Updated to match new structure
+              />
+            );
+          })
         )}
       </Box>
       <Box

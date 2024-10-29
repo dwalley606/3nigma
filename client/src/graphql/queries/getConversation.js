@@ -5,12 +5,13 @@ export const GET_CONVERSATION = gql`
   query GetConversation($userId: ID!, $otherUserId: ID!) {
     getConversation(userId: $userId, otherUserId: $otherUserId) {
       id
-      senderId
-      senderName
-      userRecipientId
       content
+      sender {
+        id
+        username
+      }
+      userRecipientId
       timestamp
-      read
       isGroupMessage
     }
   }

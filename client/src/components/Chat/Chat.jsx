@@ -1,5 +1,5 @@
 // client/src/components/Chat/Chat.jsx
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/auth/AuthContext";
 import { useMessages } from "../../context/message/MessageContext"; // Import the useMessages hook
 import { useQuery } from "@apollo/client";
@@ -42,13 +42,20 @@ const Chat = () => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "80vh" }}>
       <Box sx={{ flexGrow: 1, overflowY: "auto", padding: 2 }}>
-        {messageState.messages.map((message) => (
-          <Message
-            key={message.id}
-            message={message}
-            isOwner={message.senderId === authState.user.id}
-          />
-        ))}
+        {messageState.messages.map((message) => {
+          // Check if message and sender are defined
+          if (!message || !message.sender) {
+            return null; // Skip rendering if message or sender is undefined
+          }
+
+          return (
+            <Message
+              key={message.id}
+              message={message}
+              isOwner={message.sender.id === authState.user.id} // Updated to match new structure
+            />
+          );
+        })}
       </Box>
       <Box
         sx={{

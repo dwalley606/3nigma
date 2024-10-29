@@ -4,15 +4,14 @@ export const GET_GROUP_MESSAGES = gql`
   query getGroupMessages($groupId: ID!) {
     getGroupMessages(groupId: $groupId) {
       id
-      senderId
-      senderName
-      userRecipientId
-      groupRecipientId
       content
+      sender {
+        id
+        username
+      }
       timestamp
-      read
       isGroupMessage
-      groupName
+      groupRecipientId
     }
   }
 `;

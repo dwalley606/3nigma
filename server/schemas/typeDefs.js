@@ -18,6 +18,7 @@ const typeDefs = `
     timestamp: String!
     isGroupMessage: Boolean!
     groupRecipientId: ID
+    userRecipientId: ID
   }
 
   type Conversation {
@@ -79,8 +80,8 @@ const typeDefs = `
   type Mutation {
     registerUser(username: String!, email: String!, password: String!, phoneNumber: String!): RegisterUserResponse!
     login(email: String!, password: String!): AuthPayload!
-    sendDirectMessage(senderId: ID!, recipientId: ID!, content: String!): Message!
-    sendGroupMessage(senderId: ID!, groupId: ID!, content: String!): Message!
+    sendDirectMessage(recipientId: ID!, content: String!): Message!
+    sendGroupMessage(groupId: ID!, content: String!): Message!
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!
     respondContactRequest(requestId: ID!, status: String!): ContactRequest!   
     createGroup(name: String!, memberIds: [ID!]!): Group!

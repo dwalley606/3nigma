@@ -27,7 +27,7 @@ const Message = ({ message, isOwner }) => {
       >
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
           <Typography variant="subtitle2" component="span">
-            {message.senderName}
+            {message.sender ? message.sender.username : "Unknown User"}
           </Typography>
           <Typography variant="caption" component="span">
             {formattedTimestamp}
@@ -42,11 +42,12 @@ const Message = ({ message, isOwner }) => {
 Message.propTypes = {
   message: PropTypes.shape({
     id: PropTypes.string.isRequired,
-    senderId: PropTypes.string.isRequired,
-    senderName: PropTypes.string.isRequired,
+    sender: PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+    }).isRequired,
     content: PropTypes.string.isRequired,
     timestamp: PropTypes.string.isRequired,
-    read: PropTypes.bool.isRequired,
     isGroupMessage: PropTypes.bool,
   }).isRequired,
   isOwner: PropTypes.bool.isRequired,
