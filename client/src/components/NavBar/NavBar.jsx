@@ -1,7 +1,8 @@
 // src/components/NavBar.jsx
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth/AuthContext";
+import { useView } from "../../context/view/ViewContext";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -11,20 +12,22 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
+import { SET_CHAT_ACTIVE } from "../../context/view/viewReducer";
 
 const Navbar = () => {
-  const { state, dispatch } = useAuth();
+  const { state, dispatch: authDispatch } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const { state: viewState, dispatch: viewDispatch } = useView();
+
+  console.log("isChatActive in NavBar:", viewState.isChatActive);
 
   const handleLogout = () => {
-    dispatch({ type: "LOGOUT" });
-    navigate("/"); // Redirect to Home page
+    authDispatch({ type: "LOGOUT" });
   };
 
   const handleBackToDashboard = () => {
-    navigate("/dashboard");
+    viewDispatch({ type: SET_CHAT_ACTIVE, payload: false });
   };
 
   const handleMenu = (event) => {
@@ -36,34 +39,9 @@ const Navbar = () => {
   };
 
   const handleNavigation = (path) => {
+    console.log(`Navigating to ${path}`);
+    setAnchorEl(null);
     navigate(path);
-    handleClose();
-  };
-
-  // Determine the title based on the current location
-  const getTitle = () => {
-    if (location.pathname.startsWith("/chat")) {
-      const senderName = location.state?.senderName || "Unknown User";
-      return `${senderName}`;
-    }
-    if (location.pathname.startsWith("/groupChat")) {
-      return "Group Chat";
-    }
-    if (location.pathname === "/groups") return "Groups";
-    if (location.pathname === "/settings") return "Settings";
-    if (location.pathname === "/contacts") return "Contacts";
-    return "3NIGMA"; // Default title
-  };
-
-  // Determine if the back arrow should be displayed
-  const shouldShowBackArrow = () => {
-    return (
-      location.pathname.startsWith("/chat") ||
-      location.pathname.startsWith("/groupChat") || // Include groupChat path
-      location.pathname === "/groups" ||
-      location.pathname === "/settings" ||
-      location.pathname === "/contacts"
-    );
   };
 
   return (
@@ -71,7 +49,7 @@ const Navbar = () => {
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static">
           <Toolbar>
-            {shouldShowBackArrow() && (
+            {viewState.isChatActive && (
               <IconButton
                 size="large"
                 edge="start"
@@ -84,7 +62,7 @@ const Navbar = () => {
               </IconButton>
             )}
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              {getTitle()}
+              3NIGMA
             </Typography>
             <div>
               <IconButton

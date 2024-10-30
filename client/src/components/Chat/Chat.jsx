@@ -1,61 +1,44 @@
 // client/src/components/Chat/Chat.jsx
-import { useParams } from "react-router-dom";
-import { useAuth } from "../../context/auth/AuthContext";
-import { useMessages } from "../../context/message/MessageContext"; // Import the useMessages hook
-import { useQuery } from "@apollo/client";
-import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
 import { Typography, Box } from "@mui/material";
+import { useAuth } from "../../context/auth/AuthContext";
 import MessageInput from "../MessageInput/MessageInput";
 import Message from "../Message/Message";
-import { useEffect } from "react";
 
-const Chat = () => {
+const Chat = ({ conversation, onBack }) => {
   const { state: authState } = useAuth();
-  const { state: messageState, dispatch } = useMessages(); // Use the message context
-  const { otherUserId } = useParams(); // Extract otherUserId from URL
 
-  console.log("Rendering Chat with otherUserId:", otherUserId); // Debugging log
-
-  const { loading, error, data } = useQuery(GET_CONVERSATION, {
-    variables: { userId: authState.user.id, otherUserId },
-    skip: !authState.user || !otherUserId,
-  });
-
-  useEffect(() => {
-    if (data) {
-      dispatch({ type: "SET_MESSAGES", payload: data.getConversation });
-    }
-  }, [data, dispatch]);
-
-  if (!otherUserId) {
+  if (!conversation) {
     return <Typography>Please select a user to view messages.</Typography>;
   }
 
-  if (loading) return <Typography>Loading messages...</Typography>;
-  if (error)
-    return <Typography>Error loading messages: {error.message}</Typography>;
-
   const handleSendMessage = (newMessage) => {
-    dispatch({ type: "ADD_MESSAGE", payload: newMessage });
+    // Handle sending messages
+    console.log("Sending message:", newMessage);
+    // You might want to update the conversation state in the parent component
   };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "80vh" }}>
       <Box sx={{ flexGrow: 1, overflowY: "auto", padding: 2 }}>
-        {messageState.messages.map((message) => {
-          // Check if message and sender are defined
-          if (!message || !message.sender) {
-            return null; // Skip rendering if message or sender is undefined
-          }
+        {conversation.messages.length === 0 ? (
+          <Typography>No messages in this conversation yet.</Typography>
+        ) : (
+          conversation.messages.map((message) => {
+            // Defensive check for sender
+            if (!message.sender) {
+              console.warn("Message sender is undefined:", message);
+              return null; // Skip rendering if sender is undefined
+            }
 
-          return (
-            <Message
-              key={message.id}
-              message={message}
-              isOwner={message.sender.id === authState.user.id} // Updated to match new structure
-            />
-          );
-        })}
+            return (
+              <Message
+                key={message.id}
+                message={message}
+                isOwner={message.sender.id === authState.user.id}
+              />
+            );
+          })
+        )}
       </Box>
       <Box
         sx={{
@@ -69,7 +52,7 @@ const Chat = () => {
         }}
       >
         <MessageInput
-          recipientId={otherUserId}
+          recipientId={conversation.id}
           onSendMessage={handleSendMessage}
         />
       </Box>

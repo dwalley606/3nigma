@@ -1,19 +1,20 @@
 import { useAuth } from "../../context/auth/AuthContext";
-import { useMessages } from "../../context/message/MessageContext";
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
 import { GET_CONVERSATIONS } from "../../graphql/queries/getConversations";
 import MessageList from "../MessageList/MessageList";
+import Chat from "../Chat/Chat";
+import GroupChat from "../GroupChat/GroupChat";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useView } from "../../context/view/ViewContext";
+import { SET_CHAT_ACTIVE } from "../../context/view/viewReducer";
 
 const Dashboard = () => {
   const { state: authState } = useAuth();
-  const { dispatch } = useMessages();
-  const navigate = useNavigate();
-
   const userId = authState.user?.id;
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const { state: viewState, dispatch } = useView();
 
   const { loading, error, data, refetch } = useQuery(GET_CONVERSATIONS, {
     variables: { userId },
@@ -22,16 +23,22 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (data) {
-      console.log("Fetched conversations:", data.getConversations); // Debugging log
-      dispatch({ type: "SET_MESSAGES", payload: data.getConversations });
+      console.log("Fetched conversations:", data.getConversations);
     }
-  }, [data, dispatch]);
+  }, [data]);
 
   useEffect(() => {
-    if (userId) {
-      refetch();
+    console.log("Selected Conversation:", selectedConversation);
+    dispatch({ type: SET_CHAT_ACTIVE, payload: !!selectedConversation });
+    console.log("isChatActive:", viewState.isChatActive);
+  }, [selectedConversation, dispatch, viewState.isChatActive]);
+
+  useEffect(() => {
+    if (!viewState.isChatActive) {
+      setSelectedConversation(null);
+      refetch(); // Refetch conversations when returning to the dashboard
     }
-  }, [userId, refetch]);
+  }, [viewState.isChatActive, refetch]);
 
   if (loading) return <Typography>Loading conversations...</Typography>;
   if (error)
@@ -42,25 +49,32 @@ const Dashboard = () => {
   const sortedConversations = [...data.getConversations].sort((a, b) => {
     const lastMessageA = a.lastMessage ? new Date(a.lastMessage.timestamp) : 0;
     const lastMessageB = b.lastMessage ? new Date(b.lastMessage.timestamp) : 0;
-    return lastMessageB - lastMessageA; // Sort by descending timestamp
+    return lastMessageB - lastMessageA;
   });
 
   return (
     <Box sx={{ padding: 2 }}>
-      <MessageList
-        groupedMessages={sortedConversations}
-        onMessageClick={(conversationId, isGroup) => {
-          if (isGroup) {
-            navigate(`/groupChat/${conversationId}`);
-          } else {
-            const otherUserId = conversationId;
-            const senderName =
-              sortedConversations.find((conv) => conv.id === conversationId)
-                ?.participants[0]?.username || "Unknown User";
-            navigate(`/chat/${otherUserId}`, { state: { senderName } });
-          }
-        }}
-      />
+      {!selectedConversation ? (
+        <MessageList
+          groupedMessages={sortedConversations}
+          onMessageClick={(conversationId, isGroup) => {
+            const conversation = sortedConversations.find(
+              (conv) => conv.id === conversationId
+            );
+            setSelectedConversation({ ...conversation, isGroup });
+          }}
+        />
+      ) : selectedConversation.isGroup ? (
+        <GroupChat
+          conversation={selectedConversation}
+          onBack={() => setSelectedConversation(null)}
+        />
+      ) : (
+        <Chat
+          conversation={selectedConversation}
+          onBack={() => setSelectedConversation(null)}
+        />
+      )}
     </Box>
   );
 };
