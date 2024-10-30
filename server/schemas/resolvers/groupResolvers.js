@@ -1,9 +1,58 @@
 import Group from "../../models/Group.js";
 import User from "../../models/User.js";
+import Conversation from "../../models/Conversation.js";
 
 export const groupResolvers = {
   Query: {
-    // Add any group-related queries here if needed
+    getGroupConversations: async (_, { userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to view group conversations.");
+      }
+      try {
+        const conversations = await Conversation.find({
+          isGroup: true,
+          participants: userId,
+        })
+          .populate({
+            path: "lastMessage",
+            populate: { path: "sender", select: "username email" }, // Populate sender details if needed
+          })
+          .sort({ "lastMessage.timestamp": -1 })
+          .exec();
+
+        return conversations.map((conversation) => {
+          if (!conversation) {
+            console.warn("Conversation is undefined");
+            return null;
+          }
+
+          const lastMessage = conversation.lastMessage || null;
+
+          return {
+            id: conversation._id ? conversation._id.toString() : null,
+            lastMessage: lastMessage
+              ? {
+                  id: lastMessage._id ? lastMessage._id.toString() : null,
+                  content: lastMessage.content || "",
+                  sender: {
+                    id: lastMessage.sender
+                      ? lastMessage.sender._id.toString()
+                      : null,
+                    username: lastMessage.sender
+                      ? lastMessage.sender.username
+                      : null,
+                  },
+                  timestamp: lastMessage.timestamp,
+                }
+              : null,
+            createdAt: conversation.createdAt,
+          };
+        });
+      } catch (error) {
+        console.error("Error fetching group conversations:", error);
+        throw new Error("Failed to fetch group conversations");
+      }
+    },
   },
   Mutation: {
     createGroup: async (_, { name, memberIds }, context) => {

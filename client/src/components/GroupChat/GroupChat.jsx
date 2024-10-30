@@ -11,8 +11,6 @@ const GroupChat = ({ conversation, onBack }) => {
   }
 
   const handleSendMessage = (newMessage) => {
-    // Assuming you have a function to handle sending messages
-    // You might want to update the conversation state in the parent component
     console.log("Sending message:", newMessage);
   };
 
@@ -23,7 +21,6 @@ const GroupChat = ({ conversation, onBack }) => {
           <Typography>No messages in this group yet.</Typography>
         ) : (
           conversation.messages.map((message) => {
-            // Defensive check for sender
             if (!message.sender) {
               console.warn("Message sender is undefined:", message);
               return null; // Skip rendering if sender is undefined

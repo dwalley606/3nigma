@@ -1,5 +1,5 @@
 import { createContext, useReducer, useContext } from "react";
-import viewReducer, { SET_CHAT_ACTIVE } from "./viewReducer";
+import viewReducer from "./viewReducer";
 
 const initialState = {
   isChatActive: false,

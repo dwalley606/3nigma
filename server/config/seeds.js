@@ -50,19 +50,9 @@ const seedDatabase = async () => {
     });
     await group.save();
 
-    // Create a group conversation
-    const groupConversation = new Conversation({
-      participants: groupMembers.map((user) => user._id),
-      isGroup: true,
-      messages: [], // Initialize messages array
-      lastMessage: null,
-      updatedAt: new Date().toISOString(),
-    });
-    await groupConversation.save();
-
     // Create group messages
     const groupMessages = [];
-    groupMembers.forEach((user) => {
+    for (const user of groupMembers) {
       for (let j = 0; j < 3; j++) {
         const message = new Message({
           sender: user._id,
@@ -71,20 +61,22 @@ const seedDatabase = async () => {
           timestamp: new Date().toISOString(),
           read: false,
           isGroupMessage: true,
-          conversationId: groupConversation._id,
         });
         groupMessages.push(message);
       }
-    });
+    }
     const insertedGroupMessages = await Message.insertMany(groupMessages);
 
-    // Update messages and lastMessage for group conversation
-    if (insertedGroupMessages.length > 0) {
-      groupConversation.messages = insertedGroupMessages.map((msg) => msg._id);
-      groupConversation.lastMessage =
-        insertedGroupMessages[insertedGroupMessages.length - 1]._id;
-      await groupConversation.save();
-    }
+    // Create group conversation with name field
+    const groupConversation = new Conversation({
+      participants: groupMembers.map((user) => user._id),
+      isGroup: true,
+      messages: insertedGroupMessages.map((msg) => msg._id), // Store message IDs
+      lastMessage: insertedGroupMessages[insertedGroupMessages.length - 1]._id, // Set lastMessage to the last inserted message
+      name: group.name, // Add the name field for the group conversation
+      updatedAt: new Date().toISOString(),
+    });
+    await groupConversation.save();
 
     // Create non-group (direct) conversations and messages
     for (let i = 0; i < users.length; i++) {
@@ -107,7 +99,6 @@ const seedDatabase = async () => {
             timestamp: new Date().toISOString(),
             read: false,
             isGroupMessage: false,
-            conversationId: conversation._id,
           });
           messages.push(message);
         }
@@ -117,7 +108,7 @@ const seedDatabase = async () => {
         if (insertedDirectMessages.length > 0) {
           conversation.messages = insertedDirectMessages.map((msg) => msg._id);
           conversation.lastMessage =
-            insertedDirectMessages[insertedDirectMessages.length - 1]._id;
+            insertedDirectMessages[insertedDirectMessages.length - 1]._id; // Set lastMessage to the last inserted message
           await conversation.save();
         }
       }

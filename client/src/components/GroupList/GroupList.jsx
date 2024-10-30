@@ -2,68 +2,118 @@
 import { useState } from "react";
 import { useQuery } from "@apollo/client";
 import { useAuth } from "../../context/auth/AuthContext";
-import { GET_USER_GROUPS } from "../../graphql/queries/getUserGroups";
+import { useView } from "../../context/view/ViewContext";
+import { GET_GROUP_CONVERSATIONS } from "../../graphql/queries/getGroupConversations";
 import {
   Box,
   List,
   ListItem,
   ListItemText,
-  IconButton,
   Typography,
+  Button,
+  Stack,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import GroupChat from "../GroupChat/GroupChat";
 import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
-import { useNavigate } from "react-router-dom";
+import LeaveGroup from "../LeaveGroup/LeaveGroup";
+import {
+  setGroupChatActive,
+  setCurrentGroup,
+} from "../../context/view/viewActions";
 
 const GroupList = () => {
   const { state: authState } = useAuth();
-  const { loading, error, data } = useQuery(GET_USER_GROUPS, {
+  const { state: viewState, dispatch } = useView();
+  const { loading, error, data } = useQuery(GET_GROUP_CONVERSATIONS, {
     variables: { userId: authState.user.id },
+    fetchPolicy: "network-only",
   });
 
-  const navigate = useNavigate();
   const [selectedGroupId, setSelectedGroupId] = useState(null);
-  const [showAddUser, setShowAddUser] = useState(false);
+  const [isAddingUser, setIsAddingUser] = useState(false);
 
   if (loading) return <Typography>Loading groups...</Typography>;
   if (error)
     return <Typography>Error loading groups: {error.message}</Typography>;
 
-  const groups = data?.getUserGroups || [];
-  console.log("Groups data:", groups); // Debugging log
+  const groups = data?.getConversations.filter((convo) => convo.isGroup) || [];
 
-  const handleGroupClick = (groupId) => {
-    console.log("Clicked groupId:", groupId); // Log the clicked groupId
-    navigate(`/groupChat/${groupId}`); // Navigate to GroupChat with groupId
+  const handleStartChat = (group) => {
+    dispatch(setCurrentGroup(group));
+    dispatch(setGroupChatActive(true));
   };
 
-  const handleAddUserClick = (groupId) => {
-    setSelectedGroupId(groupId);
-    setShowAddUser((prev) => !prev); // Toggle the visibility of AddUserToGroup
+  const handleAddUser = (group) => {
+    setSelectedGroupId(group.id);
+    setIsAddingUser(true);
+  };
+
+  const handleLeaveGroup = (group) => {
+    dispatch(setCurrentGroup(group));
+    // Navigate to LeaveGroup component
+  };
+
+  const handleBackToGroups = () => {
+    setIsAddingUser(false);
+    setSelectedGroupId(null);
   };
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h6">Your Groups</Typography>
-      <List>
-        {groups.map((group) => (
-          <ListItem key={group.id} button>
-            <ListItemText
-              primary={group.name}
-              onClick={() => handleGroupClick(group.id)}
+      {viewState.isChatActive ? (
+        <Box>
+          <Button onClick={() => dispatch(setGroupChatActive(false))}>
+            Back to Groups
+          </Button>
+          <GroupChat conversation={viewState.currentGroup} />
+        </Box>
+      ) : (
+        <>
+          <Typography variant="h6">Your Groups</Typography>
+          <List>
+            {groups.map((group) => (
+              <ListItem key={group.id}>
+                <ListItemText
+                  primary={group.name}
+                  secondary={
+                    group.lastMessage ? (
+                      <div>
+                        <Typography variant="body2" color="textSecondary">
+                          {group.lastMessage.content}
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          {new Date(
+                            parseInt(group.lastMessage.timestamp)
+                          ).toLocaleString()}
+                        </Typography>
+                      </div>
+                    ) : (
+                      <Typography variant="caption" color="textSecondary">
+                        No messages yet
+                      </Typography>
+                    )
+                  }
+                />
+                <Stack direction="row" spacing={1} sx={{ marginTop: 1 }}>
+                  <Button onClick={() => handleStartChat(group)}>Chat</Button>
+                  <Button onClick={() => handleAddUser(group)}>
+                    Add Member
+                  </Button>
+                  <Button onClick={() => handleLeaveGroup(group)}>
+                    Leave Group
+                  </Button>
+                </Stack>
+              </ListItem>
+            ))}
+          </List>
+          {isAddingUser && (
+            <AddUserToGroup
+              groupId={selectedGroupId}
+              onBack={handleBackToGroups}
             />
-            <Typography variant="caption">ID: {group.id}</Typography>
-            <IconButton
-              edge="end"
-              aria-label="add user"
-              onClick={() => handleAddUserClick(group.id)}
-            >
-              <AddIcon />
-            </IconButton>
-          </ListItem>
-        ))}
-      </List>
-      {showAddUser && <AddUserToGroup groupId={selectedGroupId} />}
+          )}
+        </>
+      )}
     </Box>
   );
 };

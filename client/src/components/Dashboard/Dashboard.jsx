@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
 import { useView } from "../../context/view/ViewContext";
-import { SET_CHAT_ACTIVE } from "../../context/view/viewReducer";
+import { SET_CHAT_ACTIVE } from "../../context/view/viewActions";
 
 const Dashboard = () => {
   const { state: authState } = useAuth();
@@ -46,11 +46,17 @@ const Dashboard = () => {
       <Typography>Error fetching conversations: {error.message}</Typography>
     );
 
-  const sortedConversations = [...data.getConversations].sort((a, b) => {
-    const lastMessageA = a.lastMessage ? new Date(a.lastMessage.timestamp) : 0;
-    const lastMessageB = b.lastMessage ? new Date(b.lastMessage.timestamp) : 0;
-    return lastMessageB - lastMessageA;
-  });
+  const sortedConversations = [...data.getConversations]
+    .sort((a, b) => {
+      const lastMessageA = a.lastMessage
+        ? new Date(a.lastMessage.timestamp)
+        : 0;
+      const lastMessageB = b.lastMessage
+        ? new Date(b.lastMessage.timestamp)
+        : 0;
+      return lastMessageB - lastMessageA;
+    })
+    .reverse(); // Reverse the sorted array
 
   return (
     <Box sx={{ padding: 2 }}>
