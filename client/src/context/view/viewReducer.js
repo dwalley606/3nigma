@@ -2,6 +2,7 @@ import {
   SET_CHAT_ACTIVE,
   SET_GROUP_CHAT_ACTIVE,
   SET_CURRENT_GROUP,
+  SET_VIEW_COMPONENT,
 } from "./viewActions";
 
 const initialState = {
@@ -18,6 +19,11 @@ const viewReducer = (state = initialState, action) => {
       return { ...state, isChatActive: action.payload };
     case SET_CURRENT_GROUP:
       return { ...state, currentGroup: action.payload };
+    case SET_VIEW_COMPONENT: // Handle the new action
+      return {
+        ...state,
+        currentViewComponent: action.payload,
+      };
     default:
       return state;
   }

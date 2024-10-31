@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { SEND_DIRECT_MESSAGE } from "../../graphql/mutations/sendDirectMessage";
 import { SEND_GROUP_MESSAGE } from "../../graphql/mutations/sendGroupMessage";
-import { useAuth } from "../../context/auth/AuthContext";
-import { useMessages } from "../../context/message/MessageContext"; // Import the useMessages hook
+import { useAuth } from "../../context/StoreProvider";
+import { useMessages } from "../../context/StoreProvider"; // Import the useMessages hook
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 
@@ -28,7 +28,7 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
     onSendMessage(newMessage); // Optimistically update the UI
     dispatch({ type: "ADD_MESSAGE", payload: newMessage }); // Update global state
 
-      // In MessageInput.jsx
+    // In MessageInput.jsx
     console.log("Dispatching new message:", newMessage);
 
     try {

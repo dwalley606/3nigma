@@ -1,7 +1,7 @@
 // client/src/components/Contacts/Contacts.jsx
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from "../../context/auth/AuthContext";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/StoreProvider";
 import { useQuery } from "@apollo/client";
 import { GET_CONTACTS } from "../../graphql/queries/getContacts";
 import AddContact from "../AddContact/AddContact";
@@ -23,7 +23,7 @@ const Contacts = () => {
     console.log("Contacts: state.user", state.user); // Log the user state
 
     if (!state.user) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [state.user, navigate]);
 

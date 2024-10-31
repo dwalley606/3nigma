@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_USERS } from "../../graphql/queries/getUsers";
 import { SEND_CONTACT_REQUEST } from "../../graphql/mutations/sendContactRequest";
-import { useAuth } from "../../context/auth/AuthContext";
+import { useAuth } from "../../context/StoreProvider";
 import {
   Typography,
   List,

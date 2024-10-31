@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../graphql/mutations/loginUser";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/auth/AuthContext";
+import { useAuth } from "../context/StoreProvider";
 import { Container, TextField, Button, Typography, Box } from "@mui/material";
 
 const LoginForm = () => {
@@ -84,7 +84,9 @@ const LoginForm = () => {
           >
             {loading ? "Logging in..." : "Login"}
           </Button>
-          {error && <Typography color="error">Error: {error.message}</Typography>}
+          {error && (
+            <Typography color="error">Error: {error.message}</Typography>
+          )}
         </Box>
       </Box>
     </Container>

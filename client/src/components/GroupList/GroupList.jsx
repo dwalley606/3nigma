@@ -1,8 +1,7 @@
 // src/components/GroupList/GroupList.jsx
-import { useState } from "react";
 import { useQuery } from "@apollo/client";
-import { useAuth } from "../../context/auth/AuthContext";
-import { useView } from "../../context/view/ViewContext";
+import { useAuth } from "../../context/StoreProvider";
+import { useView } from "../../context/StoreProvider";
 import { GET_GROUP_CONVERSATIONS } from "../../graphql/queries/getGroupConversations";
 import {
   Box,
@@ -14,11 +13,11 @@ import {
   Stack,
 } from "@mui/material";
 import GroupChat from "../GroupChat/GroupChat";
-import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
-import LeaveGroup from "../LeaveGroup/LeaveGroup";
+import GroupOptions from "../GroupOptions/GroupOptions";
 import {
   setGroupChatActive,
   setCurrentGroup,
+  setViewComponent,
 } from "../../context/view/viewActions";
 
 const GroupList = () => {
@@ -29,33 +28,15 @@ const GroupList = () => {
     fetchPolicy: "network-only",
   });
 
-  const [selectedGroupId, setSelectedGroupId] = useState(null);
-  const [isAddingUser, setIsAddingUser] = useState(false);
-
   if (loading) return <Typography>Loading groups...</Typography>;
   if (error)
     return <Typography>Error loading groups: {error.message}</Typography>;
 
   const groups = data?.getConversations.filter((convo) => convo.isGroup) || [];
 
-  const handleStartChat = (group) => {
+  const handleGroupClick = (group) => {
     dispatch(setCurrentGroup(group));
-    dispatch(setGroupChatActive(true));
-  };
-
-  const handleAddUser = (group) => {
-    setSelectedGroupId(group.id);
-    setIsAddingUser(true);
-  };
-
-  const handleLeaveGroup = (group) => {
-    dispatch(setCurrentGroup(group));
-    // Navigate to LeaveGroup component
-  };
-
-  const handleBackToGroups = () => {
-    setIsAddingUser(false);
-    setSelectedGroupId(null);
+    dispatch(setViewComponent("GroupOptions"));
   };
 
   return (
@@ -72,7 +53,7 @@ const GroupList = () => {
           <Typography variant="h6">Your Groups</Typography>
           <List>
             {groups.map((group) => (
-              <ListItem key={group.id}>
+              <ListItem key={group.id} onClick={() => handleGroupClick(group)}>
                 <ListItemText
                   primary={group.name}
                   secondary={
@@ -95,22 +76,15 @@ const GroupList = () => {
                   }
                 />
                 <Stack direction="row" spacing={1} sx={{ marginTop: 1 }}>
-                  <Button onClick={() => handleStartChat(group)}>Chat</Button>
-                  <Button onClick={() => handleAddUser(group)}>
-                    Add Member
-                  </Button>
-                  <Button onClick={() => handleLeaveGroup(group)}>
-                    Leave Group
+                  <Button onClick={() => handleGroupClick(group)}>
+                    Options
                   </Button>
                 </Stack>
               </ListItem>
             ))}
           </List>
-          {isAddingUser && (
-            <AddUserToGroup
-              groupId={selectedGroupId}
-              onBack={handleBackToGroups}
-            />
+          {viewState.currentViewComponent === "GroupOptions" && (
+            <GroupOptions groupId={viewState.currentGroup.id} />
           )}
         </>
       )}

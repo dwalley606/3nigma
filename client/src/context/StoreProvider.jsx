@@ -1,4 +1,4 @@
-import { createContext, useReducer, useContext, useEffect } from "react";
+import React, { createContext, useReducer, useContext, useEffect } from "react";
 import authReducer from "./auth/authReducer";
 import messageReducer from "./message/messageReducer";
 import viewReducer from "./view/viewReducer";
@@ -32,6 +32,9 @@ const initialMessageState = {
 
 const initialViewState = {
   isChatActive: false,
+  currentGroup: null,
+  currentViewComponent: null,
+  setGroupChatActive: null,
 };
 
 // Combine initial states

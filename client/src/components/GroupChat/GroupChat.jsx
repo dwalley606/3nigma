@@ -1,5 +1,5 @@
 import { Typography, Box } from "@mui/material";
-import { useAuth } from "../../context/auth/AuthContext";
+import { useAuth } from "../../context/StoreProvider";
 import MessageInput from "../MessageInput/MessageInput";
 import Message from "../Message/Message";
 

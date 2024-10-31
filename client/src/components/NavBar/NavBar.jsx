@@ -1,8 +1,8 @@
 // src/components/NavBar.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/auth/AuthContext";
-import { useView } from "../../context/view/ViewContext";
+import { useAuth } from "../../context/StoreProvider";
+import { useView } from "../../context/StoreProvider";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";

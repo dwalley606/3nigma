@@ -1,18 +1,18 @@
-import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import NavBar from "./components/NavBar/NavBar";
-import { useAuth } from "./context/auth/AuthContext.jsx";
-import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { loggedIn, refreshToken } from './utils/auth';
+import { useAuth } from "./context/StoreProvider";
+import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { loggedIn, refreshToken } from "./utils/auth";
 
 // Define your custom theme
 const theme = createTheme({
   palette: {
-    primary: { main: '#1976d2' },
-    secondary: { main: '#dc004e' },
+    primary: { main: "#1976d2" },
+    secondary: { main: "#dc004e" },
   },
-  typography: { fontFamily: 'Roboto, sans-serif' },
+  typography: { fontFamily: "Roboto, sans-serif" },
 });
 
 function App() {
@@ -26,7 +26,7 @@ function App() {
           await refreshToken(dispatch);
         } catch (error) {
           console.error("Token refresh failed:", error);
-          dispatch({ type: 'LOGOUT' });
+          dispatch({ type: "LOGOUT" });
         }
       }
     };
