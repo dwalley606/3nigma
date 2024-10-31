@@ -16,19 +16,17 @@ import Contacts from "./components/Contacts/Contacts";
 import Error from "./pages/Error";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
 import Chat from "./components/Chat/Chat";
-import GroupChat from "./components/GroupChat/GroupChat"; // Import GroupChat component
-import AddUserToGroup from "./components/AddUserToGroup/AddUserToGroup"; // Import AddUserToGroup component
-import LeaveGroup from "./components/LeaveGroup/LeaveGroup"; // Import LeaveGroup component
+import GroupChat from "./components/GroupChat/GroupChat";
+import AddUserToGroup from "./components/AddUserToGroup/AddUserToGroup";
+import LeaveGroup from "./components/LeaveGroup/LeaveGroup";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute.jsx";
-import { AuthProvider } from "./context/auth/AuthContext.jsx";
+import { StoreProvider } from "./context/StoreProvider";
 import {
   ApolloClient,
   InMemoryCache,
   ApolloProvider,
   createHttpLink,
 } from "@apollo/client";
-import { MessageProvider } from "./context/message/MessageContext";
-import { ViewProvider } from "./context/view/ViewContext"; // Import ViewProvider
 
 import { setContext } from "@apollo/client/link/context";
 
@@ -125,12 +123,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <ApolloProvider client={client}>
-    <AuthProvider>
-      <ViewProvider>
-        <MessageProvider>
-          <RouterProvider router={router} />
-        </MessageProvider>
-      </ViewProvider>
-    </AuthProvider>
+    <StoreProvider>
+      <RouterProvider router={router} />
+    </StoreProvider>
   </ApolloProvider>
 );

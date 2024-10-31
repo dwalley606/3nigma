@@ -1,13 +1,7 @@
 // src/context/message/MessageContext.jsx
-import { createContext, useReducer, useContext } from "react";
-import messageReducer from "./messageReducer"; // Import the reducer
-import {
-  ADD_MESSAGE,
-  REMOVE_MESSAGE,
-  SET_MESSAGES,
-  SET_ERROR,
-  CLEAR_ERROR,
-} from "./messageActions"; // Import action types
+import { createContext, useReducer } from "react";
+import messageReducer from "./messageReducer";
+import { ADD_MESSAGE, REMOVE_MESSAGE, SET_MESSAGES, SET_ERROR, CLEAR_ERROR } from "./messageActions";
 
 const initialState = {
   messages: [],
@@ -24,9 +18,4 @@ export const MessageProvider = ({ children }) => {
       {children}
     </MessageContext.Provider>
   );
-};
-
-// Custom hook to use the MessageContext
-export const useMessages = () => {
-  return useContext(MessageContext);
 };

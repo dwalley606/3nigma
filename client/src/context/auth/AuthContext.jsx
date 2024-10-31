@@ -1,11 +1,11 @@
-import { createContext, useReducer, useContext, useEffect } from "react";
-import authReducer from "./authReducer"; // Import the reducer from authReducer.js
-import { LOGIN, LOGOUT, UPDATE_USER, REFRESH_TOKEN, SET_ERROR, CLEAR_ERROR } from "./authActions"; // Import action types
+import { createContext, useReducer, useEffect } from "react";
+import authReducer from "./authReducer";
+import { LOGIN, LOGOUT, UPDATE_USER, REFRESH_TOKEN, SET_ERROR, CLEAR_ERROR } from "./authActions";
 
 const initialState = {
   authToken: localStorage.getItem("authToken") || null,
   user: JSON.parse(localStorage.getItem("user")) || null,
-  error: null, // Include error in the initial state
+  error: null,
 };
 
 const AuthContext = createContext();
@@ -23,9 +23,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-// Custom hook to use the AuthContext
-export const useAuth = () => {
-  return useContext(AuthContext);
 };

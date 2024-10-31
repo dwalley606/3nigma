@@ -1,4 +1,4 @@
-import { createContext, useReducer, useContext } from "react";
+import { createContext, useReducer } from "react";
 import viewReducer from "./viewReducer";
 
 const initialState = {
@@ -15,9 +15,4 @@ export const ViewProvider = ({ children }) => {
       {children}
     </ViewContext.Provider>
   );
-};
-
-// Custom hook to use the ViewContext
-export const useView = () => {
-  return useContext(ViewContext);
 };

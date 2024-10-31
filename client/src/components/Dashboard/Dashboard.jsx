@@ -1,4 +1,4 @@
-import { useAuth } from "../../context/auth/AuthContext";
+import { useAuth } from "../../context/StoreProvider";
 import { useQuery } from "@apollo/client";
 import { GET_CONVERSATIONS } from "../../graphql/queries/getConversations";
 import MessageList from "../MessageList/MessageList";
@@ -7,7 +7,7 @@ import GroupChat from "../GroupChat/GroupChat";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
-import { useView } from "../../context/view/ViewContext";
+import { useView } from "../../context/StoreProvider";
 import { SET_CHAT_ACTIVE } from "../../context/view/viewActions";
 
 const Dashboard = () => {
