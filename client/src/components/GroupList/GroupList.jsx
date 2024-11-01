@@ -1,8 +1,9 @@
 // src/components/GroupList/GroupList.jsx
-import { useQuery } from "@apollo/client";
+import React, { useState } from "react";
+import { useGroups } from "../../context/StoreProvider";
 import { useAuth } from "../../context/StoreProvider";
-import { useView } from "../../context/StoreProvider";
-import { GET_GROUP_CONVERSATIONS } from "../../graphql/queries/getGroupConversations";
+import { useQuery } from "@apollo/client";
+import { GET_GROUP_DETAILS } from "../../graphql/queries/getGroupDetails";
 import {
   Box,
   List,
@@ -12,62 +13,71 @@ import {
   Button,
   Stack,
 } from "@mui/material";
-import GroupChat from "../GroupChat/GroupChat";
 import GroupOptions from "../GroupOptions/GroupOptions";
-import {
-  setGroupChatActive,
-  setCurrentGroup,
-  setViewComponent,
-} from "../../context/view/viewActions";
+import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
 
 const GroupList = () => {
+  const { state: groupState, actions } = useGroups();
   const { state: authState } = useAuth();
-  const { state: viewState, dispatch } = useView();
-  const { loading, error, data } = useQuery(GET_GROUP_CONVERSATIONS, {
+  const { loading, error, data } = useQuery(GET_GROUP_DETAILS, {
     variables: { userId: authState.user.id },
     fetchPolicy: "network-only",
   });
+
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [isGroupOptionsOpen, setIsGroupOptionsOpen] = useState(false);
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
   if (loading) return <Typography>Loading groups...</Typography>;
   if (error)
     return <Typography>Error loading groups: {error.message}</Typography>;
 
-  const groups = data?.getConversations.filter((convo) => convo.isGroup) || [];
+  const groups = data?.getGroupDetails || [];
 
   const handleGroupClick = (group) => {
-    dispatch(setCurrentGroup(group));
-    dispatch(setViewComponent("GroupOptions"));
+    setSelectedGroup(group);
+    setIsGroupOptionsOpen(true);
+  };
+
+  const handleCloseGroupOptions = () => {
+    setIsGroupOptionsOpen(false);
+    setSelectedGroup(null);
+    setIsAddUserOpen(false);
+  };
+
+  const handleAddUserClick = () => {
+    setIsAddUserOpen(true);
+    setIsGroupOptionsOpen(false);
+  };
+
+  const handleUserAdded = () => {
+    setIsAddUserOpen(false);
+    setIsGroupOptionsOpen(true);
+  };
+
+  const handleGroupLeft = (groupId) => {
+    actions.removeGroup(groupId);
   };
 
   return (
     <Box sx={{ padding: 2 }}>
-      {viewState.isChatActive ? (
-        <Box>
-          <Button onClick={() => dispatch(setGroupChatActive(false))}>
-            Back to Groups
-          </Button>
-          <GroupChat conversation={viewState.currentGroup} />
-        </Box>
-      ) : (
+      {!isGroupOptionsOpen && !isAddUserOpen ? (
         <>
           <Typography variant="h6">Your Groups</Typography>
           <List>
-            {groups.map((group) => (
-              <ListItem key={group.id} onClick={() => handleGroupClick(group)}>
+            {groupState.groups.map((group) => (
+              <ListItem
+                key={group.id}
+                onClick={() => handleGroupClick(group)}
+                button
+              >
                 <ListItemText
                   primary={group.name}
                   secondary={
                     group.lastMessage ? (
-                      <div>
-                        <Typography variant="body2" color="textSecondary">
-                          {group.lastMessage.content}
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          {new Date(
-                            parseInt(group.lastMessage.timestamp)
-                          ).toLocaleString()}
-                        </Typography>
-                      </div>
+                      <Typography variant="body2" color="textSecondary">
+                        {group.lastMessage.content}
+                      </Typography>
                     ) : (
                       <Typography variant="caption" color="textSecondary">
                         No messages yet
@@ -76,18 +86,32 @@ const GroupList = () => {
                   }
                 />
                 <Stack direction="row" spacing={1} sx={{ marginTop: 1 }}>
-                  <Button onClick={() => handleGroupClick(group)}>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleGroupClick(group);
+                    }}
+                  >
                     Options
                   </Button>
                 </Stack>
               </ListItem>
             ))}
           </List>
-          {viewState.currentViewComponent === "GroupOptions" && (
-            <GroupOptions groupId={viewState.currentGroup.id} />
-          )}
         </>
-      )}
+      ) : isGroupOptionsOpen && selectedGroup ? (
+        <GroupOptions
+          group={selectedGroup}
+          onClose={handleCloseGroupOptions}
+          onAddUser={handleAddUserClick}
+          onGroupLeft={handleGroupLeft}
+        />
+      ) : isAddUserOpen && selectedGroup ? (
+        <AddUserToGroup
+          groupId={selectedGroup.id}
+          onUserAdded={handleUserAdded}
+        />
+      ) : null}
     </Box>
   );
 };

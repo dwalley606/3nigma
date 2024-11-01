@@ -3,7 +3,7 @@ const typeDefs = `
     id: ID!
     username: String!
     email: String!
-    phoneNumber: String!
+    phoneNumber: String
     groups: [Group]
     publicKey: String!
     lastSeen: String!
@@ -64,6 +64,15 @@ const typeDefs = `
     user: User!
   }
 
+  type GroupDetails {
+  id: ID!
+  name: String!
+  lastMessage: Message
+  admins: [User!]!
+  members: [User!]!
+  isGroup: Boolean!
+}
+
   type Query {
     getContacts(userId: ID!): [User!]!
     getConversations(userId: ID!): [Conversation!]!
@@ -75,7 +84,8 @@ const typeDefs = `
     getContactRequests(userId: ID!): [ContactRequest!]!
     getUserGroups(userId: ID!): [Group]
     getConversation(userId: ID!, otherUserId: ID!): [Message!]!
-    getGroupConversations(userId: ID!): [Conversation!]! 
+    getGroupConversations(userId: ID!): [Conversation!]!
+    getGroupDetails(userId: ID!): [GroupDetails!]! 
   }
 
   type Mutation {

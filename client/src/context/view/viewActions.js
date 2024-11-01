@@ -3,24 +3,30 @@ export const SET_CHAT_ACTIVE = "SET_CHAT_ACTIVE";
 export const SET_GROUP_CHAT_ACTIVE = "SET_GROUP_CHAT_ACTIVE";
 export const SET_CURRENT_GROUP = "SET_CURRENT_GROUP";
 export const SET_VIEW_COMPONENT = "SET_VIEW_COMPONENT";
+export const SET_GROUP_OPTIONS_OPEN = "SET_GROUP_OPTIONS_OPEN";
+export const SET_GROUP_OPTIONS_CLOSED = "SET_GROUP_OPTIONS_CLOSED";
+export const SET_ADD_USER = "SET_ADD_USER";
+export const SET_LEAVE_GROUP = "SET_LEAVE_GROUP";
+
 // Action creators
-export const setChatActive = (isActive) => ({
-  type: SET_CHAT_ACTIVE,
-  payload: isActive,
+export const setGroupOptionsOpen = (group) => ({
+  type: SET_GROUP_OPTIONS_OPEN,
+  payload: group,
 });
 
-export const setGroupChatActive = (isActive) => ({
-  type: SET_GROUP_CHAT_ACTIVE,
-  payload: isActive,
+export const setGroupOptionsClosed = () => ({
+  type: SET_GROUP_OPTIONS_CLOSED,
+});
+
+export const setAddUser = () => ({
+  type: SET_ADD_USER,
+});
+
+export const setLeaveGroup = () => ({
+  type: SET_LEAVE_GROUP,
 });
 
 export const setCurrentGroup = (group) => ({
   type: SET_CURRENT_GROUP,
   payload: group,
-});
-
-// New action creator for setting the current view component
-export const setViewComponent = (component) => ({
-  type: SET_VIEW_COMPONENT,
-  payload: component,
 });

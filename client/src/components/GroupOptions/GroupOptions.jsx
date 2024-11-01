@@ -1,23 +1,21 @@
 import React, { useState } from "react";
-import { Box, Button, Typography, List, ListItem, ListItemText } from "@mui/material";
-import { useView } from "../../context/StoreProvider"; // Import useView to access global state
+import { Box, Button, Typography, List, ListItem } from "@mui/material";
+import LeaveGroup from "../LeaveGroup/LeaveGroup"; // Import LeaveGroup component
+import { useAuth } from "../../context/StoreProvider"; // Import useAuth to get userId
 
-const GroupOptions = ({ groupId, admins, members }) => {
-  const { dispatch } = useView();
-  const [isOptionsVisible, setOptionsVisible] = useState(false);
-
-  const toggleOptionsVisibility = () => {
-    setOptionsVisible(!isOptionsVisible);
-  };
-
-  const handleAddGroupMember = () => {
-    // Logic to add a group member
-    console.log(`Add member to group with ID: ${groupId}`);
-  };
+const GroupOptions = ({
+  group,
+  onClose,
+  onAddUser,
+  onLeaveGroup,
+  activeAction,
+  onGroupLeft, // Callback to notify when the group is left
+}) => {
+  const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false); // State to manage LeaveGroup dialog
+  const { state: authState } = useAuth(); // Get userId from auth state
 
   const handleLeaveGroup = () => {
-    // Logic to leave the group
-    console.log(`Leave group with ID: ${groupId}`);
+    setIsLeaveGroupOpen(true); // Open LeaveGroup dialog
   };
 
   return (
@@ -29,38 +27,46 @@ const GroupOptions = ({ groupId, admins, members }) => {
         marginTop: 1,
       }}
     >
-      <Typography variant="h6" onClick={toggleOptionsVisibility} sx={{ cursor: "pointer" }}>
-        Group Options
-      </Typography>
-      {isOptionsVisible && (
-        <>
-          <Typography variant="subtitle1">Admins</Typography>
-          <List>
-            {admins.map((admin) => (
-              <ListItem key={admin.id}>
-                <ListItemText primary={admin.name} />
-              </ListItem>
-            ))}
-          </List>
-          <Typography variant="subtitle1">Members</Typography>
-          <List>
-            {members.map((member) => (
-              <ListItem key={member.id}>
-                <ListItemText primary={member.name} />
-              </ListItem>
-            ))}
-          </List>
-          <Box
-            sx={{ display: "flex", justifyContent: "space-between", marginTop: 1 }}
-          >
-            <Button variant="contained" color="primary" onClick={handleAddGroupMember}>
-              Add Group Member
-            </Button>
-            <Button variant="contained" color="secondary" onClick={handleLeaveGroup}>
-              Leave Group
-            </Button>
-          </Box>
-        </>
+      <Typography variant="h6">Group Options for {group.name}</Typography>
+      <Typography variant="subtitle1">Admins:</Typography>
+      <List>
+        {group.admins.map((admin) => (
+          <ListItem key={admin.id}>
+            <Typography>{admin.username}</Typography>
+          </ListItem>
+        ))}
+      </List>
+      <Typography variant="subtitle1">Members:</Typography>
+      <List>
+        {group.members.map((member) => (
+          <ListItem key={member.id}>
+            <Typography>{member.username}</Typography>
+          </ListItem>
+        ))}
+      </List>
+
+      <Button variant="contained" color="primary" onClick={onAddUser}>
+        Add User
+      </Button>
+      <Button variant="contained" color="error" onClick={handleLeaveGroup}>
+        Leave Group
+      </Button>
+      <Button variant="outlined" onClick={onClose}>
+        Close
+      </Button>
+
+      {/* Render LeaveGroup dialog */}
+      {isLeaveGroupOpen && (
+        <LeaveGroup
+          groupName={group.name}
+          groupId={group.id}
+          userId={authState.user.id} // Pass userId to LeaveGroup
+          onClose={() => {
+            setIsLeaveGroupOpen(false);
+            onClose(); // Close GroupOptions after leaving
+            onGroupLeft(); // Notify GroupList to refresh
+          }}
+        />
       )}
     </Box>
   );

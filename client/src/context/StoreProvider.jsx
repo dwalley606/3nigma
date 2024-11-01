@@ -2,21 +2,7 @@ import React, { createContext, useReducer, useContext, useEffect } from "react";
 import authReducer from "./auth/authReducer";
 import messageReducer from "./message/messageReducer";
 import viewReducer from "./view/viewReducer";
-import {
-  LOGIN,
-  LOGOUT,
-  UPDATE_USER,
-  REFRESH_TOKEN,
-  SET_ERROR as SET_AUTH_ERROR,
-  CLEAR_ERROR as CLEAR_AUTH_ERROR,
-} from "./auth/authActions";
-import {
-  ADD_MESSAGE,
-  REMOVE_MESSAGE,
-  SET_MESSAGES,
-  SET_ERROR as SET_MESSAGE_ERROR,
-  CLEAR_ERROR as CLEAR_MESSAGE_ERROR,
-} from "./message/messageActions";
+import groupReducer from "./groups/groupReducer";
 
 // Initial states
 const initialAuthState = {
@@ -37,18 +23,24 @@ const initialViewState = {
   setGroupChatActive: null,
 };
 
+const initialGroupState = {
+  groups: [],
+};
+
 // Combine initial states
 const initialState = {
   auth: initialAuthState,
   message: initialMessageState,
   view: initialViewState,
+  group: initialGroupState,
 };
 
 // Combine reducers
-const rootReducer = ({ auth, message, view }, action) => ({
+const rootReducer = ({ auth, message, view, group }, action) => ({
   auth: authReducer(auth, action),
   message: messageReducer(message, action),
   view: viewReducer(view, action),
+  group: groupReducer(group, action),
 });
 
 const StoreContext = createContext();
@@ -86,4 +78,9 @@ export const useMessages = () => {
 export const useView = () => {
   const { state, dispatch } = useStore();
   return { state: state.view, dispatch };
+};
+
+export const useGroups = () => {
+  const { state, dispatch } = useStore();
+  return { state: state.group, dispatch };
 };

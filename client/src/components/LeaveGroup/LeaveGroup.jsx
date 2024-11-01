@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 
-const LeaveGroup = ({ groupName, groupId, onClose }) => {
+const LeaveGroup = ({ groupName, groupId, userId, onClose }) => {
   const [open, setOpen] = React.useState(true);
 
   const [removeGroupMember] = useMutation(REMOVE_GROUP_MEMBER, {
@@ -26,7 +26,7 @@ const LeaveGroup = ({ groupName, groupId, onClose }) => {
   });
 
   const handleLeaveGroup = () => {
-    removeGroupMember({ variables: { groupId } });
+    removeGroupMember({ variables: { groupId, userId } });
   };
 
   const handleCancel = () => {

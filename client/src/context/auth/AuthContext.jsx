@@ -1,6 +1,5 @@
 import { createContext, useReducer, useEffect } from "react";
 import authReducer from "./authReducer";
-import { LOGIN, LOGOUT, UPDATE_USER, REFRESH_TOKEN, SET_ERROR, CLEAR_ERROR } from "./authActions";
 
 const initialState = {
   authToken: localStorage.getItem("authToken") || null,
