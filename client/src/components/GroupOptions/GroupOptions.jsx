@@ -1,24 +1,23 @@
-import React from "react";
-import { Box, Button, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Button, Typography, List, ListItem, ListItemText } from "@mui/material";
 import { useView } from "../../context/StoreProvider"; // Import useView to access global state
-import { setViewComponent } from "../../context/view/viewActions"; // Import action to change view
 
-const GroupOptions = ({ groupId }) => {
+const GroupOptions = ({ groupId, admins, members }) => {
   const { dispatch } = useView();
+  const [isOptionsVisible, setOptionsVisible] = useState(false);
 
-  const handleEditGroup = () => {
-    // Logic to edit the group (e.g., open a modal or navigate to an edit page)
-    console.log(`Edit group with ID: ${groupId}`);
+  const toggleOptionsVisibility = () => {
+    setOptionsVisible(!isOptionsVisible);
+  };
+
+  const handleAddGroupMember = () => {
+    // Logic to add a group member
+    console.log(`Add member to group with ID: ${groupId}`);
   };
 
   const handleLeaveGroup = () => {
     // Logic to leave the group
     console.log(`Leave group with ID: ${groupId}`);
-  };
-
-  const handleDeleteGroup = () => {
-    // Logic to delete the group
-    console.log(`Delete group with ID: ${groupId}`);
   };
 
   return (
@@ -30,24 +29,39 @@ const GroupOptions = ({ groupId }) => {
         marginTop: 1,
       }}
     >
-      <Typography variant="h6">Group Options</Typography>
-      <Box
-        sx={{ display: "flex", justifyContent: "space-between", marginTop: 1 }}
-      >
-        <Button variant="contained" color="primary" onClick={handleEditGroup}>
-          Edit Group
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleLeaveGroup}
-        >
-          Leave Group
-        </Button>
-        <Button variant="contained" color="error" onClick={handleDeleteGroup}>
-          Delete Group
-        </Button>
-      </Box>
+      <Typography variant="h6" onClick={toggleOptionsVisibility} sx={{ cursor: "pointer" }}>
+        Group Options
+      </Typography>
+      {isOptionsVisible && (
+        <>
+          <Typography variant="subtitle1">Admins</Typography>
+          <List>
+            {admins.map((admin) => (
+              <ListItem key={admin.id}>
+                <ListItemText primary={admin.name} />
+              </ListItem>
+            ))}
+          </List>
+          <Typography variant="subtitle1">Members</Typography>
+          <List>
+            {members.map((member) => (
+              <ListItem key={member.id}>
+                <ListItemText primary={member.name} />
+              </ListItem>
+            ))}
+          </List>
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", marginTop: 1 }}
+          >
+            <Button variant="contained" color="primary" onClick={handleAddGroupMember}>
+              Add Group Member
+            </Button>
+            <Button variant="contained" color="secondary" onClick={handleLeaveGroup}>
+              Leave Group
+            </Button>
+          </Box>
+        </>
+      )}
     </Box>
   );
 };
