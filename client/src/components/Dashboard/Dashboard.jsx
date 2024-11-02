@@ -83,7 +83,8 @@ const Dashboard = () => {
           onBack={() => setSelectedConversation(null)}
         />
       )}
-      <BottomNav />
+
+      {!viewState.isChatActive && <BottomNav />}
     </Box>
   );
 };

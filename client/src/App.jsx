@@ -1,32 +1,24 @@
-import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
-import NavBar from "./components/NavBar/NavBar";
-import { useAuth } from "./context/StoreProvider";
-import CssBaseline from "@mui/material/CssBaseline";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { loggedIn, refreshToken } from "./utils/auth";
-
-// Define your custom theme
-const theme = createTheme({
-  palette: {
-    primary: { main: "#1976d2" },
-    secondary: { main: "#dc004e" },
-  },
-  typography: { fontFamily: "Roboto, sans-serif" },
-});
+import React from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { Outlet } from 'react-router-dom';
+import NavBar from './components/NavBar/NavBar';
+import { useAuth } from './context/StoreProvider';
+import { loggedIn, refreshToken } from './utils/auth';
+import cyberpunkTheme from './theme/cyberpunkTheme'; // Import your theme
 
 function App() {
   const { state, dispatch } = useAuth();
 
-  useEffect(() => {
+  React.useEffect(() => {
     const checkToken = async () => {
       const token = state.authToken;
       if (!loggedIn(token)) {
         try {
           await refreshToken(dispatch);
         } catch (error) {
-          console.error("Token refresh failed:", error);
-          dispatch({ type: "LOGOUT" });
+          console.error('Token refresh failed:', error);
+          dispatch({ type: 'LOGOUT' });
         }
       }
     };
@@ -35,10 +27,12 @@ function App() {
   }, [state.authToken, dispatch]);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={cyberpunkTheme}>
       <CssBaseline />
       <NavBar />
-      <Outlet /> {/* Render child routes */}
+      <div style={{ marginTop: '10vh' }}>
+        <Outlet />
+      </div>
     </ThemeProvider>
   );
 }

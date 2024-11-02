@@ -94,13 +94,14 @@ const typeDefs = `
     sendDirectMessage(recipientId: ID!, content: String!): Message!
     sendGroupMessage(groupId: ID!, content: String!): Message!
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!
-    respondContactRequest(requestId: ID!, status: String!): ContactRequest!   
+    respondContactRequest(requestId: ID!, status: String!): ContactRequest!
     createGroup(name: String!, memberIds: [ID!]!): Group!
     addUserToGroup(groupId: ID!, userId: ID!): Group!
     removeGroupMember(groupId: ID!, userId: ID!): Group!
     deleteMessage(messageId: ID!, forEveryone: Boolean!): Boolean!
     markMessagesAsRead(conversationId: ID!): Boolean!
     refreshToken(refreshToken: String!): AuthPayload
+    promoteToAdmin(groupId: ID!, userId: ID!): Group!
   }
 `;
 

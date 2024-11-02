@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, Typography, List, ListItem } from "@mui/material";
+import { Box, Button, Typography, List, ListItem, Stack } from "@mui/material";
 import LeaveGroup from "../LeaveGroup/LeaveGroup"; // Import LeaveGroup component
 import { useAuth } from "../../context/StoreProvider"; // Import useAuth to get userId
 
@@ -27,33 +27,50 @@ const GroupOptions = ({
         marginTop: 1,
       }}
     >
-      <Typography variant="h6">Group Options for {group.name}</Typography>
-      <Typography variant="subtitle1">Admins:</Typography>
+      <Typography
+        variant="h5" // Increase font size
+        sx={{ textAlign: "center", marginBottom: 2 }} // Center title
+      >
+        Group Options for {group.name}
+      </Typography>
+      <Typography
+        variant="h6"
+        sx={{ textAlign: "left", fontSize: "1.2rem", marginBottom: 1 }} // Align left and increase font size
+      >
+        Admins:
+      </Typography>
       <List>
         {group.admins.map((admin) => (
-          <ListItem key={admin.id}>
-            <Typography>{admin.username}</Typography>
+          <ListItem key={admin.id} sx={{ justifyContent: "center" }}> {/* Center usernames */}
+            <Typography sx={{ fontSize: "1.1rem" }}>{admin.username}</Typography> {/* Increase font size */}
           </ListItem>
         ))}
       </List>
-      <Typography variant="subtitle1">Members:</Typography>
+      <Typography
+        variant="h6"
+        sx={{ textAlign: "left", fontSize: "1.2rem", marginBottom: 1 }} // Align left and increase font size
+      >
+        Members:
+      </Typography>
       <List>
         {group.members.map((member) => (
-          <ListItem key={member.id}>
-            <Typography>{member.username}</Typography>
+          <ListItem key={member.id} sx={{ justifyContent: "center" }}> {/* Center usernames */}
+            <Typography sx={{ fontSize: "1.1rem" }}>{member.username}</Typography> {/* Increase font size */}
           </ListItem>
         ))}
       </List>
 
-      <Button variant="contained" color="primary" onClick={onAddUser}>
-        Add User
-      </Button>
-      <Button variant="contained" color="error" onClick={handleLeaveGroup}>
-        Leave Group
-      </Button>
-      <Button variant="outlined" onClick={onClose}>
-        Close
-      </Button>
+      <Stack direction="row" justifyContent="center" spacing={2} sx={{ marginTop: 2 }}>
+        <Button variant="contained" color="primary" onClick={onAddUser} sx={{ fontSize: "1rem" }}>
+          Add User
+        </Button>
+        <Button variant="contained" color="error" onClick={handleLeaveGroup} sx={{ fontSize: "1rem" }}>
+          Leave Group
+        </Button>
+        <Button variant="outlined" onClick={onClose} sx={{ fontSize: "1rem" }}>
+          Close
+        </Button>
+      </Stack>
 
       {/* Render LeaveGroup dialog */}
       {isLeaveGroupOpen && (

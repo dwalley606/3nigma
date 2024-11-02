@@ -45,10 +45,26 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav
+      className="navbar"
+      style={{
+        margin: 0,
+        padding: 0,
+        width: "100%",
+        boxSizing: "border-box",
+      }}
+    >
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
+        <AppBar
+          position="fixed"
+          sx={{
+            height: "10vh",
+            top: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
+          <Toolbar sx={{ height: "100%" }}>
             {viewState.isChatActive && (
               <IconButton
                 size="large"

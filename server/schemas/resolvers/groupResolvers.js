@@ -133,6 +133,7 @@ export const groupResolvers = {
         const newGroup = new Group({
           name,
           members: memberIds,
+          admins: [context.user.id], // Automatically assign the creator as an admin
           createdAt: new Date().toISOString(),
         });
 
@@ -200,34 +201,62 @@ export const groupResolvers = {
       }
     },
 
+    promoteToAdmin: async (_, { groupId, userId }, context) => {
+      if (!context.user) {
+        throw new Error("You must be logged in to promote a member to admin.");
+      }
+      try {
+        const group = await Group.findById(groupId);
+        if (!group) throw new Error("Group not found");
+
+        // Check if the current user is an admin
+        if (!group.admins.includes(context.user.id)) {
+          throw new Error("You must be an admin to promote members");
+        }
+
+        // Check if the user to be promoted is a member
+        if (!group.members.includes(userId)) {
+          throw new Error("User is not a member of the group");
+        }
+
+        // Promote the user to admin
+        group.admins.push(userId);
+        await group.save();
+
+        return group;
+      } catch (error) {
+        console.error("Error promoting member to admin:", error);
+        throw new Error("Failed to promote member to admin");
+      }
+    },
+
     removeGroupMember: async (_, { groupId, userId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to remove a group member.");
       }
       try {
-        // Remove user from the group
-        const group = await Group.findByIdAndUpdate(
-          groupId,
-          { $pull: { members: userId } },
-          { new: true }
-        ).populate("members", "username email");
+        const group = await Group.findById(groupId);
+        if (!group) throw new Error("Group not found");
 
-        if (!group) {
-          throw new Error("Group not found");
+        // Check if the user is an admin
+        const isAdmin = group.admins.includes(userId);
+
+        // Remove the user from members
+        group.members = group.members.filter((memberId) => memberId !== userId);
+
+        if (isAdmin) {
+          // Remove the user from admins
+          group.admins = group.admins.filter((adminId) => adminId !== userId);
+
+          // Promote another member to admin if no admins left
+          if (group.admins.length === 0 && group.members.length > 0) {
+            group.admins.push(group.members[0]); // Promote the first member to admin
+          }
         }
 
-        // Update the user's groups field
-        await User.findByIdAndUpdate(userId, { $pull: { groups: groupId } });
+        await group.save();
 
-        return {
-          id: group._id.toString(),
-          name: group.name,
-          members: group.members.map((member) => ({
-            id: member._id.toString(),
-            username: member.username,
-          })),
-          createdAt: group.createdAt,
-        };
+        return group;
       } catch (error) {
         console.error("Error removing group member:", error);
         throw new Error("Failed to remove group member");

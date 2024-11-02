@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import GroupOptions from "../GroupOptions/GroupOptions";
 import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
+import BottomNav from "../BottomNav/BottomNav";
 
 const GroupList = () => {
   const { state: groupState, dispatch } = useGroups();
@@ -118,6 +119,7 @@ const GroupList = () => {
           onUserAdded={handleUserAdded}
         />
       ) : null}
+      <BottomNav />
     </Box>
   );
 };

@@ -6,6 +6,7 @@ import { useQuery } from "@apollo/client";
 import { GET_CONTACTS } from "../../graphql/queries/getContacts";
 import AddContact from "../AddContact/AddContact";
 import ContactRequests from "./ContactRequests";
+import BottomNav from "../BottomNav/BottomNav";
 import {
   Typography,
   Button,
@@ -76,6 +77,7 @@ const Contacts = () => {
           requestedUserIds={new Set()} // Adjust as needed
         />
       )}
+      <BottomNav />
     </Box>
   );
 };
