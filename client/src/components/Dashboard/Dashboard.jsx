@@ -9,6 +9,8 @@ import Box from "@mui/material/Box";
 import { useState, useEffect } from "react";
 import { useView } from "../../context/StoreProvider";
 import { SET_CHAT_ACTIVE } from "../../context/view/viewActions";
+import BottomNav from "../BottomNav/BottomNav";
+
 
 const Dashboard = () => {
   const { state: authState } = useAuth();
@@ -81,6 +83,7 @@ const Dashboard = () => {
           onBack={() => setSelectedConversation(null)}
         />
       )}
+      <BottomNav />
     </Box>
   );
 };

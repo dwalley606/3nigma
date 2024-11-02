@@ -1,9 +1,11 @@
 // src/components/GroupList/GroupList.jsx
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGroups } from "../../context/StoreProvider";
 import { useAuth } from "../../context/StoreProvider";
 import { useQuery } from "@apollo/client";
 import { GET_GROUP_DETAILS } from "../../graphql/queries/getGroupDetails";
+import { setGroups } from "../../context/groups/groupActions";
+import { removeGroup } from "../../context/groups/groupActions";
 import {
   Box,
   List,
@@ -17,7 +19,7 @@ import GroupOptions from "../GroupOptions/GroupOptions";
 import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
 
 const GroupList = () => {
-  const { state: groupState, actions } = useGroups();
+  const { state: groupState, dispatch } = useGroups();
   const { state: authState } = useAuth();
   const { loading, error, data } = useQuery(GET_GROUP_DETAILS, {
     variables: { userId: authState.user.id },
@@ -28,11 +30,15 @@ const GroupList = () => {
   const [isGroupOptionsOpen, setIsGroupOptionsOpen] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
+  useEffect(() => {
+    if (data && data.getGroupDetails) {
+      dispatch(setGroups(data.getGroupDetails));
+    }
+  }, [data, dispatch]);
+
   if (loading) return <Typography>Loading groups...</Typography>;
   if (error)
     return <Typography>Error loading groups: {error.message}</Typography>;
-
-  const groups = data?.getGroupDetails || [];
 
   const handleGroupClick = (group) => {
     setSelectedGroup(group);
@@ -56,7 +62,7 @@ const GroupList = () => {
   };
 
   const handleGroupLeft = (groupId) => {
-    actions.removeGroup(groupId);
+    dispatch(removeGroup(groupId));
   };
 
   return (

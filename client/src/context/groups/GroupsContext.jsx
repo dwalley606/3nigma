@@ -1,5 +1,6 @@
 import { createContext, useReducer, useContext } from "react";
-import { groupReducer } from "./groupReducer";
+import groupReducer from "./groupReducer";
+import { setGroups } from "./groupActions"; // Ensure this import is correct
 
 const initialState = {
   groups: [],
