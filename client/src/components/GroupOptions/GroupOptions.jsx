@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Box, Button, Typography, List, ListItem, Stack } from "@mui/material";
+import { Box, Button, Typography, List, ListItem, Stack, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import LeaveGroup from "../LeaveGroup/LeaveGroup"; // Import LeaveGroup component
 import { useAuth } from "../../context/StoreProvider"; // Import useAuth to get userId
+import { useMutation } from '@apollo/client';
+import { PROMOTE_TO_ADMIN } from '../../graphql/mutations/promoteToAdmin';
 
 const GroupOptions = ({
   group,
@@ -12,10 +14,30 @@ const GroupOptions = ({
   onGroupLeft, // Callback to notify when the group is left
 }) => {
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false); // State to manage LeaveGroup dialog
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false); // State to manage error dialog
+  const [errorMessage, setErrorMessage] = useState(""); // State to store error message
   const { state: authState } = useAuth(); // Get userId from auth state
+  const [promoteToAdmin, { loading }] = useMutation(PROMOTE_TO_ADMIN, {
+    onCompleted: (data) => {
+      console.log('Promotion successful:', data);
+    },
+    onError: (error) => {
+      console.error('Error promoting to admin:', error);
+      setErrorMessage(error.message); // Set error message
+      setErrorDialogOpen(true); // Open error dialog
+    },
+  });
 
   const handleLeaveGroup = () => {
     setIsLeaveGroupOpen(true); // Open LeaveGroup dialog
+  };
+
+  const handlePromote = (userId) => {
+    promoteToAdmin({ variables: { groupId: group.id, userId } });
+  };
+
+  const handleCloseErrorDialog = () => {
+    setErrorDialogOpen(false); // Close error dialog
   };
 
   return (
@@ -56,6 +78,14 @@ const GroupOptions = ({
         {group.members.map((member) => (
           <ListItem key={member.id} sx={{ justifyContent: "center" }}> {/* Center usernames */}
             <Typography sx={{ fontSize: "1.1rem" }}>{member.username}</Typography> {/* Increase font size */}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handlePromote(member.id)}
+              disabled={loading}
+            >
+              Promote to Admin
+            </Button>
           </ListItem>
         ))}
       </List>
@@ -85,6 +115,26 @@ const GroupOptions = ({
           }}
         />
       )}
+
+      {/* Error Dialog */}
+      <Dialog
+        open={errorDialogOpen}
+        onClose={handleCloseErrorDialog}
+        aria-labelledby="error-dialog-title"
+        aria-describedby="error-dialog-description"
+      >
+        <DialogTitle id="error-dialog-title">Error</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="error-dialog-description">
+            {errorMessage}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseErrorDialog} color="primary" autoFocus>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

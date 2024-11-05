@@ -219,11 +219,32 @@ export const groupResolvers = {
           throw new Error("User is not a member of the group");
         }
 
+        // Check if the user is already an admin
+        if (group.admins.includes(userId)) {
+          throw new Error("User is already an admin");
+        }
+
         // Promote the user to admin
         group.admins.push(userId);
         await group.save();
 
-        return group;
+        // Populate the group with member and admin details
+        const updatedGroup = await Group.findById(groupId)
+          .populate("admins", "_id username") // Ensure _id is included
+          .populate("members", "_id username"); // Ensure _id is included
+
+        return {
+          id: updatedGroup._id.toString(),
+          name: updatedGroup.name,
+          admins: updatedGroup.admins.map((admin) => ({
+            id: admin._id.toString(), // Convert ObjectId to string
+            username: admin.username,
+          })),
+          members: updatedGroup.members.map((member) => ({
+            id: member._id.toString(), // Convert ObjectId to string
+            username: member.username,
+          })),
+        };
       } catch (error) {
         console.error("Error promoting member to admin:", error);
         throw new Error("Failed to promote member to admin");
@@ -256,7 +277,16 @@ export const groupResolvers = {
 
         await group.save();
 
-        return group;
+        return {
+          id: group._id.toString(),
+          name: group.name,
+          admins: group.admins.map((adminId) => ({
+            id: adminId.toString(),
+          })),
+          members: group.members.map((memberId) => ({
+            id: memberId.toString(),
+          })),
+        };
       } catch (error) {
         console.error("Error removing group member:", error);
         throw new Error("Failed to remove group member");
