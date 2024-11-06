@@ -11,15 +11,13 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
-import GroupList from "./components/GroupList/GroupList";
+import Groups from "./pages/Groups";
 import Contacts from "./components/Contacts/Contacts";
 import Error from "./pages/Error";
 import Dashboard from "./components/Dashboard/Dashboard.jsx";
-import Chat from "./components/Chat/Chat";
-import GroupChat from "./components/GroupChat/GroupChat";
 import AddUserToGroup from "./components/AddUserToGroup/AddUserToGroup";
-import LeaveGroup from "./components/LeaveGroup/LeaveGroup";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute.jsx";
+import CreateGroup from "./components/CreateGroup/CreateGroup";
 import { StoreProvider } from "./context/StoreProvider";
 import {
   ApolloClient,
@@ -79,7 +77,7 @@ const router = createBrowserRouter([
         path: "groups",
         element: (
           <ProtectedRoute>
-            <GroupList />
+            <Groups />
           </ProtectedRoute>
         ),
         children: [
@@ -92,18 +90,10 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: "leave-group",
+            path: "create-group",
             element: (
               <ProtectedRoute>
-                <LeaveGroup />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: "chat",
-            element: (
-              <ProtectedRoute>
-                <GroupChat />
+                <CreateGroup />
               </ProtectedRoute>
             ),
           },

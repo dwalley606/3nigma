@@ -17,12 +17,11 @@ import {
 } from "@mui/material";
 import GroupOptions from "../GroupOptions/GroupOptions";
 import AddUserToGroup from "../AddUserToGroup/AddUserToGroup";
-import BottomNav from "../BottomNav/BottomNav";
 
 const GroupList = () => {
   const { state: groupState, dispatch } = useGroups();
   const { state: authState } = useAuth();
-  const { loading, error, data } = useQuery(GET_GROUP_DETAILS, {
+  const { loading, error, data, refetch } = useQuery(GET_GROUP_DETAILS, {
     variables: { userId: authState.user.id },
     fetchPolicy: "network-only",
   });
@@ -36,6 +35,10 @@ const GroupList = () => {
       dispatch(setGroups(data.getGroupDetails));
     }
   }, [data, dispatch]);
+
+  useEffect(() => {
+    refetch(); // Refetch groups when the component mounts
+  }, [refetch]);
 
   if (loading) return <Typography>Loading groups...</Typography>;
   if (error)
@@ -119,7 +122,6 @@ const GroupList = () => {
           onUserAdded={handleUserAdded}
         />
       ) : null}
-      <BottomNav />
     </Box>
   );
 };

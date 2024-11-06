@@ -5,6 +5,7 @@ import BottomNavigationAction from "@mui/material/BottomNavigationAction";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import ContactsIcon from "@mui/icons-material/Contacts";
+import AddIcon from "@mui/icons-material/Add";
 import { useTheme } from "@mui/material/styles";
 
 const BottomNav = () => {
@@ -65,6 +66,13 @@ const BottomNav = () => {
             sx={{ "& .MuiBottomNavigationAction-label": { fontSize: 14 } }}
           />,
           <BottomNavigationAction
+            key="create-group"
+            label="Create Group"
+            value="/groups/create-group"
+            icon={<AddIcon sx={{ fontSize: 30 }} />}
+            sx={{ "& .MuiBottomNavigationAction-label": { fontSize: 14 } }}
+          />,
+          <BottomNavigationAction
             key="contacts"
             label="Contacts"
             value="/contacts"
@@ -90,7 +98,7 @@ const BottomNav = () => {
         height: "10vh",
         backgroundColor: theme.palette.primary.main,
         zIndex: 1000,
-        alignItems: "center"
+        alignItems: "center",
       }}
     >
       {actions}

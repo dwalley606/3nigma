@@ -11,7 +11,6 @@ import { useView } from "../../context/StoreProvider";
 import { SET_CHAT_ACTIVE } from "../../context/view/viewActions";
 import BottomNav from "../BottomNav/BottomNav";
 
-
 const Dashboard = () => {
   const { state: authState } = useAuth();
   const userId = authState.user?.id;
@@ -25,7 +24,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (data) {
-      console.log("Fetched conversations:", data.getConversations);
+      // console.log("Fetched conversations:", data.getConversations);
     }
   }, [data]);
 

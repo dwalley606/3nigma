@@ -1,6 +1,7 @@
 import Group from "../../models/Group.js";
 import User from "../../models/User.js";
 import Conversation from "../../models/Conversation.js";
+import Message from "../../models/Message.js";
 
 export const groupResolvers = {
   Query: {
@@ -145,6 +146,33 @@ export const groupResolvers = {
           { $addToSet: { groups: savedGroup._id } }
         );
 
+        // Create a new conversation for the group
+        const newConversation = new Conversation({
+          isGroup: true,
+          participants: [context.user.id, ...memberIds],
+          lastMessage: null, // Initially, there is no last message
+          name: name,
+        });
+
+        const savedConversation = await newConversation.save();
+
+        // Create a message indicating that the creator added the members
+        const messageContent = `${context.user.username} created a group.`;
+        const newMessage = new Message({
+          sender: context.user.id, // Set the sender to the creator of the group
+          groupRecipientId: savedGroup._id, // Link to the group
+          content: messageContent,
+          isGroupMessage: true,
+          timestamp: new Date(),
+        });
+
+        const savedMessage = await newMessage.save();
+
+        // Update the conversation with the last message and add it to the messages array
+        savedConversation.lastMessage = savedMessage._id; // Set the last message
+        savedConversation.messages.push(savedMessage._id); // Add the message to the messages array
+        await savedConversation.save();
+
         // Populate the group with member details
         const populatedGroup = await Group.findById(savedGroup._id)
           .populate("members", "username email")
@@ -185,6 +213,23 @@ export const groupResolvers = {
         await User.findByIdAndUpdate(userId, {
           $addToSet: { groups: groupId },
         });
+
+        // Create a message indicating that the user has been added
+        const messageContent = `${context.user.username} added ${userId} to the group.`;
+        const newMessage = new Message({
+          sender: context.user.id, // Set the sender to the creator of the group
+          groupRecipientId: groupId, // Link to the group
+          content: messageContent,
+          isGroupMessage: true,
+          timestamp: new Date(),
+        });
+
+        await newMessage.save();
+
+        // Update the conversation with the last message
+        const conversation = await Conversation.findById(group.conversationId);
+        conversation.lastMessage = newMessage._id;
+        await conversation.save();
 
         return {
           id: group._id.toString(),

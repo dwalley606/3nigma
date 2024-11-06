@@ -31,13 +31,29 @@ const seedDatabase = async () => {
         publicKey: `publicKeyUser${i}`,
         lastSeen: new Date().toISOString(),
         profilePicUrl: `https://example.com/user${i}.jpg`,
-        contacts: [],
+        contacts: [], // Initialize contacts array
       });
       await user.save(); // This will trigger the pre-save middleware
       users.push(user);
     }
 
     console.log("Users inserted:", users.length);
+
+    // Generate contacts for each user
+    for (const user of users) {
+      // Randomly select 3 unique users as contacts
+      const contactIds = new Set();
+      while (contactIds.size < 3) {
+        const randomUser = users[Math.floor(Math.random() * users.length)];
+        if (randomUser._id.toString() !== user._id.toString()) {
+          contactIds.add(randomUser._id);
+        }
+      }
+      user.contacts = Array.from(contactIds); // Convert Set to Array
+      await user.save(); // Save the user with updated contacts
+    }
+
+    console.log("Contacts added for each user.");
 
     // Create a group and assign users to it
     const groupMembers = users.slice(0, 5); // First 5 users in a group
