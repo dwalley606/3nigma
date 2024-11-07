@@ -2,19 +2,31 @@ import { useAuth } from "../context/StoreProvider";
 import { useQuery } from "@apollo/client";
 import { GET_CONVERSATIONS } from "../graphql/queries/getConversations";
 import MessageList from "../components/MessageList/MessageList";
+import Chat from "../components/Chat/Chat";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useView } from "../context/StoreProvider";
 
 const Dashboard = () => {
   const { state: authState } = useAuth();
   const userId = authState.user?.id;
-  const navigate = useNavigate();
+
+  const { state: viewState, dispatch } = useView();
+  const [selectedConversationId, setSelectedConversationId] = useState(null);
 
   const { loading, error, data } = useQuery(GET_CONVERSATIONS, {
     variables: { userId },
     skip: !userId,
   });
+
+  useEffect(() => {
+    if (viewState.isChatActive) {
+      setSelectedConversationId(selectedConversationId);
+    } else {
+      setSelectedConversationId(null);
+    }
+  }, [viewState.isChatActive, selectedConversationId]);
 
   if (loading) return <Typography>Loading conversations...</Typography>;
   if (error)
@@ -34,17 +46,23 @@ const Dashboard = () => {
     })
     .reverse();
 
-    return (
-        <Box sx={{ padding: 2 }}>
-          <MessageList
-            groupedMessages={sortedConversations}
-            onMessageClick={(conversationId) => {
-              navigate(`/dashboard/chat/${conversationId}`);
-            }}
-          />
-          <Outlet /> {/* This renders the child route, such as Chat */}
-        </Box>
-      );
-    };
+  const handleMessageClick = (conversationId) => {
+    setSelectedConversationId(conversationId);
+    dispatch({ type: "SET_CHAT_ACTIVE", payload: true });
+  };
+
+  return (
+    <Box sx={{ padding: 2 }}>
+      {selectedConversationId ? (
+        <Chat conversationId={selectedConversationId} />
+      ) : (
+        <MessageList
+          groupedMessages={sortedConversations}
+          onMessageClick={handleMessageClick}
+        />
+      )}
+    </Box>
+  );
+};
 
 export default Dashboard;

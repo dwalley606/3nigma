@@ -9,19 +9,21 @@ const MessageList = ({ groupedMessages, onMessageClick }) => {
           return null; // Skip this iteration if data is not valid
         }
 
-        const { lastMessage } = conversation;
+        const { lastMessage, isGroup } = conversation;
 
         return (
           <ListItem
             key={conversation.id}
             button
-            onClick={() =>
-              onMessageClick(conversation.id, conversation.isGroup)
-            }
+            onClick={() => onMessageClick(conversation.id, isGroup)}
           >
             <ListItemText
               primary={lastMessage.content}
-              secondary={lastMessage.sender.username}
+              secondary={
+                isGroup
+                  ? `Group: ${lastMessage.sender.username}` // Display group name or sender for group messages
+                  : `From: ${lastMessage.sender.username}` // Display sender for direct messages
+              }
             />
             <Typography variant="caption">
               {new Date(parseInt(lastMessage.timestamp, 10)).toLocaleString(

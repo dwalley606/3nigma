@@ -83,7 +83,7 @@ const typeDefs = `
     getEncryptionKey(userId: ID!): EncryptionKey!
     getContactRequests(userId: ID!): [ContactRequest!]!
     getUserGroups(userId: ID!): [Group]
-    getConversation(userId: ID!, otherUserId: ID!): [Message!]!
+    getConversation(conversationId: ID!): [Message!]!
     getGroupConversations(userId: ID!): [Conversation!]!
     getGroupDetails(userId: ID!): [GroupDetails!]! 
   }

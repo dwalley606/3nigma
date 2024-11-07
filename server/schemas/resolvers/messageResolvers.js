@@ -127,23 +127,18 @@ export const messageResolvers = {
       }
     },
 
-    getConversation: async (_, { userId, otherUserId }, context) => {
+    getConversation: async (_, { conversationId }, context) => {
       if (!context.user) {
         throw new Error("You must be logged in to view conversations.");
       }
 
       try {
-        if (
-          !mongoose.Types.ObjectId.isValid(userId) ||
-          !mongoose.Types.ObjectId.isValid(otherUserId)
-        ) {
-          throw new Error("Invalid user ID format");
+        if (!mongoose.Types.ObjectId.isValid(conversationId)) {
+          throw new Error("Invalid conversation ID format");
         }
 
-        const conversation = await Conversation.findOne({
-          participants: { $all: [userId, otherUserId] },
-          isGroup: false,
-        })
+        // Find the conversation by ID and populate necessary fields
+        const conversation = await Conversation.findById(conversationId)
           .populate({
             path: "messages",
             populate: {
@@ -151,12 +146,14 @@ export const messageResolvers = {
               select: "id username",
             },
           })
+          .populate("participants", "id username") // Populate participants
           .exec();
 
         if (!conversation) {
           return []; // Return empty array if no conversation exists
         }
 
+        // Map the messages to the desired structure
         return conversation.messages
           .map((message) => {
             if (!message) return null;
