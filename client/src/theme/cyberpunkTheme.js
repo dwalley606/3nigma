@@ -50,14 +50,23 @@ const cyberpunkTheme = createTheme({
     },
   },
   components: {
+    MuiBottomNavigationAction: {
+      styleOverrides: {
+        root: {
+          '&.Mui-selected': {
+            color: '#e0e0e0', // Replace with your desired color
+          },
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
           borderRadius: "8px", // Rounded corners for buttons
           boxShadow: "0 3px 5px 2px rgba(255, 105, 135, .3)", // Subtle shadow
-        },
-        selected: {
-          color: "#e0e0e0", // Change the selected color globally
+            '&.Mui-selected': {
+            color: '#e0e0e0', // Replace with your desired color
+          },// Change the selected color globally
         },
       },
     },

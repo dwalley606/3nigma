@@ -3,14 +3,15 @@ import { useMutation } from "@apollo/client";
 import { SEND_DIRECT_MESSAGE } from "../../graphql/mutations/sendDirectMessage";
 import { SEND_GROUP_MESSAGE } from "../../graphql/mutations/sendGroupMessage";
 import { useAuth } from "../../context/StoreProvider";
-import { useMessages } from "../../context/StoreProvider"; // Import the useMessages hook
+import { useMessages } from "../../context/StoreProvider";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 
 const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
   const [message, setMessage] = useState("");
   const { state: authState } = useAuth();
-  const { dispatch } = useMessages(); // Use the message context
+  const { dispatch } = useMessages();
   const [sendDirectMessage] = useMutation(SEND_DIRECT_MESSAGE);
   const [sendGroupMessage] = useMutation(SEND_GROUP_MESSAGE);
 
@@ -19,17 +20,14 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
     if (message.trim() === "") return;
 
     const newMessage = {
-      id: Date.now().toString(), // Temporary ID
+      id: Date.now().toString(),
       senderId: authState.user.id,
       content: message,
       timestamp: new Date().toISOString(),
     };
 
-    onSendMessage(newMessage); // Optimistically update the UI
-    dispatch({ type: "ADD_MESSAGE", payload: newMessage }); // Update global state
-
-    // In MessageInput.jsx
-    console.log("Dispatching new message:", newMessage);
+    onSendMessage(newMessage);
+    dispatch({ type: "ADD_MESSAGE", payload: newMessage });
 
     try {
       if (isGroupMessage) {
@@ -49,16 +47,23 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
           },
         });
       }
-      setMessage(""); // Clear the input field after sending
+      setMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
 
   return (
-    <form
+    <Box
+      component="form"
       onSubmit={handleSubmit}
-      style={{ display: "flex", alignItems: "center", width: "100%" }}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
+        padding: 1,
+      }}
     >
       <TextField
         value={message}
@@ -66,15 +71,15 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
         placeholder="Type your message..."
         multiline
         minRows={1}
-        maxRows={10}
+        maxRows={4}
         variant="filled"
         fullWidth
-        style={{ marginRight: "10px" }}
+        sx={{ marginRight: 1 }}
       />
       <Button type="submit" variant="contained" color="primary">
         Send
       </Button>
-    </form>
+    </Box>
   );
 };
 

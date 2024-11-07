@@ -1,6 +1,5 @@
 import { Typography, Box } from "@mui/material";
 import { useAuth } from "../../context/StoreProvider";
-import MessageInput from "../MessageInput/MessageInput";
 import Message from "../Message/Message";
 
 const GroupChat = ({ conversation, onBack }) => {
@@ -9,10 +8,6 @@ const GroupChat = ({ conversation, onBack }) => {
   if (!conversation) {
     return <Typography>Please select a group to view messages.</Typography>;
   }
-
-  const handleSendMessage = (newMessage) => {
-    console.log("Sending message:", newMessage);
-  };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "80vh" }}>
@@ -35,23 +30,6 @@ const GroupChat = ({ conversation, onBack }) => {
             );
           })
         )}
-      </Box>
-      <Box
-        sx={{
-          position: "fixed",
-          bottom: 0,
-          width: "100%",
-          backgroundColor: "white",
-          padding: 1,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <MessageInput
-          recipientId={conversation.id}
-          isGroupMessage={true}
-          onSendMessage={handleSendMessage}
-        />
       </Box>
     </Box>
   );

@@ -1,5 +1,4 @@
 import ReactDOM from "react-dom/client";
-import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -14,7 +13,8 @@ import Settings from "./pages/Settings";
 import Groups from "./pages/Groups";
 import Contacts from "./components/Contacts/Contacts";
 import Error from "./pages/Error";
-import Dashboard from "./components/Dashboard/Dashboard.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Chat from "./components/Chat/Chat";
 import AddUserToGroup from "./components/AddUserToGroup/AddUserToGroup";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute.jsx";
 import CreateGroup from "./components/CreateGroup/CreateGroup";
@@ -64,6 +64,12 @@ const router = createBrowserRouter([
             <Dashboard />
           </ProtectedRoute>
         ),
+        children: [
+          {
+            path: "chat/:conversationId",
+            element: <Chat />,
+          },
+        ],
       },
       {
         path: "settings",

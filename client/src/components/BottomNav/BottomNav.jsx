@@ -7,11 +7,14 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import ContactsIcon from "@mui/icons-material/Contacts";
 import AddIcon from "@mui/icons-material/Add";
 import { useTheme } from "@mui/material/styles";
+import { useView } from "../../context/StoreProvider"; // Import your context hook
 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
+  const { state: viewState } = useView(); // Access the view state
+
   const [value, setValue] = React.useState(location.pathname);
 
   const handleNavigationChange = (event, newValue) => {
@@ -84,6 +87,11 @@ const BottomNav = () => {
         return [];
     }
   })();
+
+  // Conditionally render BottomNav based on isChatActive
+  if (viewState.isChatActive) {
+    return null; // Dismount BottomNav when chat is active
+  }
 
   return (
     <BottomNavigation

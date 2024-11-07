@@ -40,7 +40,7 @@ function App() {
       <div
         style={{
           marginTop: "10vh",
-          paddingBottom: showBottomNav ? "10vh" : "0",
+          height: "80vh"
         }}
       >
         <Outlet />

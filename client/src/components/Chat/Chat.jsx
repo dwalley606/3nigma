@@ -1,21 +1,29 @@
 // client/src/components/Chat/Chat.jsx
-import { Typography, Box } from "@mui/material";
-import { useAuth } from "../../context/StoreProvider";
-import MessageInput from "../MessageInput/MessageInput";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
+import { useMessages } from "../../context/StoreProvider";
 import Message from "../Message/Message";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import MessageInput from "../MessageInput/MessageInput";
 
-const Chat = ({ conversation, onBack }) => {
-  const { state: authState } = useAuth();
+const Chat = () => {
+  const { conversationId } = useParams();
+  const { dispatch } = useMessages();
 
-  if (!conversation) {
-    return <Typography>Please select a user to view messages.</Typography>;
-  }
+  const { loading, error, data } = useQuery(GET_CONVERSATION, {
+    variables: { conversationId },
+    onCompleted: (data) => {
+      dispatch({ type: "SET_MESSAGES", payload: data.getConversation.messages });
+    },
+  });
 
-  const handleSendMessage = (newMessage) => {
-    // Handle sending messages
-    console.log("Sending message:", newMessage);
-    // You might want to update the conversation state in the parent component
-  };
+  if (loading) return <Typography>Loading messages...</Typography>;
+  if (error)
+    return <Typography>Error fetching messages: {error.message}</Typography>;
+
+  const conversation = data.getConversation;
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "80vh" }}>
@@ -23,39 +31,22 @@ const Chat = ({ conversation, onBack }) => {
         {conversation.messages.length === 0 ? (
           <Typography>No messages in this conversation yet.</Typography>
         ) : (
-          conversation.messages.map((message) => {
-            // Defensive check for sender
-            if (!message.sender) {
-              console.warn("Message sender is undefined:", message);
-              return null; // Skip rendering if sender is undefined
-            }
-
-            return (
-              <Message
-                key={message.id}
-                message={message}
-                isOwner={message.sender.id === authState.user.id}
-              />
-            );
-          })
+          conversation.messages.map((message) => (
+            <Message
+              key={message.id}
+              message={message}
+              isOwner={message.senderId === conversation.userId}
+            />
+          ))
         )}
       </Box>
-      <Box
-        sx={{
-          position: "fixed",
-          bottom: 0,
-          width: "100%",
-          backgroundColor: "white",
-          padding: 1,
-          display: "flex",
-          alignItems: "center",
+      <MessageInput
+        recipientId={conversationId}
+        isGroupMessage={conversation.isGroup}
+        onSendMessage={(newMessage) => {
+          dispatch({ type: "ADD_MESSAGE", payload: newMessage });
         }}
-      >
-        <MessageInput
-          recipientId={conversation.id}
-          onSendMessage={handleSendMessage}
-        />
-      </Box>
+      />
     </Box>
   );
 };

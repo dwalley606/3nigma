@@ -20,7 +20,7 @@ import { useAuth } from "../../context/StoreProvider";
 import { useGroups } from "../../context/StoreProvider";
 import { useNavigate } from "react-router-dom";
 
-const CreateGroup = ({ onGroupCreated }) => {
+const CreateGroup = ({ onGroupCreated = () => {} }) => {
   const { state } = useAuth();
   const userId = state.user?.id;
   const navigate = useNavigate();
@@ -28,7 +28,13 @@ const CreateGroup = ({ onGroupCreated }) => {
   const { loading, error, data } = useQuery(GET_CONTACTS, {
     variables: { userId },
   });
-  const [createGroup] = useMutation(CREATE_GROUP);
+  const [createGroup] = useMutation(CREATE_GROUP, {
+    onCompleted: (createGroupData) => {
+      dispatch({ type: "ADD_GROUP", payload: createGroupData.createGroup });
+      onGroupCreated();
+      navigate("/groups");
+    },
+  });
   const [groupName, setGroupName] = useState("");
   const [selectedMembers, setSelectedMembers] = useState(new Set());
   const [openDialog, setOpenDialog] = useState(false);
@@ -53,16 +59,13 @@ const CreateGroup = ({ onGroupCreated }) => {
   const handleSubmit = async () => {
     try {
       const memberIds = Array.from(selectedMembers);
-      const { data: createGroupData } = await createGroup({
+      await createGroup({
         variables: {
           name: groupName,
           memberIds: memberIds,
         },
       });
-      dispatch({ type: "ADD_GROUP", payload: createGroupData.createGroup });
       setOpenDialog(true);
-      onGroupCreated();
-      navigate("/groups");
     } catch (error) {
       console.error("Error creating group:", error);
     }
