@@ -1,11 +1,93 @@
-import React from 'react';
+// client/src/components/Contacts/Contacts.jsx
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/StoreProvider";
+import { useQuery } from "@apollo/client";
+import { GET_CONTACTS } from "../graphql/queries/getContacts";
+import AddContact from "../components/AddContact/AddContact";
+import ContactRequests from "../components/ContactRequests/ContactRequests";
+import BottomNav from "../components/BottomNav/BottomNav";
+import {
+  Typography,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  Box,
+} from "@mui/material";
 
 const Contacts = () => {
+  const { state } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("Contacts: state.user", state.user); // Log the user state
+
+    if (!state.user) {
+      navigate("/login");
+    }
+  }, [state.user, navigate]);
+
+  const {
+    loading: contactsLoading,
+    error: contactsError,
+    data: contactsData,
+  } = useQuery(GET_CONTACTS, {
+    variables: { userId: state.user.id },
+    skip: !state.user,
+  });
+
+  const [showAddContact, setShowAddContact] = useState(false);
+
+  if (contactsLoading) return <Typography>Loading...</Typography>;
+  if (contactsError)
+    return (
+      <Typography>Error loading contacts: {contactsError.message}</Typography>
+    );
+
+  const contacts = contactsData?.getContacts || [];
+
   return (
-    <div>
-      <h1>Contacts</h1>
-      <p>Contact list and details will be displayed here.</p>
-    </div>
+    <Box
+      sx={{
+        padding: 2,
+        display: "flex",
+        flexDirection: "column",
+        height: "80vh", // Adjust to fit within the remaining space
+        overflow: "auto",
+        marginTop: "10vh",
+      }}
+    >
+      <ContactRequests userId={state.user.id} />
+      {contacts.length === 0 ? (
+        <Typography>No Current Contacts</Typography>
+      ) : (
+        <List>
+          {contacts.map((contact) => (
+            <ListItem key={contact.id}>
+              <ListItemText
+                primary={contact.username}
+                secondary={contact.email}
+              />
+            </ListItem>
+          ))}
+        </List>
+      )}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => setShowAddContact(!showAddContact)}
+      >
+        {showAddContact ? "Hide Add Contact" : "Add Contact"}
+      </Button>
+      {showAddContact && (
+        <AddContact
+          existingContacts={contacts}
+          requestedUserIds={new Set()} // Adjust as needed
+        />
+      )}
+      <BottomNav />
+    </Box>
   );
 };
 

@@ -11,7 +11,10 @@ export const userResolvers = {
         throw new Error("You must be logged in to view user details.");
       }
       try {
-        const user = await User.findById(id).populate("contacts", "username email");
+        const user = await User.findById(id).populate(
+          "contacts",
+          "username email"
+        );
         if (!user) {
           throw new Error("User not found");
         }
@@ -38,7 +41,10 @@ export const userResolvers = {
         throw new Error("You must be logged in to view contacts.");
       }
       try {
-        const user = await User.findById(userId).populate("contacts", "username email");
+        const user = await User.findById(userId).populate(
+          "contacts",
+          "username email"
+        );
         return user.contacts || [];
       } catch (error) {
         console.error("Error fetching contacts:", error);
@@ -50,11 +56,27 @@ export const userResolvers = {
         throw new Error("You must be logged in to view contact requests.");
       }
       try {
-        const requests = await ContactRequest.find({
+        const incomingRequests = await ContactRequest.find({
           to: userId,
           status: "pending",
         }).populate("from", "username email");
-        return requests;
+
+        const outgoingRequests = await ContactRequest.find({
+          from: userId,
+          status: "pending",
+        }).populate("to", "username email");
+
+        const allRequests = [...incomingRequests, ...outgoingRequests];
+
+        return allRequests.map((request) => ({
+          id: request.id.toString(),
+          from: {
+            id: request.from.id.toString(),
+            username: request.from.username,
+            email: request.from.email,
+          },
+          status: request.status,
+        }));
       } catch (error) {
         console.error("Error fetching contact requests:", error);
         throw new Error("Failed to fetch contact requests");
@@ -65,7 +87,9 @@ export const userResolvers = {
         throw new Error("You must be logged in to view your groups.");
       }
       try {
-        const groups = await Group.find({ members: userId }).populate("members", "username email").populate("admins", "username email");
+        const groups = await Group.find({ members: userId })
+          .populate("members", "username email")
+          .populate("admins", "username email");
         return groups;
       } catch (error) {
         console.error("Error fetching user groups:", error);
@@ -115,7 +139,10 @@ export const userResolvers = {
     },
     refreshToken: async (_, { refreshToken }) => {
       try {
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const decoded = jwt.verify(
+          refreshToken,
+          process.env.REFRESH_TOKEN_SECRET
+        );
         const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
           expiresIn: "15m",
         });
@@ -151,7 +178,9 @@ export const userResolvers = {
     },
     respondContactRequest: async (_, { requestId, status }, context) => {
       if (!context.user) {
-        throw new Error("You must be logged in to respond to a contact request.");
+        throw new Error(
+          "You must be logged in to respond to a contact request."
+        );
       }
       try {
         const request = await ContactRequest.findById(requestId);

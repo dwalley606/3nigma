@@ -11,7 +11,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Settings from "./pages/Settings";
 import Groups from "./pages/Groups";
-import Contacts from "./components/Contacts/Contacts";
+import Contacts from "./pages/Contacts";
 import Error from "./pages/Error";
 import Dashboard from "./pages/Dashboard.jsx";
 import Chat from "./components/Chat/Chat";

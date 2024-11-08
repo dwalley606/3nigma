@@ -3,6 +3,7 @@ import authReducer from "./auth/authReducer";
 import messageReducer from "./message/messageReducer";
 import viewReducer from "./view/viewReducer";
 import groupReducer from "./groups/groupReducer";
+import contactsReducer from "./contacts/contactsReducer";
 
 // Initial states
 const initialAuthState = {
@@ -27,20 +28,27 @@ const initialGroupState = {
   groups: [],
 };
 
+const initialContactsState = {
+  contacts: [],
+  contactRequests: [],
+};
+
 // Combine initial states
 const initialState = {
   auth: initialAuthState,
   message: initialMessageState,
   view: initialViewState,
   group: initialGroupState,
+  contacts: initialContactsState,
 };
 
 // Combine reducers
-const rootReducer = ({ auth, message, view, group }, action) => ({
+const rootReducer = ({ auth, message, view, group, contacts }, action) => ({
   auth: authReducer(auth, action),
   message: messageReducer(message, action),
   view: viewReducer(view, action),
   group: groupReducer(group, action),
+  contacts: contactsReducer(contacts, action),
 });
 
 const StoreContext = createContext();
@@ -83,4 +91,9 @@ export const useView = () => {
 export const useGroups = () => {
   const { state, dispatch } = useStore();
   return { state: state.group, dispatch };
+};
+
+export const useContacts = () => {
+  const { state, dispatch } = useStore();
+  return { state: state.contacts, dispatch };
 };
