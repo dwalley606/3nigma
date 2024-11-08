@@ -52,15 +52,31 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      {selectedConversationId ? (
-        <Chat conversationId={selectedConversationId} />
-      ) : (
-        <MessageList
-          groupedMessages={sortedConversations}
-          onMessageClick={handleMessageClick}
-        />
-      )}
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "80vh", // Adjust to fit within the remaining space
+        overflow: "hidden",
+        marginTop: "10vh" // Prevent overflow
+      }}
+    >
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: "auto", // Allow scrolling for content
+          padding: 2,
+        }}
+      >
+        {selectedConversationId ? (
+          <Chat conversationId={selectedConversationId} />
+        ) : (
+          <MessageList
+            groupedMessages={sortedConversations}
+            onMessageClick={handleMessageClick}
+          />
+        )}
+      </Box>
     </Box>
   );
 };

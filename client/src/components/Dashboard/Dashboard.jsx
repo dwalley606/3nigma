@@ -3,6 +3,7 @@
 // import { GET_CONVERSATIONS } from "../../graphql/queries/getConversations";
 // import MessageList from "../MessageList/MessageList";
 // import Chat from "../Chat/Chat";
+// import GroupChat from "../GroupChat/GroupChat";
 // import Typography from "@mui/material/Typography";
 // import Box from "@mui/material/Box";
 // import { useState, useEffect } from "react";

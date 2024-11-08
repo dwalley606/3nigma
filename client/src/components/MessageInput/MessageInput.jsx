@@ -59,6 +59,9 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
       onSubmit={handleSubmit}
       sx={{
         display: "flex",
+        height: "10vh",
+        position: "fixed",
+        bottom: 0,
         alignItems: "center",
         justifyContent: "space-between",
         width: "100%",

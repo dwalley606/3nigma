@@ -3,18 +3,20 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Outlet, useLocation } from "react-router-dom";
 import NavBar from "./components/NavBar/NavBar";
-import BottomNav from "./components/BottomNav/BottomNav"; // Import BottomNav
-import { useAuth } from "./context/StoreProvider";
+import BottomNav from "./components/BottomNav/BottomNav";
+import MessageInput from "./components/MessageInput/MessageInput";
+import { useAuth, useView } from "./context/StoreProvider";
 import { loggedIn, refreshToken } from "./utils/auth";
-import cyberpunkTheme from "./theme/cyberpunkTheme"; // Import your theme
+import cyberpunkTheme from "./theme/cyberpunkTheme";
 
 function App() {
-  const { state, dispatch } = useAuth();
+  const { state: authState, dispatch } = useAuth();
+  const { state: viewState } = useView();
   const location = useLocation();
 
   React.useEffect(() => {
     const checkToken = async () => {
-      const token = state.authToken;
+      const token = authState.authToken;
       if (!loggedIn(token)) {
         try {
           await refreshToken(dispatch);
@@ -26,7 +28,7 @@ function App() {
     };
 
     checkToken();
-  }, [state.authToken, dispatch]);
+  }, [authState.authToken, dispatch]);
 
   // Define the routes where BottomNav should be displayed
   const showBottomNav = ["/dashboard", "/groups", "/contacts"].includes(
@@ -37,15 +39,19 @@ function App() {
     <ThemeProvider theme={cyberpunkTheme}>
       <CssBaseline />
       <NavBar />
-      <div
-        style={{
-          marginTop: "10vh",
-          height: "80vh"
-        }}
-      >
-        <Outlet />
-      </div>
-      {showBottomNav && <BottomNav />} {/* Conditionally render BottomNav */}
+      <Outlet />
+      {viewState.isChatActive ? (
+        <MessageInput
+          recipientId={viewState.currentConversationId}
+          isGroupMessage={viewState.isGroupMessage}
+          onSendMessage={(newMessage) => {
+            console.log("Message sent:", newMessage);
+            dispatch({ type: "ADD_MESSAGE", payload: newMessage });
+          }}
+        />
+      ) : (
+        showBottomNav && <BottomNav />
+      )}
     </ThemeProvider>
   );
 }

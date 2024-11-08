@@ -35,11 +35,6 @@ const Chat = ({ conversationId }) => {
         const isOwner = message.sender.id === userId;
         return <Message key={message.id} message={message} isOwner={isOwner} />;
       })}
-      <MessageInput
-        recipientId={conversationId}
-        isGroupMessage={messages[0].isGroupMessage}
-        onSendMessage={handleSendMessage}
-      />
     </Box>
   );
 };

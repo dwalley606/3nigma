@@ -1,17 +1,27 @@
 import React from "react";
-import { Outlet, useLocation } from "react-router-dom"; // Import Outlet
-import GroupList from "../components/GroupList/GroupList"; // Import the GroupList component
+import { Outlet, useLocation } from "react-router-dom";
+import GroupList from "../components/GroupList/GroupList";
+import Box from "@mui/material/Box";
 
 const Groups = () => {
   const location = useLocation();
 
   return (
-    <div>
-      {location.pathname === "/groups/create-group" ? null : <GroupList />}{" "}
-      {/* Render GroupList only if not on create group page */}
-      <Outlet />{" "}
-      {/* This will render the CreateGroup component when the path matches */}
-    </div>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        marginTop: "10vh",
+        padding: 2,
+        height: "80vh",
+        overflowY: "auto",
+      }}
+    >
+      {location.pathname === "/groups/create-group" ? null : <GroupList />}
+      <Outlet />
+    </Box>
   );
 };
 
