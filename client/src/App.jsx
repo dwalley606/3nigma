@@ -39,7 +39,13 @@ function App() {
     <ThemeProvider theme={cyberpunkTheme}>
       <CssBaseline />
       <NavBar />
-      <Outlet />
+      <Outlet
+        style={{
+          marginTop: "10vh",
+          height: "80vh",
+          overflow: "auto", // Optional: Add overflow if needed
+        }}
+      />
       {viewState.isChatActive ? (
         <MessageInput
           recipientId={viewState.currentConversationId}

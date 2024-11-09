@@ -18,14 +18,19 @@ const Message = ({ message, isOwner }) => {
       <Paper
         elevation={3}
         sx={{
-          maxWidth: "60%",
+          maxWidth: "80%",
           padding: 2,
           borderRadius: 2,
-          backgroundColor: isOwner ? "primary.main" : "grey.300",
-          color: isOwner ? "primary.contrastText" : "text.primary",
+          backgroundColor: isOwner ? "primary.main" : "secondary.main",
+          color: isOwner ? "primary.contrastText" : "#0d0d0d",
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+        <Box sx={{ 
+          display: "flex", 
+          justifyContent: "space-between", 
+          mb: 1,
+          }}
+        >
           <Typography variant="subtitle2" component="span">
             {message.sender ? message.sender.username : "Unknown User"}
           </Typography>
@@ -33,7 +38,11 @@ const Message = ({ message, isOwner }) => {
             {formattedTimestamp}
           </Typography>
         </Box>
-        <Typography variant="body1">{message.content}</Typography>
+        <Typography 
+          variant="body1"
+          sx={{
+            color: isOwner ? "inherit": "black",
+          }}>{message.content}</Typography>
       </Paper>
     </Box>
   );

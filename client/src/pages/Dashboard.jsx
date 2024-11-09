@@ -5,15 +5,15 @@ import MessageList from "../components/MessageList/MessageList";
 import Chat from "../components/Chat/Chat";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useView } from "../context/StoreProvider";
+import { SET_CHAT_ACTIVE, SET_CURRENT_CONVERSATION } from "../context/view/viewActions";
 
 const Dashboard = () => {
   const { state: authState } = useAuth();
   const userId = authState.user?.id;
 
   const { state: viewState, dispatch } = useView();
-  const [selectedConversationId, setSelectedConversationId] = useState(null);
 
   const { loading, error, data } = useQuery(GET_CONVERSATIONS, {
     variables: { userId },
@@ -21,12 +21,13 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    if (viewState.isChatActive) {
-      setSelectedConversationId(selectedConversationId);
-    } else {
-      setSelectedConversationId(null);
+    if (!viewState.isChatActive) {
+      dispatch({
+        type: SET_CURRENT_CONVERSATION,
+        payload: { conversationId: null, isGroupMessage: false },
+      });
     }
-  }, [viewState.isChatActive, selectedConversationId]);
+  }, [viewState.isChatActive, dispatch]);
 
   if (loading) return <Typography>Loading conversations...</Typography>;
   if (error)
@@ -34,21 +35,18 @@ const Dashboard = () => {
       <Typography>Error fetching conversations: {error.message}</Typography>
     );
 
-  const sortedConversations = [...data.getConversations]
-    .sort((a, b) => {
-      const lastMessageA = a.lastMessage
-        ? new Date(a.lastMessage.timestamp)
-        : 0;
-      const lastMessageB = b.lastMessage
-        ? new Date(b.lastMessage.timestamp)
-        : 0;
-      return lastMessageB - lastMessageA;
-    })
-    .reverse();
+  const sortedConversations = [...data.getConversations].sort((a, b) => {
+    const lastMessageA = a.lastMessage ? new Date(a.lastMessage.timestamp) : 0;
+    const lastMessageB = b.lastMessage ? new Date(b.lastMessage.timestamp) : 0;
+    return lastMessageB - lastMessageA; // Sort by most recent message first
+  });
 
-  const handleMessageClick = (conversationId) => {
-    setSelectedConversationId(conversationId);
-    dispatch({ type: "SET_CHAT_ACTIVE", payload: true });
+  const handleMessageClick = (conversationId, isGroup) => {
+    dispatch({ type: SET_CHAT_ACTIVE, payload: true });
+    dispatch({
+      type: SET_CURRENT_CONVERSATION,
+      payload: { conversationId, isGroupMessage: isGroup },
+    });
   };
 
   return (
@@ -56,20 +54,20 @@ const Dashboard = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        height: "80vh", // Adjust to fit within the remaining space
+        height: "80vh",
         overflow: "hidden",
-        marginTop: "10vh" // Prevent overflow
+        marginTop: "10vh",
       }}
     >
       <Box
         sx={{
           flexGrow: 1,
-          overflowY: "auto", // Allow scrolling for content
+          overflowY: "auto",
           padding: 2,
         }}
       >
-        {selectedConversationId ? (
-          <Chat conversationId={selectedConversationId} />
+        {viewState.currentConversationId ? (
+          <Chat conversationId={viewState.currentConversationId} />
         ) : (
           <MessageList
             groupedMessages={sortedConversations}

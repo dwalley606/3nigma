@@ -1,34 +1,23 @@
 import { gql } from '@apollo/client';
 
 export const GET_CONVERSATIONS = gql`
-  query getConversations($userId: ID!) {
+  query GetConversations($userId: ID!) {
     getConversations(userId: $userId) {
       id
+      name 
       participants {
         id
         username
       }
-      messages {
-        id
-        content
-        sender {
-          id
-          username
-        }
-        timestamp
-      }
       lastMessage {
         id
         content
+        timestamp
         sender {
           id
           username
         }
-        timestamp
       }
-      isGroup
-      name
-      unreadCount
     }
   }
-`; 
+`;

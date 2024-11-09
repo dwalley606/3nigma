@@ -3,6 +3,8 @@ import viewReducer from "./viewReducer";
 
 const initialState = {
   isChatActive: false,
+  currentConversationId: null,
+  isGroupMessage: false,
 };
 
 const ViewContext = createContext();
@@ -16,3 +18,5 @@ export const ViewProvider = ({ children }) => {
     </ViewContext.Provider>
   );
 };
+
+export default ViewContext;

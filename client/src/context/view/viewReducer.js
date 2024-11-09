@@ -1,7 +1,7 @@
 import {
   SET_CHAT_ACTIVE,
   SET_GROUP_CHAT_ACTIVE,
-  SET_CURRENT_GROUP,
+  SET_CURRENT_CONVERSATION,
   SET_GROUP_OPTIONS_OPEN,
   SET_GROUP_OPTIONS_CLOSED,
   SET_ADD_USER,
@@ -10,7 +10,8 @@ import {
 
 const initialState = {
   isChatActive: false,
-  currentGroup: null,
+  currentConversationId: null,
+  isGroupMessage: false,
   isGroupOptionsOpen: false,
   isAddingUser: false,
   isLeavingGroup: false,
@@ -23,8 +24,12 @@ const viewReducer = (state = initialState, action) => {
       return { ...state, isChatActive: action.payload };
     case SET_GROUP_CHAT_ACTIVE:
       return { ...state, isChatActive: action.payload };
-    case SET_CURRENT_GROUP:
-      return { ...state, currentGroup: action.payload };
+    case SET_CURRENT_CONVERSATION:
+      return {
+        ...state,
+        currentConversationId: action.payload.conversationId,
+        isGroupMessage: action.payload.isGroupMessage,
+      };
     case SET_GROUP_OPTIONS_OPEN:
       return {
         ...state,
