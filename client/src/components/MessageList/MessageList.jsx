@@ -8,18 +8,16 @@ const MessageList = ({ groupedMessages, onMessageClick }) => {
           return null; // Skip this iteration if data is not valid
         }
 
-        const { lastMessage, isGroup, name, participants } = conversation;
+        const { lastMessage, name, participants } = conversation;
 
-        // Determine display name
-        const displayName = isGroup
-          ? name || participants.map(p => p.username).join(', ') // Fallback to participant names if name is not available
-          : participants.find(p => p.id !== lastMessage.sender.id)?.username;
+        // Use the group name if available, otherwise determine the other user's name
+        const displayName = name || participants.find(p => p.id !== lastMessage.sender.id)?.username;
 
         return (
           <ListItem
             key={conversation.id}
             button
-            onClick={() => onMessageClick(conversation.id, isGroup)}
+            onClick={() => onMessageClick(conversation.id, !!name)}
           >
             <ListItemText
               primary={

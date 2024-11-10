@@ -31,6 +31,11 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
 
     try {
       if (isGroupMessage) {
+        console.log("Sending group message:", {
+          senderId: authState.user.id,
+          groupId: recipientId,
+          content: message,
+        });
         await sendGroupMessage({
           variables: {
             senderId: authState.user.id,
@@ -39,6 +44,11 @@ const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
           },
         });
       } else {
+        console.log("Sending direct message:", {
+          senderId: authState.user.id,
+          recipientId,
+          content: message,
+        });
         await sendDirectMessage({
           variables: {
             senderId: authState.user.id,

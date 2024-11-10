@@ -28,8 +28,8 @@ const Chat = ({ conversationId }) => {
     <Box
       sx={{
         display: "flex",
-        flexDirection: "column-reverse",
-        justifyContent: "flex-start",
+        flexDirection: "column",
+        justifyContent: "flex-end",
         height: "80vh",
         overflowY: "auto",
         padding: 2,
