@@ -83,13 +83,14 @@ const seedDatabase = async () => {
     }
     const insertedGroupMessages = await Message.insertMany(groupMessages);
 
-    // Create group conversation with name field
+    // Create group conversation with name field and groupId
     const groupConversation = new Conversation({
       participants: groupMembers.map((user) => user._id),
       isGroup: true,
       messages: insertedGroupMessages.map((msg) => msg._id), // Store message IDs
       lastMessage: insertedGroupMessages[insertedGroupMessages.length - 1]._id, // Set lastMessage to the last inserted message
       name: group.name, // Add the name field for the group conversation
+      groupId: group._id, // Set the groupId to associate with the group
       updatedAt: new Date().toISOString(),
     });
     await groupConversation.save();

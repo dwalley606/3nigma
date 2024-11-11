@@ -29,6 +29,7 @@ const typeDefs = `
     isGroup: Boolean!
     name: String
     unreadCount: Int
+    groupId: Group
   }
 
   type Group {
@@ -65,13 +66,13 @@ const typeDefs = `
   }
 
   type GroupDetails {
-  id: ID!
-  name: String!
-  lastMessage: Message
-  admins: [User!]!
-  members: [User!]!
-  isGroup: Boolean!
-}
+    id: ID!
+    name: String!
+    lastMessage: Message
+    admins: [User!]!
+    members: [User!]!
+    isGroup: Boolean!
+  }
 
   type Query {
     getContacts(userId: ID!): [User!]!
@@ -83,9 +84,9 @@ const typeDefs = `
     getEncryptionKey(userId: ID!): EncryptionKey!
     getContactRequests(userId: ID!): [ContactRequest!]!
     getUserGroups(userId: ID!): [Group]
-    getConversation(conversationId: ID!): [Message!]!
+    getConversation(conversationId: ID!): Conversation!
     getGroupConversations(userId: ID!): [Conversation!]!
-    getGroupDetails(userId: ID!): [GroupDetails!]! 
+    getGroupDetails(userId: ID!): [GroupDetails!]!
   }
 
   type Mutation {

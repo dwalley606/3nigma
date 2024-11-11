@@ -7,6 +7,7 @@ export const SET_GROUP_OPTIONS_CLOSED = "SET_GROUP_OPTIONS_CLOSED";
 export const SET_ADD_USER = "SET_ADD_USER";
 export const SET_LEAVE_GROUP = "SET_LEAVE_GROUP";
 export const SET_CURRENT_CONVERSATION = "SET_CURRENT_CONVERSATION";
+export const SET_RECIPIENT_ID = "SET_RECIPIENT_ID";
 
 // Action creators
 export const setGroupOptionsOpen = (group) => ({
@@ -29,4 +30,9 @@ export const setLeaveGroup = () => ({
 export const setCurrentConversation = (conversationId, isGroupMessage) => ({
   type: SET_CURRENT_CONVERSATION,
   payload: { conversationId, isGroupMessage },
+});
+
+export const setRecipientId = (recipientId) => ({
+  type: SET_RECIPIENT_ID,
+  payload: recipientId,
 });

@@ -10,6 +10,7 @@ const conversationSchema = new Schema({
   isGroup: { type: Boolean, default: false },
   name: { type: String },
   unreadCount: { type: Number, default: 0 },
+  groupId: { type: Schema.Types.ObjectId, ref: 'Group' }, // Add groupId to associate with a group
 });
 
 const Conversation = mongoose.model('Conversation', conversationSchema);

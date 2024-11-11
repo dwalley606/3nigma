@@ -6,6 +6,7 @@ import {
   SET_GROUP_OPTIONS_CLOSED,
   SET_ADD_USER,
   SET_LEAVE_GROUP,
+  SET_RECIPIENT_ID,
 } from "./viewActions";
 
 const initialState = {
@@ -15,6 +16,7 @@ const initialState = {
   isGroupOptionsOpen: false,
   isAddingUser: false,
   isLeavingGroup: false,
+  recipientId: null,
 };
 
 // Reducer function
@@ -42,6 +44,8 @@ const viewReducer = (state = initialState, action) => {
       return { ...state, isAddingUser: true };
     case SET_LEAVE_GROUP:
       return { ...state, isLeavingGroup: true };
+    case SET_RECIPIENT_ID:
+      return { ...state, recipientId: action.payload };
     default:
       return state;
   }

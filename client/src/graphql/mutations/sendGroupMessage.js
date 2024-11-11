@@ -11,6 +11,7 @@ export const SEND_GROUP_MESSAGE = gql`
       }
       timestamp
       isGroupMessage
+      groupRecipientId
     }
   }
 `;

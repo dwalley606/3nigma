@@ -5,14 +5,27 @@ export const GET_CONVERSATION = gql`
   query GetConversation($conversationId: ID!) {
     getConversation(conversationId: $conversationId) {
       id
-      content
-      sender {
+      messages {
         id
-        username
+        content
+        sender {
+          id
+          username
+        }
+        userRecipientId
+        timestamp
+        isGroupMessage
+        groupRecipientId
       }
-      userRecipientId
-      timestamp
-      isGroupMessage
+      lastMessage {
+        id
+        content
+        sender {
+          id
+          username
+        }
+        groupRecipientId
+      }
     }
   }
 `;

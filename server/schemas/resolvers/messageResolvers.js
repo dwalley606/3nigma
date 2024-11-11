@@ -146,34 +146,49 @@ export const messageResolvers = {
               select: "id username",
             },
           })
-          .populate("participants", "id username") // Populate participants
+          .populate({
+            path: "lastMessage",
+            populate: {
+              path: "sender",
+              select: "id username",
+            },
+          })
           .exec();
 
         if (!conversation) {
-          return []; // Return empty array if no conversation exists
+          throw new Error("Conversation not found");
         }
 
-        // Map the messages to the desired structure
-        return conversation.messages
-          .map((message) => {
-            if (!message) return null;
-
-            return {
-              id: message._id?.toString() || null,
-              content: message.content || "",
-              sender: message.sender
-                ? {
-                    id: message.sender._id?.toString() || null,
-                    username: message.sender.username || "",
-                  }
-                : null,
-              userRecipientId: message.userRecipientId?.toString() || null,
-              timestamp: message.timestamp || null,
-              read: message.read || false,
-              isGroupMessage: message.isGroupMessage || false,
-            };
-          })
-          .filter(Boolean); // Remove any null values
+        // Return the conversation object with all necessary fields
+        return {
+          id: conversation._id.toString(),
+          participants: conversation.participants.map(participant => ({
+            id: participant._id.toString(),
+            username: participant.username,
+          })),
+          messages: conversation.messages.map(message => ({
+            id: message._id.toString(),
+            content: message.content,
+            sender: {
+              id: message.sender._id.toString(),
+              username: message.sender.username,
+            },
+            userRecipientId: message.userRecipientId?.toString() || null,
+            timestamp: message.timestamp,
+            isGroupMessage: message.isGroupMessage,
+            groupRecipientId: message.groupRecipientId?.toString() || null,
+          })),
+          lastMessage: conversation.lastMessage ? {
+            id: conversation.lastMessage._id.toString(),
+            content: conversation.lastMessage.content,
+            sender: {
+              id: conversation.lastMessage.sender._id.toString(),
+              username: conversation.lastMessage.sender.username,
+            },
+            groupRecipientId: conversation.lastMessage.groupRecipientId?.toString() || null,
+          } : null,
+          isGroup: conversation.isGroup,
+        };
       } catch (error) {
         console.error("Error fetching conversation:", error);
         throw new Error("Failed to fetch conversation");
@@ -263,7 +278,7 @@ export const messageResolvers = {
 
         // Update the conversation with the new message
         let conversation = await Conversation.findOne({
-          participants: groupId,
+          participants: context.user.id,
           isGroup: true,
         });
 

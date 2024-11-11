@@ -5,6 +5,7 @@ const initialState = {
   isChatActive: false,
   currentConversationId: null,
   isGroupMessage: false,
+  recipientId: null,
 };
 
 const ViewContext = createContext();
