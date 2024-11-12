@@ -26,46 +26,68 @@ export const messageResolvers = {
               path: "sender",
               select: "id username",
             },
-          });
+          })
+          .populate("groupId");
+
+        // Sort conversations based on the lastMessage timestamp
+        const sortedConversations = conversations.sort((a, b) => {
+          const lastMessageA = a.lastMessage
+            ? new Date(a.lastMessage.timestamp).getTime()
+            : 0; // Default to 0 if no last message
+          const lastMessageB = b.lastMessage
+            ? new Date(b.lastMessage.timestamp).getTime()
+            : 0; // Default to 0 if no last message
+          return lastMessageB - lastMessageA; // Sort by most recent message first
+        });
 
         // Ensure IDs are strings and handle null participants
-        return conversations.map((conversation) => ({
-          ...conversation.toObject(),
-          id: conversation._id.toString(),
-          participants: conversation.participants.map((participant) => {
-            if (!participant) {
-              console.warn(
-                "Missing participant in conversation:",
-                conversation._id
-              );
-              return null;
-            }
-            return {
-              ...participant.toObject(),
-              id: participant._id.toString(),
-            };
-          }),
-          messages: conversation.messages.map((message) => ({
-            ...message.toObject(),
-            id: message._id.toString(),
-            sender: {
-              ...message.sender.toObject(),
-              id: message.sender._id.toString(),
-            },
-          })),
-          lastMessage: conversation.lastMessage
-            ? {
-                ...conversation.lastMessage.toObject(),
-                id: conversation.lastMessage._id.toString(),
-                sender: conversation.lastMessage.sender
-                  ? {
-                      ...conversation.lastMessage.sender.toObject(),
-                      id: conversation.lastMessage.sender._id.toString(),
-                    }
-                  : null,
+        return sortedConversations.map((conversation) => {
+          const groupId =
+            conversation.isGroup && conversation.groupId
+              ? conversation.groupId._id.toString()
+              : null;
+
+          return {
+            ...conversation.toObject(),
+            id: conversation._id.toString(),
+            participants: conversation.participants.map((participant) => {
+              if (!participant) {
+                console.warn(
+                  "Missing participant in conversation:",
+                  conversation._id
+                );
+                return null;
               }
-            : null,
-        }));
+              return {
+                ...participant.toObject(),
+                id: participant._id.toString(),
+              };
+            }),
+            messages: conversation.messages.map((message) => ({
+              ...message.toObject(),
+              id: message._id.toString(),
+              sender: {
+                ...message.sender.toObject(),
+                id: message.sender._id.toString(),
+              },
+            })),
+            lastMessage: conversation.lastMessage
+              ? {
+                  ...conversation.lastMessage.toObject(),
+                  id: conversation.lastMessage._id.toString(),
+                  sender: conversation.lastMessage.sender
+                    ? {
+                        ...conversation.lastMessage.sender.toObject(),
+                        id: conversation.lastMessage.sender._id.toString(),
+                      }
+                    : null,
+                  timestamp: conversation.lastMessage.timestamp,
+                }
+              : null,
+            isGroup: conversation.isGroup,
+            groupId: groupId,
+          };
+        });
       } catch (error) {
         console.error("Error fetching conversations:", error.message);
         console.error("Stack trace:", error.stack);
@@ -167,11 +189,11 @@ export const messageResolvers = {
         return {
           id: conversation._id.toString(),
           isGroup: conversation.isGroup,
-          participants: conversation.participants.map(participant => ({
+          participants: conversation.participants.map((participant) => ({
             id: participant._id.toString(),
             username: participant.username,
           })),
-          messages: conversation.messages.map(message => ({
+          messages: conversation.messages.map((message) => ({
             id: message._id.toString(),
             content: message.content,
             sender: {
@@ -183,15 +205,18 @@ export const messageResolvers = {
             isGroupMessage: message.isGroupMessage,
             groupRecipientId: message.groupRecipientId?.toString() || null,
           })),
-          lastMessage: conversation.lastMessage ? {
-            id: conversation.lastMessage._id.toString(),
-            content: conversation.lastMessage.content,
-            sender: {
-              id: conversation.lastMessage.sender._id.toString(),
-              username: conversation.lastMessage.sender.username,
-            },
-            groupRecipientId: conversation.lastMessage.groupRecipientId?.toString() || null,
-          } : null,
+          lastMessage: conversation.lastMessage
+            ? {
+                id: conversation.lastMessage._id.toString(),
+                content: conversation.lastMessage.content,
+                sender: {
+                  id: conversation.lastMessage.sender._id.toString(),
+                  username: conversation.lastMessage.sender.username,
+                },
+                groupRecipientId:
+                  conversation.lastMessage.groupRecipientId?.toString() || null,
+              }
+            : null,
         };
       } catch (error) {
         console.error("Error fetching conversation:", error);
@@ -243,17 +268,10 @@ export const messageResolvers = {
         // Populate the sender information before returning
         await savedMessage.populate("sender", "id username");
 
+        // Return a success message or the saved message
         return {
-          id: savedMessage._id.toString(),
-          content: savedMessage.content,
-          sender: {
-            id: savedMessage.sender._id.toString(),
-            username: savedMessage.sender.username,
-          },
-          userRecipientId: savedMessage.userRecipientId.toString(),
-          timestamp: savedMessage.timestamp,
-          read: savedMessage.read,
-          isGroupMessage: savedMessage.isGroupMessage,
+          success: true,
+          message: savedMessage,
         };
       } catch (error) {
         console.error("Error in sendDirectMessage:", error);
@@ -303,15 +321,19 @@ export const messageResolvers = {
         // Populate the sender information before returning
         await savedMessage.populate("sender", "id username");
 
+        // Return a success message or the saved message
         return {
-          id: savedMessage._id.toString(),
-          content: savedMessage.content,
-          sender: {
-            id: savedMessage.sender._id.toString(),
-            username: savedMessage.sender.username,
+          success: true,
+          message: {
+            id: savedMessage._id.toString(),
+            content: savedMessage.content,
+            sender: {
+              id: savedMessage.sender._id.toString(),
+              username: savedMessage.sender.username,
+            },
+            timestamp: savedMessage.timestamp,
+            isGroupMessage: savedMessage.isGroupMessage,
           },
-          timestamp: savedMessage.timestamp,
-          isGroupMessage: savedMessage.isGroupMessage,
         };
       } catch (error) {
         console.error("Error in sendGroupMessage:", error);

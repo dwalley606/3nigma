@@ -1,10 +1,9 @@
 import { List, ListItem, ListItemText, Typography } from "@mui/material";
+import { useAuth } from "../../context/StoreProvider"; // Import useAuth to access the signed-in user
 
 const MessageList = ({ groupedMessages, onMessageClick }) => {
-  const handleClick = (conversation) => {
-    const { id, isGroup, recipientId } = conversation;
-    onMessageClick(id, isGroup, recipientId);
-  };
+  const { state: authState } = useAuth(); // Get the signed-in user's state
+  const signedInUserId = authState.user?.id; // Get the signed-in user's ID
 
   return (
     <List>
@@ -13,16 +12,31 @@ const MessageList = ({ groupedMessages, onMessageClick }) => {
           return null; // Skip this iteration if data is not valid
         }
 
-        const { lastMessage, name, participants } = conversation;
+        const { lastMessage, name, participants, isGroup, groupId } =
+          conversation; // Destructure isGroup and groupId
 
         // Use the group name if available, otherwise determine the other user's name
-        const displayName = name || participants.find(p => p.id !== lastMessage.sender.id)?.username;
+        const displayName =
+          name ||
+          participants.find((p) => p.id !== lastMessage.sender.id)?.username;
+
+        // Determine recipientId based on whether it's a group or direct message
+        const recipientId = isGroup
+          ? null
+          : participants.find((p) => p.id !== signedInUserId)?.id; // Exclude the signed-in user
 
         return (
           <ListItem
             key={conversation.id}
             button
-            onClick={() => handleClick(conversation)}
+            onClick={() =>
+              onMessageClick(
+                conversation.id,
+                isGroup,
+                recipientId,
+                groupId // Pass groupId
+              )
+            } // Pass groupId and recipientId
           >
             <ListItemText
               primary={
@@ -35,17 +49,20 @@ const MessageList = ({ groupedMessages, onMessageClick }) => {
                   <Typography variant="body2" component="span">
                     {lastMessage.content}
                   </Typography>
-                  <Typography variant="caption" component="div" sx={{ marginTop: 0.5 }}>
-                    {new Date(parseInt(lastMessage.timestamp, 10)).toLocaleString(
-                      undefined,
-                      {
-                        year: "2-digit",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )}
+                  <Typography
+                    variant="caption"
+                    component="div"
+                    sx={{ marginTop: 0.5 }}
+                  >
+                    {new Date(
+                      parseInt(lastMessage.timestamp, 10)
+                    ).toLocaleString(undefined, {
+                      year: "2-digit",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </Typography>
                 </>
               }

@@ -2,39 +2,52 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { SEND_GROUP_MESSAGE } from "../../graphql/mutations/sendGroupMessage";
 import { SEND_DIRECT_MESSAGE } from "../../graphql/mutations/sendDirectMessage";
-import { useAuth } from "../../context/StoreProvider";
+import { useAuth, useMessages } from "../../context/StoreProvider";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
+import { SET_SHOULD_REFETCH } from "../../context/view/viewActions";
 
-const MessageInput = ({ recipientId, isGroupMessage, onSendMessage }) => {
+const MessageInput = ({
+  recipientId,
+  isGroupMessage,
+  groupId,
+  onSendMessage,
+}) => {
   const [message, setMessage] = useState("");
   const { state: authState } = useAuth();
   const [sendGroupMessage] = useMutation(SEND_GROUP_MESSAGE);
   const [sendDirectMessage] = useMutation(SEND_DIRECT_MESSAGE);
+  const { dispatch } = useMessages();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (message.trim() === "") return;
 
     try {
+      let response;
       if (isGroupMessage) {
-        const { data } = await sendGroupMessage({
-          variables: {
-            groupId: recipientId,
-            content: message,
-          },
+        response = await sendGroupMessage({
+          variables: { groupId, content: message },
         });
-        onSendMessage(data.sendGroupMessage);
       } else {
-        const { data } = await sendDirectMessage({
-          variables: {
-            recipientId: recipientId,
-            content: message,
-          },
+        response = await sendDirectMessage({
+          variables: { recipientId, content: message },
         });
-        onSendMessage(data.sendDirectMessage);
       }
+
+      if (response && response.data) {
+        const success = isGroupMessage
+          ? response.data.sendGroupMessage.success
+          : response.data.sendDirectMessage.success;
+
+        if (success) {
+          dispatch({ type: SET_SHOULD_REFETCH, payload: true });
+        }
+      } else {
+        console.error("Unexpected response structure:", response);
+      }
+
       setMessage("");
     } catch (error) {
       console.error("Error sending message:", error);

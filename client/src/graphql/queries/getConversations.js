@@ -1,10 +1,10 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_CONVERSATIONS = gql`
   query GetConversations($userId: ID!) {
     getConversations(userId: $userId) {
       id
-      name 
+      name
       participants {
         id
         username
@@ -18,6 +18,8 @@ export const GET_CONVERSATIONS = gql`
           username
         }
       }
+      isGroup
+      groupId
     }
   }
 `;

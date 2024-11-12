@@ -20,9 +20,13 @@ const initialMessageState = {
 
 const initialViewState = {
   isChatActive: false,
-  currentGroup: null,
-  currentViewComponent: null,
-  setGroupChatActive: null,
+  currentConversationId: null,
+  isGroupMessage: false,
+  isGroupOptionsOpen: false,
+  isAddingUser: false,
+  isLeavingGroup: false,
+  recipientId: null,
+  shouldRefetch: false,
 };
 
 const initialGroupState = {

@@ -21,10 +21,6 @@ const Chat = ({ conversationId }) => {
     skip: !conversationId, // Ensure the query only runs if conversationId is valid
   });
 
-  console.log("Query loading:", loading);
-  console.log("Query error:", error);
-  console.log("Fetched data:", data);
-
   useEffect(() => {
     if (data && data.getConversation) {
       const conversation = data.getConversation;
@@ -64,13 +60,7 @@ const Chat = ({ conversationId }) => {
     >
       {messages.map((message) => {
         const isOwner = message.sender.id === userId;
-        return (
-          <Message
-            key={message.id}
-            message={message}
-            isOwner={isOwner}
-          />
-        );
+        return <Message key={message.id} message={message} isOwner={isOwner} />;
       })}
     </Box>
   );

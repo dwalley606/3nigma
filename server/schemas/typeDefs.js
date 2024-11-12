@@ -29,7 +29,7 @@ const typeDefs = `
     isGroup: Boolean!
     name: String
     unreadCount: Int
-    groupId: Group
+    groupId: ID
   }
 
   type Group {
@@ -74,6 +74,11 @@ const typeDefs = `
     isGroup: Boolean!
   }
 
+  type SendMessageResponse {
+    success: Boolean!
+    message: Message!
+  }
+
   type Query {
     getContacts(userId: ID!): [User!]!
     getConversations(userId: ID!): [Conversation!]!
@@ -92,8 +97,8 @@ const typeDefs = `
   type Mutation {
     registerUser(username: String!, email: String!, password: String!, phoneNumber: String!): RegisterUserResponse!
     login(email: String!, password: String!): AuthPayload!
-    sendDirectMessage(recipientId: ID!, content: String!): Message!
-    sendGroupMessage(groupId: ID!, content: String!): Message!
+    sendDirectMessage(recipientId: ID!, content: String!): SendMessageResponse!
+    sendGroupMessage(groupId: ID!, content: String!): SendMessageResponse!
     sendContactRequest(fromUserId: ID!, toUserId: ID!): ContactRequest!
     respondContactRequest(requestId: ID!, status: String!): ContactRequest!
     createGroup(name: String!, memberIds: [ID!]!): Group!

@@ -7,19 +7,18 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useEffect } from "react";
 import { useView } from "../context/StoreProvider";
-import { SET_CHAT_ACTIVE, SET_CURRENT_CONVERSATION, SET_SHOULD_REFETCH, SET_RECIPIENT_ID } from "../context/StoreProvider";
+import {
+  SET_CHAT_ACTIVE,
+  SET_CURRENT_CONVERSATION,
+  SET_SHOULD_REFETCH,
+  SET_RECIPIENT_ID,
+} from "../context/view/viewActions";
 
 const Dashboard = () => {
   const { state: viewState, dispatch: viewDispatch } = useView();
-  const { state: authState, dispatch: authDispatch } = useAuth();
-
-  console.log("User object:", authState.user);
+  const { state: authState } = useAuth();
 
   const userId = authState.user.id;
-
-  if (!userId) {
-    console.warn("User ID is undefined. Check if the user is logged in and the AuthContext is set up correctly.");
-  }
 
   const { loading, error, data, refetch } = useQuery(GET_CONVERSATIONS, {
     variables: { userId },
@@ -48,21 +47,32 @@ const Dashboard = () => {
       <Typography>Error fetching conversations: {error.message}</Typography>
     );
 
-  const sortedConversations = data?.getConversations
-    ? [...data.getConversations].sort((a, b) => {
-        const lastMessageA = a.lastMessage ? new Date(a.lastMessage.timestamp) : 0;
-        const lastMessageB = b.lastMessage ? new Date(b.lastMessage.timestamp) : 0;
-        return lastMessageB - lastMessageA; // Sort by most recent message first
-      })
-    : [];
+  // Pass the raw data to MessageList for sorting
+  const conversations = data?.getConversations || [];
 
-  const handleMessageClick = (conversationId, isGroup, recipientId) => {
+  const handleMessageClick = (
+    conversationId,
+    isGroup,
+    recipientId,
+    groupId
+  ) => {
+    console.log("Current viewState before clicking:", viewState); // Log the current viewState
+
     viewDispatch({ type: SET_CHAT_ACTIVE, payload: true });
     viewDispatch({
       type: SET_CURRENT_CONVERSATION,
       payload: { conversationId, isGroupMessage: isGroup },
     });
-    viewDispatch({ type: SET_RECIPIENT_ID, payload: recipientId }); // Set the recipient ID
+
+    // Conditionally set the recipient ID based on whether it's a group or direct message
+    const idToSet = isGroup ? groupId : recipientId;
+    viewDispatch({ type: SET_RECIPIENT_ID, payload: idToSet });
+
+    console.log("Updated viewState after clicking:", {
+      currentConversationId: conversationId,
+      isGroupMessage: isGroup,
+      recipientId: idToSet,
+    }); // Log the updated viewState
   };
 
   return (
@@ -86,9 +96,10 @@ const Dashboard = () => {
           <Chat conversationId={viewState.currentConversationId} />
         ) : (
           <MessageList
-            groupedMessages={sortedConversations}
-            onMessageClick={(conversationId, isGroup, recipientId) => 
-              handleMessageClick(conversationId, isGroup, recipientId)}
+            groupedMessages={conversations} // Pass raw conversations
+            onMessageClick={(conversationId, isGroup, recipientId, groupId) =>
+              handleMessageClick(conversationId, isGroup, recipientId, groupId)
+            }
           />
         )}
       </Box>
