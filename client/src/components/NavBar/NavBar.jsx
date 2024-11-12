@@ -12,7 +12,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import { SET_CHAT_ACTIVE } from "../../context/view/viewActions";
+import { SET_CHAT_ACTIVE, SET_SHOULD_REFETCH } from "../../context/view/viewActions";
 
 const Navbar = () => {
   const { state, dispatch: authDispatch } = useAuth();
@@ -28,6 +28,7 @@ const Navbar = () => {
 
   const handleBackToDashboard = () => {
     viewDispatch({ type: SET_CHAT_ACTIVE, payload: false });
+    viewDispatch({ type: SET_SHOULD_REFETCH, payload: true });
   };
 
   const handleMenu = (event) => {

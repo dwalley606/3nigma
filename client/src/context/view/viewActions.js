@@ -8,6 +8,7 @@ export const SET_ADD_USER = "SET_ADD_USER";
 export const SET_LEAVE_GROUP = "SET_LEAVE_GROUP";
 export const SET_CURRENT_CONVERSATION = "SET_CURRENT_CONVERSATION";
 export const SET_RECIPIENT_ID = "SET_RECIPIENT_ID";
+export const SET_SHOULD_REFETCH = "SET_SHOULD_REFETCH";
 
 // Action creators
 export const setGroupOptionsOpen = (group) => ({

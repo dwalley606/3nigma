@@ -1,6 +1,11 @@
 import { List, ListItem, ListItemText, Typography } from "@mui/material";
 
 const MessageList = ({ groupedMessages, onMessageClick }) => {
+  const handleClick = (conversation) => {
+    const { id, isGroup, recipientId } = conversation;
+    onMessageClick(id, isGroup, recipientId);
+  };
+
   return (
     <List>
       {groupedMessages.map((conversation) => {
@@ -17,7 +22,7 @@ const MessageList = ({ groupedMessages, onMessageClick }) => {
           <ListItem
             key={conversation.id}
             button
-            onClick={() => onMessageClick(conversation.id, !!name)}
+            onClick={() => handleClick(conversation)}
           >
             <ListItemText
               primary={

@@ -140,6 +140,10 @@ export const messageResolvers = {
         // Find the conversation by ID and populate necessary fields
         const conversation = await Conversation.findById(conversationId)
           .populate({
+            path: "participants",
+            select: "id username",
+          })
+          .populate({
             path: "messages",
             populate: {
               path: "sender",
@@ -162,6 +166,7 @@ export const messageResolvers = {
         // Return the conversation object with all necessary fields
         return {
           id: conversation._id.toString(),
+          isGroup: conversation.isGroup,
           participants: conversation.participants.map(participant => ({
             id: participant._id.toString(),
             username: participant.username,
@@ -187,7 +192,6 @@ export const messageResolvers = {
             },
             groupRecipientId: conversation.lastMessage.groupRecipientId?.toString() || null,
           } : null,
-          isGroup: conversation.isGroup,
         };
       } catch (error) {
         console.error("Error fetching conversation:", error);

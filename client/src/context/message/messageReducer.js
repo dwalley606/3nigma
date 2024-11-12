@@ -10,24 +10,46 @@ import {
 const initialState = {
   messages: [],
   error: null,
+  conversations: {},
 };
 
 const messageReducer = (state = initialState, action) => {
   switch (action.type) {
-    case ADD_MESSAGE:
-      return {
-        ...state,
-        messages: [...state.messages, action.payload],
-      };
-    case REMOVE_MESSAGE:
-      return {
-        ...state,
-        messages: state.messages.filter((msg) => msg.id !== action.payload),
-      };
     case SET_MESSAGES:
       return {
         ...state,
-        messages: action.payload,
+        conversations: {
+          ...state.conversations,
+          [action.payload.conversationId]: {
+            ...state.conversations[action.payload.conversationId],
+            messages: action.payload.messages,
+          },
+        },
+      };
+    case ADD_MESSAGE: {
+      const { conversationId, message } = action.payload;
+      const existingMessages = state.conversations[conversationId]?.messages || [];
+      return {
+        ...state,
+        conversations: {
+          ...state.conversations,
+          [conversationId]: {
+            ...state.conversations[conversationId] || {},
+            messages: [...existingMessages, message],
+          },
+        },
+      };
+    }
+    case REMOVE_MESSAGE:
+      return {
+        ...state,
+        conversations: {
+          ...state.conversations,
+          [action.payload.conversationId]: {
+            ...state.conversations[action.payload.conversationId],
+            messages: state.conversations[action.payload.conversationId].messages.filter((msg) => msg.id !== action.payload.messageId),
+          },
+        },
       };
     case SET_ERROR:
       return {

@@ -6,6 +6,7 @@ import { ADD_MESSAGE, REMOVE_MESSAGE, SET_MESSAGES, SET_ERROR, CLEAR_ERROR } fro
 const initialState = {
   messages: [],
   error: null,
+  conversations: {},
 };
 
 const MessageContext = createContext();

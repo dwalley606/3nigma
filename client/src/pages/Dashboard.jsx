@@ -7,27 +7,40 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useEffect } from "react";
 import { useView } from "../context/StoreProvider";
-import { SET_CHAT_ACTIVE, SET_CURRENT_CONVERSATION } from "../context/view/viewActions";
+import { SET_CHAT_ACTIVE, SET_CURRENT_CONVERSATION, SET_SHOULD_REFETCH, SET_RECIPIENT_ID } from "../context/StoreProvider";
 
 const Dashboard = () => {
-  const { state: authState } = useAuth();
-  const userId = authState.user?.id;
+  const { state: viewState, dispatch: viewDispatch } = useView();
+  const { state: authState, dispatch: authDispatch } = useAuth();
 
-  const { state: viewState, dispatch } = useView();
+  console.log("User object:", authState.user);
 
-  const { loading, error, data } = useQuery(GET_CONVERSATIONS, {
+  const userId = authState.user.id;
+
+  if (!userId) {
+    console.warn("User ID is undefined. Check if the user is logged in and the AuthContext is set up correctly.");
+  }
+
+  const { loading, error, data, refetch } = useQuery(GET_CONVERSATIONS, {
     variables: { userId },
     skip: !userId,
   });
 
   useEffect(() => {
+    if (viewState.shouldRefetch) {
+      refetch();
+      viewDispatch({ type: SET_SHOULD_REFETCH, payload: false }); // Reset the refetch trigger
+    }
+  }, [viewState.shouldRefetch, refetch, viewDispatch]);
+
+  useEffect(() => {
     if (!viewState.isChatActive) {
-      dispatch({
+      viewDispatch({
         type: SET_CURRENT_CONVERSATION,
         payload: { conversationId: null, isGroupMessage: false },
       });
     }
-  }, [viewState.isChatActive, dispatch]);
+  }, [viewState.isChatActive, viewDispatch]);
 
   if (loading) return <Typography>Loading conversations...</Typography>;
   if (error)
@@ -35,18 +48,21 @@ const Dashboard = () => {
       <Typography>Error fetching conversations: {error.message}</Typography>
     );
 
-  const sortedConversations = [...data.getConversations].sort((a, b) => {
-    const lastMessageA = a.lastMessage ? new Date(a.lastMessage.timestamp) : 0;
-    const lastMessageB = b.lastMessage ? new Date(b.lastMessage.timestamp) : 0;
-    return lastMessageB - lastMessageA; // Sort by most recent message first
-  });
+  const sortedConversations = data?.getConversations
+    ? [...data.getConversations].sort((a, b) => {
+        const lastMessageA = a.lastMessage ? new Date(a.lastMessage.timestamp) : 0;
+        const lastMessageB = b.lastMessage ? new Date(b.lastMessage.timestamp) : 0;
+        return lastMessageB - lastMessageA; // Sort by most recent message first
+      })
+    : [];
 
-  const handleMessageClick = (conversationId, isGroup) => {
-    dispatch({ type: SET_CHAT_ACTIVE, payload: true });
-    dispatch({
+  const handleMessageClick = (conversationId, isGroup, recipientId) => {
+    viewDispatch({ type: SET_CHAT_ACTIVE, payload: true });
+    viewDispatch({
       type: SET_CURRENT_CONVERSATION,
       payload: { conversationId, isGroupMessage: isGroup },
     });
+    viewDispatch({ type: SET_RECIPIENT_ID, payload: recipientId }); // Set the recipient ID
   };
 
   return (
@@ -71,7 +87,8 @@ const Dashboard = () => {
         ) : (
           <MessageList
             groupedMessages={sortedConversations}
-            onMessageClick={handleMessageClick}
+            onMessageClick={(conversationId, isGroup, recipientId) => 
+              handleMessageClick(conversationId, isGroup, recipientId)}
           />
         )}
       </Box>

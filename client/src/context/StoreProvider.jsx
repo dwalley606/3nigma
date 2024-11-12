@@ -15,6 +15,7 @@ const initialAuthState = {
 const initialMessageState = {
   messages: [],
   error: null,
+  conversations: {},
 };
 
 const initialViewState = {

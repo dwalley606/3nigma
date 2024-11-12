@@ -35,11 +35,6 @@ function App() {
     location.pathname
   );
 
-  // Extract the groupRecipientId from the lastMessage if it's a group message
-  const recipientId = viewState.isGroupMessage
-    ? viewState.recipientId
-    : viewState.currentConversationId;
-
   return (
     <ThemeProvider theme={cyberpunkTheme}>
       <CssBaseline />
@@ -53,7 +48,7 @@ function App() {
       />
       {viewState.isChatActive ? (
         <MessageInput
-          recipientId={recipientId}
+          recipientId={viewState.recipientId}
           isGroupMessage={viewState.isGroupMessage}
           onSendMessage={(newMessage) => {
             console.log("Message sent:", newMessage);

@@ -5,62 +5,49 @@ import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
 import Message from "../Message/Message";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { useAuth, useView } from "../../context/StoreProvider";
-import { SET_RECIPIENT_ID } from "../../context/view/viewActions";
+import { useAuth } from "../../context/StoreProvider";
+import { useMessages } from "../../context/StoreProvider";
+import { SET_MESSAGES } from "../../context/message/messageActions";
 
 const Chat = ({ conversationId }) => {
-  console.log("Chat component mounted");
+  console.log("Chat component mounted with conversationId:", conversationId);
 
   const { state: authState } = useAuth();
-  const { state: viewState, dispatch } = useView();
+  const { state: messageState, dispatch } = useMessages();
   const userId = authState.user?.id;
 
   const { loading, error, data } = useQuery(GET_CONVERSATION, {
     variables: { conversationId },
+    skip: !conversationId, // Ensure the query only runs if conversationId is valid
   });
 
+  console.log("Query loading:", loading);
+  console.log("Query error:", error);
   console.log("Fetched data:", data);
 
   useEffect(() => {
-    console.log("useEffect triggered");
     if (data && data.getConversation) {
       const conversation = data.getConversation;
-      console.log("Is group:", conversation.isGroup);
-      console.log("Participants:", conversation.participants);
+      const messages = conversation.messages;
 
-      const isGroup = conversation.isGroup;
-      let recipientId;
-
-      if (isGroup) {
-        recipientId = conversation.lastMessage?.groupRecipientId;
-      } else {
-        recipientId = conversation.participants?.find(
-          (participant) => participant.id !== userId
-        )?.id;
-      }
-
-      console.log("Calculated recipient ID:", recipientId);
-
-      if (viewState.recipientId !== recipientId) {
-        console.log("Current view state before setting recipient ID:", viewState);
-
-        dispatch({
-          type: SET_RECIPIENT_ID,
-          payload: recipientId,
-        });
-
-        console.log("Updated recipient ID:", recipientId);
-      }
+      // Dispatch action to update messages in global state
+      dispatch({
+        type: SET_MESSAGES,
+        payload: { conversationId, messages },
+      });
+    } else {
+      console.log("No conversation data available");
     }
-  }, [data, dispatch, conversationId, viewState, userId]);
+  }, [data, dispatch, conversationId]);
+
+  // Use messages from global state
+  const messages = messageState.conversations?.[conversationId]?.messages || [];
 
   if (loading) return <Typography>Loading messages...</Typography>;
   if (error)
     return <Typography>Error fetching messages: {error.message}</Typography>;
 
-  const conversation = data.getConversation;
-
-  if (!conversation || !conversation.messages || conversation.messages.length === 0) {
+  if (!messages || messages.length === 0) {
     return <Typography>No conversation found.</Typography>;
   }
 
@@ -75,7 +62,7 @@ const Chat = ({ conversationId }) => {
         padding: 2,
       }}
     >
-      {conversation.messages.map((message) => {
+      {messages.map((message) => {
         const isOwner = message.sender.id === userId;
         return (
           <Message
