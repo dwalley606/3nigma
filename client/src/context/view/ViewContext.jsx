@@ -5,7 +5,12 @@ const initialState = {
   isChatActive: false,
   currentConversationId: null,
   isGroupMessage: false,
+  isGroupOptionsOpen: false,
+  isAddingUser: false,
+  isLeavingGroup: false,
   recipientId: null,
+  shouldRefetch: false,
+  groupId: null,
 };
 
 const ViewContext = createContext();

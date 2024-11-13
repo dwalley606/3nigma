@@ -12,6 +12,7 @@ import {
   SET_CURRENT_CONVERSATION,
   SET_SHOULD_REFETCH,
   SET_RECIPIENT_ID,
+  SET_GROUP_ID,
 } from "../context/view/viewActions";
 
 const Dashboard = () => {
@@ -64,14 +65,17 @@ const Dashboard = () => {
       payload: { conversationId, isGroupMessage: isGroup },
     });
 
-    // Conditionally set the recipient ID based on whether it's a group or direct message
-    const idToSet = isGroup ? groupId : recipientId;
-    viewDispatch({ type: SET_RECIPIENT_ID, payload: idToSet });
+    if (isGroup) {
+      viewDispatch({ type: SET_GROUP_ID, payload: groupId }); // Set the group ID
+    } else {
+      viewDispatch({ type: SET_RECIPIENT_ID, payload: recipientId }); // Set the recipient ID
+    }
 
     console.log("Updated viewState after clicking:", {
       currentConversationId: conversationId,
       isGroupMessage: isGroup,
-      recipientId: idToSet,
+      recipientId: isGroup ? null : recipientId,
+      groupId: isGroup ? groupId : null,
     }); // Log the updated viewState
   };
 

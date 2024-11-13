@@ -8,6 +8,7 @@ import {
   SET_LEAVE_GROUP,
   SET_RECIPIENT_ID,
   SET_SHOULD_REFETCH,
+  SET_GROUP_ID,
 } from "./viewActions";
 
 const initialState = {
@@ -19,6 +20,7 @@ const initialState = {
   isLeavingGroup: false,
   recipientId: null,
   shouldRefetch: false,
+  groupId: null,
 };
 
 // Reducer function
@@ -50,6 +52,8 @@ const viewReducer = (state = initialState, action) => {
       return { ...state, recipientId: action.payload };
     case SET_SHOULD_REFETCH:
       return { ...state, shouldRefetch: action.payload };
+    case SET_GROUP_ID:
+      return { ...state, groupId: action.payload };
     default:
       return state;
   }

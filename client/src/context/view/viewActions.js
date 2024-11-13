@@ -9,6 +9,7 @@ export const SET_LEAVE_GROUP = "SET_LEAVE_GROUP";
 export const SET_CURRENT_CONVERSATION = "SET_CURRENT_CONVERSATION";
 export const SET_RECIPIENT_ID = "SET_RECIPIENT_ID";
 export const SET_SHOULD_REFETCH = "SET_SHOULD_REFETCH";
+export const SET_GROUP_ID = "SET_GROUP_ID";
 
 // Action creators
 export const setGroupOptionsOpen = (group) => ({
@@ -36,4 +37,9 @@ export const setCurrentConversation = (conversationId, isGroupMessage) => ({
 export const setRecipientId = (recipientId) => ({
   type: SET_RECIPIENT_ID,
   payload: recipientId,
+});
+
+export const setGroupId = (groupId) => ({
+  type: SET_GROUP_ID,
+  payload: groupId,
 });

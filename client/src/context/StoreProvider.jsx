@@ -27,6 +27,7 @@ const initialViewState = {
   isLeavingGroup: false,
   recipientId: null,
   shouldRefetch: false,
+  groupId: null,
 };
 
 const initialGroupState = {

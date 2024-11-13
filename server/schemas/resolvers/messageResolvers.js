@@ -298,20 +298,28 @@ export const messageResolvers = {
 
         const savedMessage = await newMessage.save();
 
-        // Update the conversation with the new message
+        // Find the group conversation by groupId
         let conversation = await Conversation.findOne({
-          participants: context.user.id,
+          groupId: groupId, // Ensure you're using groupId to find the conversation
           isGroup: true,
         });
 
         if (!conversation) {
+          // If no conversation is found, create a new one
+          const group = await Group.findById(groupId);
+          if (!group) {
+            throw new Error("Group not found");
+          }
+
           conversation = new Conversation({
-            participants: [senderId], // Assuming groupId is an array of participant IDs
+            participants: group.members, // Assuming group.members is an array of user IDs
             messages: [savedMessage._id],
             lastMessage: savedMessage._id,
             isGroup: true,
+            groupId: groupId,
           });
         } else {
+          // Update the existing conversation
           conversation.messages.push(savedMessage._id);
           conversation.lastMessage = savedMessage._id;
         }

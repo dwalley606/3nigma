@@ -7,6 +7,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { SET_SHOULD_REFETCH } from "../../context/view/viewActions";
+import { ADD_MESSAGE } from "../../context/message/messageActions";
 
 const MessageInput = ({
   recipientId,
@@ -42,6 +43,23 @@ const MessageInput = ({
           : response.data.sendDirectMessage.success;
 
         if (success) {
+          const newMessage = isGroupMessage
+            ? response.data.sendGroupMessage.message
+            : response.data.sendDirectMessage.message;
+
+          console.log("Dispatching ADD_MESSAGE with payload:", {
+            conversationId: isGroupMessage ? groupId : recipientId,
+            message: newMessage,
+          });
+
+          dispatch({
+            type: ADD_MESSAGE,
+            payload: {
+              conversationId: isGroupMessage ? groupId : recipientId,
+              message: newMessage,
+            },
+          });
+
           dispatch({ type: SET_SHOULD_REFETCH, payload: true });
         }
       } else {
