@@ -10,6 +10,7 @@ import { SET_SHOULD_REFETCH } from "../../context/view/viewActions";
 import { ADD_MESSAGE } from "../../context/message/messageActions";
 
 const MessageInput = ({
+  conversationId,
   recipientId,
   isGroupMessage,
   groupId,
@@ -48,14 +49,14 @@ const MessageInput = ({
             : response.data.sendDirectMessage.message;
 
           console.log("Dispatching ADD_MESSAGE with payload:", {
-            conversationId: isGroupMessage ? groupId : recipientId,
+            conversationId,
             message: newMessage,
           });
 
           dispatch({
             type: ADD_MESSAGE,
             payload: {
-              conversationId: isGroupMessage ? groupId : recipientId,
+              conversationId,
               message: newMessage,
             },
           });

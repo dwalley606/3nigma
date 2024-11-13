@@ -48,13 +48,10 @@ function App() {
       />
       {viewState.isChatActive ? (
         <MessageInput
+          conversationId={viewState.currentConversationId}
           recipientId={viewState.recipientId}
           isGroupMessage={viewState.isGroupMessage}
           groupId={viewState.groupId}
-          onSendMessage={(newMessage) => {
-            console.log("Message sent:", newMessage);
-            dispatch({ type: "ADD_MESSAGE", payload: newMessage });
-          }}
         />
       ) : (
         showBottomNav && <BottomNav />
