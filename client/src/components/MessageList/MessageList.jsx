@@ -7,7 +7,6 @@ const MessageList = ({ groupedMessages, onMessageClick, refetch }) => {
 
   return (
     <List>
-<<<<<<< Updated upstream
       {groupedMessages.map((conversation) => {
         if (!conversation || !conversation.lastMessage) {
           return null; // Skip this iteration if data is not valid
@@ -72,36 +71,6 @@ const MessageList = ({ groupedMessages, onMessageClick, refetch }) => {
           </ListItem>
         );
       })}
-=======
-      {groupedMessages.map(({ name, mostRecentMessage }, index) => (
-        <ListItem
-          key={index}
-          button
-          onClick={() =>
-            onMessageClick(
-              mostRecentMessage.isGroupMessage
-                ? mostRecentMessage.recipientId.toString()
-                : mostRecentMessage.senderId.toString(),
-              mostRecentMessage.isGroupMessage
-            )
-          }
-        >
-          <ListItemText primary={name} secondary={mostRecentMessage.content} />
-          <Typography variant="caption">
-            {new Date(parseInt(mostRecentMessage.timestamp, 10)).toLocaleString(
-              undefined,
-              {
-                year: "2-digit",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-              }
-            )}
-          </Typography>
-        </ListItem>
-      ))}
->>>>>>> Stashed changes
     </List>
   );
 };

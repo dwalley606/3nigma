@@ -1,10 +1,5 @@
 // client/src/components/Chat/Chat.jsx
-<<<<<<< Updated upstream
 import { useEffect } from "react";
-=======
-import { useLocation, useParams } from "react-router-dom";
-import { useAuth } from "../../context/auth/AuthContext";
->>>>>>> Stashed changes
 import { useQuery } from "@apollo/client";
 import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
 import Message from "../Message/Message";
