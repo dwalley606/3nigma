@@ -132,9 +132,17 @@ const Navbar = () => {
                     </MenuItem>,
                   ]
                 ) : (
-                  <MenuItem onClick={() => handleNavigation("/login")}>
-                    Login
-                  </MenuItem>
+                  <>
+                    <MenuItem onClick={() => handleNavigation("/login")}>
+                      Login
+                    </MenuItem>
+                    <MenuItem
+                      key="signup"
+                      onClick={() => handleNavigation("/signup")}
+                    >
+                      Sign Up
+                    </MenuItem>
+                  </>
                 )}
               </Menu>
             </div>

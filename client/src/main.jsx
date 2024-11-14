@@ -8,7 +8,7 @@ import "@fontsource/roboto/700.css";
 import App from "./App.jsx";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import SignUp from "./pages/SignUp";
 import Settings from "./pages/Settings";
 import Groups from "./pages/Groups";
 import Contacts from "./pages/Contacts";
@@ -56,7 +56,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "login", element: <Login /> },
-      { path: "signup", element: <Signup /> },
+      { path: "signup", element: <SignUp /> },
       {
         path: "dashboard",
         element: (
