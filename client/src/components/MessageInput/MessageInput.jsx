@@ -8,6 +8,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { SET_SHOULD_REFETCH } from "../../context/view/viewActions";
 import { ADD_MESSAGE } from "../../context/message/messageActions";
+import { GET_CONVERSATIONS } from "../../graphql/queries/getConversations";
 
 const MessageInput = ({
   conversationId,
@@ -19,7 +20,34 @@ const MessageInput = ({
   const [message, setMessage] = useState("");
   const { state: authState } = useAuth();
   const [sendGroupMessage] = useMutation(SEND_GROUP_MESSAGE);
-  const [sendDirectMessage] = useMutation(SEND_DIRECT_MESSAGE);
+  const [sendDirectMessage] = useMutation(SEND_DIRECT_MESSAGE, {
+    update(cache, { data }) {
+      const existingConversations = cache.readQuery({
+        query: GET_CONVERSATIONS,
+        variables: { userId: authState.user.id },
+      });
+
+      if (existingConversations) {
+        const updatedConversations = existingConversations.getConversations.map(conv => {
+          if (conv.id === conversationId) {
+            return {
+              ...conv,
+              lastMessage: data.sendDirectMessage.message
+            };
+          }
+          return conv;
+        });
+
+        cache.writeQuery({
+          query: GET_CONVERSATIONS,
+          variables: { userId: authState.user.id },
+          data: {
+            getConversations: updatedConversations
+          }
+        });
+      }
+    }
+  });
   const { dispatch } = useMessages();
 
   const handleSubmit = async (e) => {
@@ -39,35 +67,19 @@ const MessageInput = ({
       }
 
       if (response && response.data) {
-        const success = isGroupMessage
-          ? response.data.sendGroupMessage.success
-          : response.data.sendDirectMessage.success;
+        const newMessage = isGroupMessage
+          ? response.data.sendGroupMessage.message
+          : response.data.sendDirectMessage.message;
 
-        if (success) {
-          const newMessage = isGroupMessage
-            ? response.data.sendGroupMessage.message
-            : response.data.sendDirectMessage.message;
-
-          console.log("Dispatching ADD_MESSAGE with payload:", {
+        dispatch({
+          type: ADD_MESSAGE,
+          payload: {
             conversationId,
-            message: newMessage,
-          });
-
-          dispatch({
-            type: ADD_MESSAGE,
-            payload: {
-              conversationId,
-              message: newMessage,
-            },
-          });
-
-          dispatch({ type: SET_SHOULD_REFETCH, payload: true });
-        }
-      } else {
-        console.error("Unexpected response structure:", response);
+            message: newMessage
+          }
+        });
+        setMessage("");
       }
-
-      setMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
     }

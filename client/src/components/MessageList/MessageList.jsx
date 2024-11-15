@@ -1,7 +1,7 @@
 import { List, ListItem, ListItemText, Typography } from "@mui/material";
 import { useAuth } from "../../context/StoreProvider"; // Import useAuth to access the signed-in user
 
-const MessageList = ({ groupedMessages, onMessageClick, refetch }) => {
+const MessageList = ({ groupedMessages, onMessageClick }) => {
   const { state: authState } = useAuth(); // Get the signed-in user's state
   const signedInUserId = authState.user?.id; // Get the signed-in user's ID
 
@@ -34,10 +34,9 @@ const MessageList = ({ groupedMessages, onMessageClick, refetch }) => {
                 conversation.id,
                 isGroup,
                 recipientId,
-                groupId // Pass groupId
-              ); // Call the onMessageClick function
-              refetch(); // Call refetch to get the latest messages for the selected group
-            }} // Pass groupId and recipientId
+                groupId
+              );
+            }}
           >
             <ListItemText
               primary={

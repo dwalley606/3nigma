@@ -10,22 +10,35 @@ const Home = () => {
 
   useEffect(() => {
     if (state.user) {
-      navigate("/dashboard"); // Redirect to dashboard if user is authenticated
+      navigate("/dashboard");
     }
   }, [state.user, navigate]);
 
   return (
-    <Box sx={styles.container}>
-      <Typography variant="h1" sx={styles.title}>
+    <Box sx={{
+      padding: "20px",
+      textAlign: "center",
+      maxWidth: "600px",
+      margin: "0 auto",
+      marginTop: "10vh"
+    }}>
+      <Typography variant="h1" sx={{ marginBottom: "20px" }}>
         Welcome to Your Messaging App
       </Typography>
-      <Typography variant="body1" sx={styles.description}>
+      <Typography variant="body1" sx={{ marginBottom: "20px" }}>
         Experience secure and seamless communication with our end-to-end
         encrypted messaging app. Access your messages anywhere with our
         Progressive Web App (PWA) capabilities.
       </Typography>
-      <Box sx={styles.infoBox}>
-        <Typography variant="h2" sx={styles.subtitle}>
+      <Box sx={{
+        marginTop: "20px",
+        padding: "10px",
+        border: "1px solid #ddd",
+        borderRadius: "5px",
+        backgroundColor: "#f9f9f9",
+        textAlign: "left"
+      }}>
+        <Typography variant="h2" sx={{ marginBottom: "10px" }}>
           Features:
         </Typography>
         <ul>
@@ -36,12 +49,17 @@ const Home = () => {
           <li>Customize your profile and settings</li>
         </ul>
       </Box>
-      <Box sx={styles.buttonContainer}>
+      <Box sx={{
+        marginTop: "20px",
+        display: "flex",
+        justifyContent: "center",
+        gap: "10px"
+      }}>
         <Button
           variant="contained"
           color="primary"
           onClick={() => navigate("/signup")}
-          sx={styles.button}
+          sx={{ minWidth: "120px" }}
         >
           Sign Up
         </Button>
@@ -49,48 +67,13 @@ const Home = () => {
           variant="outlined"
           color="primary"
           onClick={() => navigate("/login")}
-          sx={styles.button}
+          sx={{ minWidth: "120px" }}
         >
           Log In
         </Button>
       </Box>
     </Box>
   );
-};
-
-const styles = {
-  container: {
-    padding: "20px",
-    textAlign: "center",
-    maxWidth: "600px",
-    margin: "0 auto",
-  },
-  title: {
-    marginBottom: "20px",
-  },
-  description: {
-    marginBottom: "20px",
-  },
-  infoBox: {
-    marginTop: "20px",
-    padding: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    backgroundColor: "#f9f9f9",
-    textAlign: "left",
-  },
-  subtitle: {
-    marginBottom: "10px",
-  },
-  buttonContainer: {
-    marginTop: "20px",
-    display: "flex",
-    justifyContent: "center",
-    gap: "10px",
-  },
-  button: {
-    minWidth: "120px",
-  },
 };
 
 export default Home;
