@@ -16,7 +16,7 @@ const Chat = ({ conversationId }) => {
   const { state: messageState, dispatch } = useMessages();
   const userId = authState.user?.id;
 
-  const { loading, error, data } = useQuery(GET_CONVERSATION, {
+  const { loading, error, data, refetch } = useQuery(GET_CONVERSATION, {
     variables: { conversationId },
     skip: !conversationId, // Ensure the query only runs if conversationId is valid
   });
@@ -38,6 +38,34 @@ const Chat = ({ conversationId }) => {
 
   // Use messages from global state
   const messages = messageState.conversations?.[conversationId]?.messages || [];
+
+  // Handle new messages being sent
+  useEffect(() => {
+    const handleNewMessage = (newMessage) => {
+      console.log("Messages before sending new message:", messages); // Log messages before sending
+      // Update local state immediately when a new message is sent
+      dispatch({
+        type: SET_MESSAGES,
+        payload: {
+          conversationId,
+          messages: [...messages, newMessage], // Append the new message
+        },
+      });
+      console.log("Messages after sending new message:", [
+        ...messages,
+        newMessage,
+      ]); // Log messages after sending
+    };
+
+    // Assuming you have a way to listen for new messages
+    // This could be a subscription or an event listener
+    // Example: socket.on('newMessage', handleNewMessage);
+
+    return () => {
+      // Clean up the listener if necessary
+      // socket.off('newMessage', handleNewMessage);
+    };
+  }, [dispatch, conversationId, messages]);
 
   if (loading) return <Typography>Loading messages...</Typography>;
   if (error)

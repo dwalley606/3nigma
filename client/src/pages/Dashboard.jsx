@@ -1,6 +1,7 @@
 import { useAuth } from "../context/StoreProvider";
 import { useQuery } from "@apollo/client";
 import { GET_CONVERSATIONS } from "../graphql/queries/getConversations";
+import { GET_CONVERSATION } from "../graphql/queries/getConversation";
 import MessageList from "../components/MessageList/MessageList";
 import Chat from "../components/Chat/Chat";
 import Typography from "@mui/material/Typography";
@@ -21,17 +22,27 @@ const Dashboard = () => {
 
   const userId = authState.user.id;
 
-  const { loading, error, data, refetch } = useQuery(GET_CONVERSATIONS, {
+  const {
+    loading,
+    error,
+    data,
+    refetch: refetchConversations,
+  } = useQuery(GET_CONVERSATIONS, {
     variables: { userId },
     skip: !userId,
   });
 
+  const { refetch: refetchConversation } = useQuery(GET_CONVERSATION, {
+    variables: { conversationId: viewState.currentConversationId },
+    skip: !viewState.currentConversationId,
+  });
+
   useEffect(() => {
     if (viewState.shouldRefetch) {
-      refetch();
+      refetchConversations();
       viewDispatch({ type: SET_SHOULD_REFETCH, payload: false }); // Reset the refetch trigger
     }
-  }, [viewState.shouldRefetch, refetch, viewDispatch]);
+  }, [viewState.shouldRefetch, refetchConversations, viewDispatch]);
 
   useEffect(() => {
     if (!viewState.isChatActive) {
@@ -42,14 +53,15 @@ const Dashboard = () => {
     }
   }, [viewState.isChatActive, viewDispatch]);
 
-  if (loading) return <Typography>Loading conversations...</Typography>;
-  if (error)
-    return (
-      <Typography>Error fetching conversations: {error.message}</Typography>
-    );
-
-  // Pass the raw data to MessageList for sorting
-  const conversations = data?.getConversations || [];
+  useEffect(() => {
+    if (viewState.currentConversationId && !viewState.isChatActive) {
+      refetchConversations(); // Only refetch when navigating back to MessageList
+    }
+  }, [
+    viewState.currentConversationId,
+    viewState.isChatActive,
+    refetchConversations,
+  ]);
 
   const handleMessageClick = (
     conversationId,
@@ -71,6 +83,8 @@ const Dashboard = () => {
       viewDispatch({ type: SET_RECIPIENT_ID, payload: recipientId }); // Set the recipient ID
     }
 
+    refetchConversation();
+
     console.log("Updated viewState after clicking:", {
       currentConversationId: conversationId,
       isGroupMessage: isGroup,
@@ -78,6 +92,15 @@ const Dashboard = () => {
       groupId: isGroup ? groupId : null,
     }); // Log the updated viewState
   };
+
+  if (loading) return <Typography>Loading conversations...</Typography>;
+  if (error)
+    return (
+      <Typography>Error fetching conversations: {error.message}</Typography>
+    );
+
+  // Pass the raw data to MessageList for sorting
+  const conversations = data?.getConversations || [];
 
   return (
     <Box
@@ -96,7 +119,7 @@ const Dashboard = () => {
           padding: 2,
         }}
       >
-        {viewState.currentConversationId ? (
+        {viewState.isChatActive ? ( // Use isChatActive to determine which component to show
           <Chat conversationId={viewState.currentConversationId} />
         ) : (
           <MessageList
@@ -104,6 +127,7 @@ const Dashboard = () => {
             onMessageClick={(conversationId, isGroup, recipientId, groupId) =>
               handleMessageClick(conversationId, isGroup, recipientId, groupId)
             }
+            refetch={refetchConversations}
           />
         )}
       </Box>
