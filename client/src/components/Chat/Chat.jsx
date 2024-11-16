@@ -9,6 +9,7 @@ import { useAuth } from "../../context/StoreProvider";
 import { useMessages } from "../../context/StoreProvider";
 import { SET_MESSAGES } from "../../context/message/messageActions";
 import { useView } from "../../context/StoreProvider";
+import MessageInput from "../MessageInput/MessageInput";
 
 const Chat = ({ conversationId }) => {
   console.log("Chat component mounted with conversationId:", conversationId);
@@ -62,15 +63,22 @@ const Chat = ({ conversationId }) => {
     <Box sx={{
       display: "flex",
       flexDirection: "column",
-      justifyContent: "flex-end",
-      height: "80vh",
+      justifyContent: "space-between",
+      height: "100%",
       overflowY: "auto",
-      padding: 2,
     }}>
-      {messages.map((message) => {
-        const isOwner = message.sender.id === userId;
-        return <Message key={message.id} message={message} isOwner={isOwner} />;
-      })}
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        {messages.map((message) => {
+          const isOwner = message.sender.id === userId;
+          return <Message key={message.id} message={message} isOwner={isOwner} />;
+        })}
+      </Box>
+      <MessageInput
+        conversationId={conversationId}
+        recipientId={viewState.recipientId}
+        isGroupMessage={viewState.isGroupMessage}
+        groupId={viewState.groupId}
+      />
     </Box>
   );
 };

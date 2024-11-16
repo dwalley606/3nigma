@@ -90,11 +90,14 @@ const MessageInput = ({
       component="form"
       onSubmit={handleSubmit}
       sx={{
+        position: 'sticky',
+        bottom: 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         width: "100%",
         padding: 1,
+        zIndex: 1,
       }}
     >
       <TextField

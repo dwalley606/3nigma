@@ -14,10 +14,14 @@ import {
   SET_RECIPIENT_ID,
   SET_GROUP_ID,
 } from "../context/view/viewActions";
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const Dashboard = () => {
   const { state: viewState, dispatch: viewDispatch } = useView();
   const { state: authState } = useAuth();
+  const theme = useTheme();
+  const isTabletOrLarger = useMediaQuery(theme.breakpoints.up('sm'));
 
   const userId = authState.user.id;
 
@@ -62,37 +66,45 @@ const Dashboard = () => {
       <Typography>Error fetching conversations: {error.message}</Typography>
     );
 
-  // Pass the raw data to MessageList for sorting
   const conversations = data?.getConversations || [];
 
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "80vh",
-        overflow: "hidden",
-        marginTop: "10vh",
+        display: 'flex',
+        flexDirection: isTabletOrLarger ? 'row' : 'column',
+        height: isTabletOrLarger ? '80vh' : (viewState.isChatActive ? '90vh' : '80vh'),
+        overflow: 'hidden',
+        marginTop: '10vh',
       }}
     >
-      <Box
-        sx={{
-          flexGrow: 1,
-          overflowY: "auto",
-          padding: 2,
-        }}
-      >
-        {viewState.isChatActive ? ( // Use isChatActive to determine which component to show
-          <Chat conversationId={viewState.currentConversationId} />
-        ) : (
+      {(!viewState.isChatActive || isTabletOrLarger) && (
+        <Box
+          sx={{
+            flex: isTabletOrLarger ? '1 1 33%' : '1 1 100%',
+            overflowY: 'auto',
+            padding: 2,
+          }}
+        >
           <MessageList
-            groupedMessages={conversations} // Pass raw conversations
-            onMessageClick={(conversationId, isGroup, recipientId, groupId) =>
-              handleMessageClick(conversationId, isGroup, recipientId, groupId)
-            }
+            groupedMessages={conversations}
+            onMessageClick={handleMessageClick}
           />
-        )}
-      </Box>
+        </Box>
+      )}
+      {(viewState.isChatActive || isTabletOrLarger) && (
+        <Box
+          sx={{
+            flex: isTabletOrLarger ? '2 1 67%' : '1 1 100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto',
+            padding: 2,
+          }}
+        >
+          <Chat conversationId={viewState.currentConversationId} />
+        </Box>
+      )}
     </Box>
   );
 };

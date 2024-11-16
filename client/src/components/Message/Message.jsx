@@ -12,7 +12,7 @@ const Message = ({ message, isOwner }) => {
       sx={{
         display: "flex",
         justifyContent: isOwner ? "flex-end" : "flex-start",
-        mb: 1,
+        margin: 1,
       }}
     >
       <Paper

@@ -4,15 +4,18 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { Outlet, useLocation } from "react-router-dom";
 import NavBar from "./components/NavBar/NavBar";
 import BottomNav from "./components/BottomNav/BottomNav";
-import MessageInput from "./components/MessageInput/MessageInput";
 import { useAuth, useView } from "./context/StoreProvider";
 import { loggedIn, refreshToken } from "./utils/auth";
 import cyberpunkTheme from "./theme/cyberpunkTheme";
+import useMediaQuery from '@mui/material/useMediaQuery'; // Import useMediaQuery
+import { useTheme } from '@mui/material/styles';
 
 function App() {
   const { state: authState, dispatch } = useAuth();
   const { state: viewState } = useView();
   const location = useLocation();
+  const theme = useTheme();
+  const isTabletOrLarger = useMediaQuery(theme.breakpoints.up('sm')); // Determine if screen is tablet or larger
 
   React.useEffect(() => {
     const checkToken = async () => {
@@ -31,9 +34,7 @@ function App() {
   }, [authState.authToken, dispatch]);
 
   // Define the routes where BottomNav should be displayed
-  const showBottomNav = ["/dashboard", "/groups", "/contacts"].includes(
-    location.pathname
-  );
+  const showBottomNav = isTabletOrLarger || (["/dashboard", "/groups", "/contacts"].includes(location.pathname) && !viewState.isChatActive);
 
   return (
     <ThemeProvider theme={cyberpunkTheme}>
@@ -46,16 +47,7 @@ function App() {
           overflow: "auto", // Optional: Add overflow if needed
         }}
       />
-      {viewState.isChatActive ? (
-        <MessageInput
-          conversationId={viewState.currentConversationId}
-          recipientId={viewState.recipientId}
-          isGroupMessage={viewState.isGroupMessage}
-          groupId={viewState.groupId}
-        />
-      ) : (
-        showBottomNav && <BottomNav />
-      )}
+      {showBottomNav && <BottomNav />}
     </ThemeProvider>
   );
 }
