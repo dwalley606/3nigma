@@ -3,34 +3,49 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Description
-I started this project as the first showcase of my new skills following the completetion of a full stack coding bootcamp. Beginning with the MERN stack, I decided I wanted to build a messging app that is universally compatible by running in the browser, was fully end-to-end encrypted, and could be used offline as a progressive web app.
+3NIGMA is a messaging application designed to be universally compatible by running in the browser. It is fully end-to-end encrypted and can be used offline as a progressive web app. This project is a showcase of my skills following the completion of a full-stack coding bootcamp, utilizing the MERN stack.
 
 ## Table of Contents
 
-1. [Installation](#installation)
-2. [Usage](#usage)
-3. [License](#license)
-4. [Contributing](#contributing)
-5. [Tests](#tests)
+1. [Overview](#overview)
+2. [Technologies Used](#technologies-used)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [License](#license)
+6. [Contributing](#contributing)
+7. [Tests](#tests)
+8. [Questions](#questions)
+
+## Overview
+3NIGMA aims to provide a secure and accessible messaging platform for users of all technical backgrounds. Its progressive web app nature ensures it can be used offline, making it a versatile communication tool.
+
+## Technologies Used
+- MongoDB
+- Express.js
+- React.js
+- Node.js
+- Progressive Web App (PWA) features
+- End-to-end encryption
 
 ## Installation
-If you would like to install this project locally, feel free to clone the repository, install dependencies with npm install, and use npm run develop to simultaneously start the server and build the client. You must have a local mongodb installation to run locally.
+To install this project locally, clone the repository and install dependencies with `npm install`. Use `npm run develop` to simultaneously start the server and build the client. Ensure you have a local MongoDB installation to run the project locally.
 
 ## Usage
-I'd like to eventually use this app to communicate with friends and family members who aren't tech savvy but want to stay in touch. Functioning like an "app" while being universally compatible allows those without technology experiencce to message with the best!
+3NIGMA is designed to be user-friendly for those who aren't tech-savvy. It functions like an "app" while being universally compatible. Below are some screenshots and examples of how to use the app.
 
+![Screenshot](path/to/screenshot.png)
 
 ## License
 This project is covered under the MIT license. For more information, click the link below.
 [License Link](https://opensource.org/licenses/MIT)
 
 ## Contributing
-As of November, 2024 I am the sole contributor to this project. If you'd like to contribute please reach out to my email below!
+As of November 2024, I am the sole contributor to this project. If you'd like to contribute, please reach out to my email below. Contributions are welcome, and I am open to collaboration.
 
 ## Tests
-At this stage I have not begun writing tests yet but plan to write a full suite of unit tests using Jest, and explore more robust testing options.
+Currently, there are no tests written, but I plan to implement a full suite of unit tests using Jest and explore more robust testing options.
 
 ## Questions
-Have questions about this project? Please see my Github profile at https://github.com/dwalley606.
+Have questions about this project? Please visit my [GitHub profile](https://github.com/dwalley606).
 
 You can also send me an email at dwalley606@gmail.com.
