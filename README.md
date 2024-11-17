@@ -20,9 +20,9 @@ If you would like to install this project locally, feel free to clone the reposi
 I'd like to eventually use this app to communicate with friends and family members who aren't tech savvy but want to stay in touch. Functioning like an "app" while being universally compatible allows those without technology experiencce to message with the best!
 
 
-    ## License
-    This project is covered under the MIT license. For more information, click the link below.
-    [License Link](https://opensource.org/licenses/MIT)
+## License
+This project is covered under the MIT license. For more information, click the link below.
+[License Link](https://opensource.org/licenses/MIT)
 
 ## Contributing
 As of November, 2024 I am the sole contributor to this project. If you'd like to contribute please reach out to my email below!
