@@ -5,6 +5,8 @@
 ## Description
 3NIGMA is a messaging application designed to be universally compatible by running in the browser. It is fully end-to-end encrypted and can be used offline as a progressive web app. This project is a showcase of my skills following the completion of a full-stack coding bootcamp, utilizing the MERN stack.
 
+Please note, this is my first iteration of the app and I have not integrated encryption yet. Do not send private or sensitive information as it is visible in the db.
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -31,6 +33,7 @@
 To install this project locally, clone the repository and install dependencies with `npm install`. Use `npm run develop` to simultaneously start the server and build the client. Ensure you have a local MongoDB installation to run the project locally.
 
 ## Usage
+To access the live deployment, please use this link: [Render Link]
 3NIGMA is designed to be user-friendly for those who aren't tech-savvy. It functions like an "app" while being universally compatible. Below are some screenshots and examples of how to use the app.
 
 ![Screenshot](path/to/screenshot.png)
