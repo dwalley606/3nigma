@@ -110,6 +110,12 @@ const MessageInput = ({
         variant="filled"
         fullWidth
         sx={{ marginRight: 1 }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit(e);
+          }
+        }}
       />
       <Button type="submit" variant="contained" color="primary">
         Send

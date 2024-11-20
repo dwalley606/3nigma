@@ -1,5 +1,5 @@
 // client/src/components/Chat/Chat.jsx
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_CONVERSATION } from "../../graphql/queries/getConversation";
 import Message from "../Message/Message";
@@ -38,6 +38,14 @@ const Chat = ({ conversationId }) => {
   // Use messages from context
   const messages = messageState.conversations?.[conversationId]?.messages || [];
 
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   // If no conversationId, show empty chat
   if (!conversationId) {
     return (
@@ -65,13 +73,21 @@ const Chat = ({ conversationId }) => {
       flexDirection: "column",
       justifyContent: "space-between",
       height: "100%",
-      overflowY: "auto",
+      overflow: "hidden",
     }}>
-      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+      <Box sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        overflowY: 'auto',
+        padding: 2,
+      }}>
         {messages.map((message) => {
           const isOwner = message.sender.id === userId;
           return <Message key={message.id} message={message} isOwner={isOwner} />;
         })}
+        <div ref={messagesEndRef} />
       </Box>
       <MessageInput
         conversationId={conversationId}
