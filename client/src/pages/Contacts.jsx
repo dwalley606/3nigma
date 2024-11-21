@@ -82,7 +82,6 @@ const Contacts = () => {
         flexDirection: "column",
         height: "80vh", // Adjust to fit within the remaining space
         overflow: "auto",
-        marginTop: "10vh",
       }}
     >
       <ContactRequests userId={state.user.id} />

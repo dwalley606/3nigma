@@ -109,7 +109,16 @@ const MessageInput = ({
         maxRows={4}
         variant="filled"
         fullWidth
-        sx={{ marginRight: 1 }}
+        sx={{
+          marginRight: 1,
+          '& .MuiInputBase-root': {
+            borderRadius: '10px',
+            padding: '10px',
+          },
+          '& .MuiInputBase-input::placeholder': {
+            lineHeight: 'normal',
+          },
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();

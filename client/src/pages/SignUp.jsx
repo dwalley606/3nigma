@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { useNavigate } from "react-router-dom"; // Updated import
+import { useNavigate } from "react-router-dom";
 import { REGISTER_USER } from "../graphql/mutations/registerUser";
+import { Container, TextField, Button, Typography, Box, Alert } from "@mui/material";
 
 const SignUp = () => {
   const [username, setUsername] = useState("");
@@ -9,7 +10,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const navigate = useNavigate(); // Updated hook
+  const navigate = useNavigate();
   const [registerUser, { loading, error }] = useMutation(REGISTER_USER);
 
   const handleSubmit = async (event) => {
@@ -19,7 +20,7 @@ const SignUp = () => {
         variables: { username, email, password, phoneNumber },
       });
       console.log("User registered:", response.data.registerUser);
-      setShowAlert(true); // Show the alert
+      setShowAlert(true);
     } catch (err) {
       console.error("Registration error:", err);
     }
@@ -27,63 +28,91 @@ const SignUp = () => {
 
   const handleAlertClose = () => {
     setShowAlert(false);
-    navigate("/login"); // Updated navigation
+    navigate("/login");
   };
 
   return (
-    <div>
-      <h2 className="login-title">Sign Up</h2>
-      <form onSubmit={handleSubmit} className="signup-form">
-        <label htmlFor="username">Username:</label>
-        <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-
-        <label htmlFor="email">Email:</label>
-        <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <label htmlFor="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <label htmlFor="phoneNumber">Phone Number:</label>
-        <input
-          type="tel"
-          id="phoneNumber"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          required
-        />
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Signing up..." : "Sign Up"}
-        </button>
-
-        {error && <p>Error signing up: {error.message}</p>}
-      </form>
-
-      {showAlert && (
-        <div className="alert">
-          <p>Registration successful! Please log in.</p>
-          <button onClick={handleAlertClose}>OK</button>
-        </div>
-      )}
-    </div>
+    <Container maxWidth="xs">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          mt: 8,
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          Sign Up
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width: '100%' }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            label="Username"
+            name="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            variant="outlined"
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email"
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            variant="outlined"
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="password"
+            label="Password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            variant="outlined"
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="phoneNumber"
+            label="Phone Number"
+            name="phoneNumber"
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            variant="outlined"
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            {loading ? "Signing up..." : "Sign Up"}
+          </Button>
+          {error && (
+            <Typography color="error">Error signing up: {error.message}</Typography>
+          )}
+        </Box>
+        {showAlert && (
+          <Alert severity="success" onClose={handleAlertClose} sx={{ mt: 2 }}>
+            Registration successful! Please log in.
+          </Alert>
+        )}
+      </Box>
+    </Container>
   );
 };
 

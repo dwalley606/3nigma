@@ -75,7 +75,6 @@ const Dashboard = () => {
         flexDirection: isTabletOrLarger ? 'row' : 'column',
         height: isTabletOrLarger ? '80vh' : (viewState.isChatActive ? '90vh' : '80vh'),
         overflow: 'hidden',
-        marginTop: '10vh',
       }}
     >
       {(!viewState.isChatActive || isTabletOrLarger) && (

@@ -7,15 +7,16 @@ import BottomNav from "./components/BottomNav/BottomNav";
 import { useAuth, useView } from "./context/StoreProvider";
 import { loggedIn, refreshToken } from "./utils/auth";
 import cyberpunkTheme from "./theme/cyberpunkTheme";
-import useMediaQuery from '@mui/material/useMediaQuery'; // Import useMediaQuery
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 
 function App() {
   const { state: authState, dispatch } = useAuth();
   const { state: viewState } = useView();
   const location = useLocation();
   const theme = useTheme();
-  const isTabletOrLarger = useMediaQuery(theme.breakpoints.up('sm')); // Determine if screen is tablet or larger
+  const isTabletOrLarger = useMediaQuery(theme.breakpoints.up('sm'));
 
   React.useEffect(() => {
     const checkToken = async () => {
@@ -33,20 +34,21 @@ function App() {
     checkToken();
   }, [authState.authToken, dispatch]);
 
-  // Define the routes where BottomNav should be displayed
   const showBottomNav = isTabletOrLarger || (["/dashboard", "/groups", "/contacts"].includes(location.pathname) && !viewState.isChatActive);
 
   return (
     <ThemeProvider theme={cyberpunkTheme}>
       <CssBaseline />
       <NavBar />
-      <Outlet
-        style={{
+      <Box
+        sx={{
           marginTop: "10vh",
-          height: "80vh",
-          overflow: "auto", // Optional: Add overflow if needed
+          height: isTabletOrLarger || showBottomNav ? "80vh" : "90vh",
+          overflow: "auto",
         }}
-      />
+      >
+        <Outlet />
+      </Box>
       {showBottomNav && <BottomNav />}
     </ThemeProvider>
   );

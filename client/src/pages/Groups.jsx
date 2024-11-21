@@ -13,7 +13,6 @@ const Groups = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "flex-start",
-        marginTop: "10vh",
         padding: 2,
         height: "80vh",
         overflowY: "auto",

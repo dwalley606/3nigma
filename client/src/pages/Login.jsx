@@ -49,7 +49,7 @@ const LoginForm = () => {
         <Typography component="h1" variant="h5">
           Login
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, width: '100%' }}>
           <TextField
             margin="normal"
             required
@@ -61,6 +61,12 @@ const LoginForm = () => {
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            variant="outlined"
+            sx={{
+              '& .MuiInputLabel-root': {
+                position: 'relative',
+              },
+            }}
           />
           <TextField
             margin="normal"
@@ -73,6 +79,12 @@ const LoginForm = () => {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            variant="outlined"
+            sx={{
+              '& .MuiInputLabel-root': {
+                position: 'relative',
+              },
+            }}
           />
           <Button
             type="submit"
