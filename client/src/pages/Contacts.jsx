@@ -77,55 +77,67 @@ const Contacts = () => {
   return (
     <Box
       sx={{
-        padding: 2,
-        display: "flex",
-        flexDirection: "column",
-        height: "80vh", // Adjust to fit within the remaining space
-        overflow: "auto",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%', 
       }}
     >
-      <ContactRequests userId={state.user.id} />
-      {contacts.length === 0 ? (
-        <Typography>No Current Contacts</Typography>
-      ) : (
-        <List>
-          {contacts.map((contact) => (
-            <ListItem
-              key={contact.id}
-              secondaryAction={
-                
-                <IconButton 
-                  color="secondary"
-                  edge="end" 
-                  onClick={() => handleMessageClick(contact.id)}
-                  aria-label="message"
-                >
-                  <MessageIcon />
-                </IconButton>
-              }
-            >
-              <ListItemText
-                primary={contact.username}
-                secondary={contact.email}
-              />
-            </ListItem>
-          ))}
-        </List>
-      )}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setShowAddContact(!showAddContact)}
+      <Box
+        sx={{
+          padding: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '80vh', // Adjust to fit within the remaining space
+          overflow: 'auto',
+          width: '100%',
+          maxWidth: '600px',
+          boxShadow: 3, // Optional: add some shadow for better visibility
+          backgroundColor: 'background.paper', // Optional: set a background color
+        }}
       >
-        {showAddContact ? "Hide Add Contact" : "Add Contact"}
-      </Button>
-      {showAddContact && (
-        <AddContact
-          existingContacts={contacts}
-          requestedUserIds={new Set()} // Adjust as needed
-        />
-      )}
-      <BottomNav />
+        <ContactRequests userId={state.user.id} />
+        {contacts.length === 0 ? (
+          <Typography>No Current Contacts</Typography>
+        ) : (
+          <List>
+            {contacts.map((contact) => (
+              <ListItem
+                key={contact.id}
+                secondaryAction={
+                  <IconButton
+                    color="secondary"
+                    edge="end"
+                    onClick={() => handleMessageClick(contact.id)}
+                    aria-label="message"
+                  >
+                    <MessageIcon />
+                  </IconButton>
+                }
+              >
+                <ListItemText
+                  primary={contact.username}
+                  secondary={contact.email}
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setShowAddContact(!showAddContact)}
+        >
+          {showAddContact ? "Hide Add Contact" : "Add Contact"}
+        </Button>
+        {showAddContact && (
+          <AddContact
+            existingContacts={contacts}
+            requestedUserIds={new Set()} // Adjust as needed
+          />
+        )}
+        <BottomNav />
+      </Box>
     </Box>
   );
 };

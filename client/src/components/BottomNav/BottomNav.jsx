@@ -7,24 +7,27 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import ContactsIcon from "@mui/icons-material/Contacts";
 import AddIcon from "@mui/icons-material/Add";
 import { useTheme } from "@mui/material/styles";
-import useMediaQuery from '@mui/material/useMediaQuery'; // Import useMediaQuery
-import { useView } from "../../context/StoreProvider"; // Import your context hook
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useView } from "../../context/StoreProvider";
 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const { state: viewState } = useView(); // Access the view state
-  const isTabletOrLarger = useMediaQuery(theme.breakpoints.up('sm')); // Determine if screen is tablet or larger
+  const { state: viewState } = useView();
+  const isTabletOrLarger = useMediaQuery(theme.breakpoints.up('sm'));
 
   const [value, setValue] = React.useState(location.pathname);
 
   const handleNavigationChange = (event, newValue) => {
     setValue(newValue);
-    navigate(newValue);
+    if (newValue === "/groups/create-group") {
+      navigate("/groups", { state: { showCreateGroup: true } });
+    } else {
+      navigate(newValue);
+    }
   };
 
-  // Determine the actions based on the current location
   const actions = (() => {
     switch (location.pathname) {
       case "/dashboard":
@@ -90,9 +93,8 @@ const BottomNav = () => {
     }
   })();
 
-  // Conditionally render BottomNav based on isChatActive and screen size
   if (!isTabletOrLarger && viewState.isChatActive) {
-    return null; // Dismount BottomNav when chat is active on smaller screens
+    return null;
   }
 
   return (

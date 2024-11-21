@@ -13,12 +13,16 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import { SET_CHAT_ACTIVE, SET_SHOULD_REFETCH } from "../../context/view/viewActions";
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 const Navbar = () => {
   const { state, dispatch: authDispatch } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const { state: viewState, dispatch: viewDispatch } = useView();
+  const theme = useTheme();
+  const isTabletOrLarger = useMediaQuery(theme.breakpoints.up('sm'));
 
   console.log("isChatActive in NavBar:", viewState.isChatActive);
 
@@ -66,7 +70,7 @@ const Navbar = () => {
           }}
         >
           <Toolbar sx={{ height: "100%" }}>
-            {viewState.isChatActive && (
+            {viewState.isChatActive && !isTabletOrLarger && (
               <IconButton
                 size="large"
                 edge="start"

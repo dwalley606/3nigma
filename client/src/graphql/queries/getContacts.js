@@ -6,6 +6,7 @@ export const GET_CONTACTS = gql`
       id
       username
       email
+      conversationId
     }
   }
 `;

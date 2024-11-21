@@ -79,8 +79,15 @@ const typeDefs = `
     message: Message!
   }
 
+  type UserWithConversation {
+    id: ID!
+    username: String!
+    email: String!
+    conversationId: ID
+  }
+
   type Query {
-    getContacts(userId: ID!): [User!]!
+    getContacts(userId: ID!): [UserWithConversation!]!
     getConversations(userId: ID!): [Conversation!]!
     getDirectMessages(userId: ID!): [Message!]!
     getGroupMessages(groupId: ID!): [Message!]!

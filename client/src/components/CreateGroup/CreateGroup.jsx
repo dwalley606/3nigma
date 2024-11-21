@@ -18,12 +18,10 @@ import {
 } from "@mui/material";
 import { useAuth } from "../../context/StoreProvider";
 import { useGroups } from "../../context/StoreProvider";
-import { useNavigate } from "react-router-dom";
 
 const CreateGroup = ({ onGroupCreated = () => {} }) => {
   const { state } = useAuth();
   const userId = state.user?.id;
-  const navigate = useNavigate();
 
   const { loading, error, data } = useQuery(GET_CONTACTS, {
     variables: { userId },
@@ -32,7 +30,6 @@ const CreateGroup = ({ onGroupCreated = () => {} }) => {
     onCompleted: (createGroupData) => {
       dispatch({ type: "ADD_GROUP", payload: createGroupData.createGroup });
       onGroupCreated();
-      navigate("/groups");
     },
   });
   const [groupName, setGroupName] = useState("");
@@ -71,8 +68,9 @@ const CreateGroup = ({ onGroupCreated = () => {} }) => {
     }
   };
 
-  const handleClose = () => {
-    navigate("/groups"); // Navigate back to the Groups page
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    onGroupCreated();
   };
 
   return (
@@ -122,7 +120,7 @@ const CreateGroup = ({ onGroupCreated = () => {} }) => {
         <Button variant="contained" color="primary" onClick={handleSubmit}>
           Create Group
         </Button>
-        <Button variant="outlined" color="primary" onClick={handleClose}>
+        <Button variant="outlined" color="primary" onClick={handleCloseDialog}>
           Close
         </Button>
       </Stack>

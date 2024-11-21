@@ -70,16 +70,23 @@ const GroupList = () => {
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
+    <Box sx={{ 
+      padding: 2,
+      width: '100%',
+      maxWidth: 600,
+    }}>
       {!isGroupOptionsOpen && !isAddUserOpen ? (
         <>
-          <Typography variant="h6">Your Groups</Typography>
+          <Typography variant="h6" align="center" sx={{ marginBottom: 2 }}>
+            Your Groups
+          </Typography>
           <List>
             {groupState.groups.map((group) => (
               <ListItem
                 key={group.id}
                 onClick={() => handleGroupClick(group)}
                 button
+                sx={{ display: 'flex', justifyContent: 'space-between' }}
               >
                 <ListItemText
                   primary={group.name}
@@ -94,17 +101,17 @@ const GroupList = () => {
                       </Typography>
                     )
                   }
+                  sx={{ flexGrow: 1 }}
                 />
-                <Stack direction="row" spacing={1} sx={{ marginTop: 1 }}>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleGroupClick(group);
-                    }}
-                  >
-                    Options
-                  </Button>
-                </Stack>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleGroupClick(group);
+                  }}
+                  sx={{ marginLeft: 'auto' }}
+                >
+                  Options
+                </Button>
               </ListItem>
             ))}
           </List>
@@ -120,6 +127,7 @@ const GroupList = () => {
         <AddUserToGroup
           groupId={selectedGroup.id}
           onUserAdded={handleUserAdded}
+          existingMembers={selectedGroup.members}
         />
       ) : null}
     </Box>

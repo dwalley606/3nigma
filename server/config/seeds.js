@@ -32,6 +32,7 @@ const seedDatabase = async () => {
         lastSeen: new Date().toISOString(),
         profilePicUrl: `https://example.com/user${i}.jpg`,
         contacts: [], // Initialize contacts array
+        groups: [], // Initialize groups array
       });
       await user.save(); // This will trigger the pre-save middleware
       users.push(user);
@@ -62,9 +63,19 @@ const seedDatabase = async () => {
       members: groupMembers.map((user) => user._id),
       admins: [groupMembers[0]._id],
       createdAt: new Date().toISOString(),
-      description: "This is Group1",
+      updatedAt: new Date().toISOString(),
     });
     await group.save();
+
+    console.log("Group created with ID:", group._id);
+
+    // Update each user's groups field with the correct groupId
+    for (const member of groupMembers) {
+      member.groups.push(group._id);
+      await member.save();
+    }
+
+    console.log("Group IDs added to users' groups field.");
 
     // Create group messages
     const groupMessages = [];
@@ -75,7 +86,6 @@ const seedDatabase = async () => {
           groupRecipientId: group._id,
           content: `Message ${j} from ${user.username} to Group1`,
           timestamp: new Date().toISOString(),
-          read: false,
           isGroupMessage: true,
         });
         groupMessages.push(message);
@@ -83,17 +93,18 @@ const seedDatabase = async () => {
     }
     const insertedGroupMessages = await Message.insertMany(groupMessages);
 
-    // Create group conversation with name field and groupId
+    // Create group conversation
     const groupConversation = new Conversation({
       participants: groupMembers.map((user) => user._id),
       isGroup: true,
-      messages: insertedGroupMessages.map((msg) => msg._id), // Store message IDs
-      lastMessage: insertedGroupMessages[insertedGroupMessages.length - 1]._id, // Set lastMessage to the last inserted message
-      name: group.name, // Add the name field for the group conversation
-      groupId: group._id, // Set the groupId to associate with the group
-      updatedAt: new Date().toISOString(),
+      messages: insertedGroupMessages.map((msg) => msg._id),
+      lastMessage: insertedGroupMessages[insertedGroupMessages.length - 1]._id,
+      name: group.name,
+      groupId: group._id,
     });
     await groupConversation.save();
+
+    console.log("Group conversation created.");
 
     // Create non-group (direct) conversations and messages
     for (let i = 0; i < users.length; i++) {
@@ -101,9 +112,8 @@ const seedDatabase = async () => {
         const conversation = new Conversation({
           participants: [users[i]._id, users[j]._id],
           isGroup: false,
-          messages: [], // Initialize messages array
+          messages: [],
           lastMessage: null,
-          updatedAt: new Date().toISOString(),
         });
         await conversation.save();
 
@@ -114,26 +124,21 @@ const seedDatabase = async () => {
             userRecipientId: users[j]._id,
             content: `Direct message ${k} from ${users[i].username} to ${users[j].username}`,
             timestamp: new Date().toISOString(),
-            read: false,
             isGroupMessage: false,
           });
           messages.push(message);
         }
         const insertedDirectMessages = await Message.insertMany(messages);
 
-        // Update messages and lastMessage for direct conversation
         if (insertedDirectMessages.length > 0) {
           conversation.messages = insertedDirectMessages.map((msg) => msg._id);
-          conversation.lastMessage =
-            insertedDirectMessages[insertedDirectMessages.length - 1]._id; // Set lastMessage to the last inserted message
+          conversation.lastMessage = insertedDirectMessages[insertedDirectMessages.length - 1]._id;
           await conversation.save();
         }
       }
     }
 
-    console.log(
-      "Database seeded successfully with conversations and messages!"
-    );
+    console.log("Database seeded successfully with conversations and messages!");
   } catch (error) {
     console.error("Error seeding database:", error);
   } finally {

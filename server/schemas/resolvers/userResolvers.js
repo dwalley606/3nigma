@@ -3,6 +3,7 @@ import User from "../../models/User.js";
 import ContactRequest from "../../models/ContactRequest.js";
 import Group from "../../models/Group.js";
 import bcrypt from "bcrypt";
+import Conversation from "../../models/Conversation.js";
 
 export const userResolvers = {
   Query: {
@@ -41,11 +42,26 @@ export const userResolvers = {
         throw new Error("You must be logged in to view contacts.");
       }
       try {
-        const user = await User.findById(userId).populate(
-          "contacts",
-          "username email"
-        );
-        return user.contacts || [];
+        // Fetch contacts for the user
+        const user = await User.findById(userId).populate('contacts');
+
+        // Fetch all conversations for the user
+        const conversations = await Conversation.find({
+          participants: userId
+        });
+
+        // Map through contacts and find the conversation ID for each
+        return user.contacts.map(contact => {
+          const conversation = conversations.find(conv =>
+            conv.participants.includes(contact.id)
+          );
+          return {
+            id: contact.id,
+            username: contact.username,
+            email: contact.email,
+            conversationId: conversation ? conversation.id : null,
+          };
+        });
       } catch (error) {
         console.error("Error fetching contacts:", error);
         throw new Error("Failed to fetch contacts");

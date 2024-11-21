@@ -13,7 +13,7 @@ import {
   ListItemText,
 } from "@mui/material";
 
-const AddUserToGroup = ({ groupId, onUserAdded }) => {
+const AddUserToGroup = ({ groupId, onUserAdded, existingMembers }) => {
   const [addUserToGroup] = useMutation(ADD_USER_TO_GROUP);
   const { loading, error, data } = useQuery(GET_USERS);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,7 +58,10 @@ const AddUserToGroup = ({ groupId, onUserAdded }) => {
         user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .filter((user) => !selectedUsers.some((u) => u.id === user.id)); // Exclude selected users
+    .filter(
+      (user) => !selectedUsers.some((u) => u.id === user.id) && 
+                !existingMembers.some((member) => member.id === user.id) // Exclude existing members
+    );
 
   return (
     <Box sx={{ padding: 2 }}>
