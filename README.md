@@ -38,6 +38,8 @@ To access the live deployment, please use this link: [Render Link]
 
 ![threenigma](https://github.com/user-attachments/assets/df35d338-26a9-48ea-b6a1-ad1033eae60a)
 
+![threenigma_mobile](https://github.com/user-attachments/assets/57413ccc-2b78-4c67-84b6-e006206709ae)  ![threenigma_mobile](https://github.com/user-attachments/assets/57413ccc-2b78-4c67-84b6-e006206709ae)
+
 ## License
 This project is covered under the MIT license. For more information, click the link below.
 [License Link](https://opensource.org/licenses/MIT)
