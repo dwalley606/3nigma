@@ -36,7 +36,7 @@ To install this project locally, clone the repository and install dependencies w
 To access the live deployment, please use this link: [Render Link]
 3NIGMA is designed to be user-friendly for those who aren't tech-savvy. It functions like an "app" while being universally compatible. Below are some screenshots and examples of how to use the app.
 
-![Screenshot](path/to/screenshot.png)
+![threenigma](https://github.com/user-attachments/assets/df35d338-26a9-48ea-b6a1-ad1033eae60a)
 
 ## License
 This project is covered under the MIT license. For more information, click the link below.
