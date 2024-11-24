@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/StoreProvider";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, Paper } from "@mui/material";
 
 const Home = () => {
   const { state } = useAuth();
@@ -20,35 +20,37 @@ const Home = () => {
       textAlign: "center",
       maxWidth: "600px",
       margin: "0 auto",
-      marginTop: "10vh"
     }}>
-      <Typography variant="h1" sx={{ marginBottom: "20px" }}>
-        Welcome to Your Messaging App
+      <Typography variant="h1" sx={{ marginBottom: "20px", fontSize: "3rem" }}>
+        3nigma
       </Typography>
       <Typography variant="body1" sx={{ marginBottom: "20px" }}>
-        Experience secure and seamless communication with our end-to-end
-        encrypted messaging app. Access your messages anywhere with our
-        Progressive Web App (PWA) capabilities.
+      Welcome to my first full stack app, 3NIGMA. After recently graduating the flex coding bootcamp through George Washington University and EdX, I decided to set out building a full stack application that I could use to both hone my skills and display what I have learned. Being particularly security minded, I decided I would explore what it takes to build an end-to-end encrypted messaging app, and if possible utilize progressive web app techniques for ease of use.
       </Typography>
-      <Box sx={{
+      <Paper sx={{
         marginTop: "20px",
         padding: "10px",
-        border: "1px solid #ddd",
         borderRadius: "5px",
-        backgroundColor: "#f9f9f9",
         textAlign: "left"
       }}>
         <Typography variant="h2" sx={{ marginBottom: "10px" }}>
-          Features:
+          Active Features:
         </Typography>
         <ul>
-          <li>End-to-end encryption for secure messaging</li>
-          <li>Progressive Web App for offline access</li>
           <li>Real-time chat with friends and family</li>
-          <li>Manage your contacts and groups</li>
-          <li>Customize your profile and settings</li>
+          <li>Optimistic state updates for a smooth user experience</li>
+          <li>Keep track of contacts and groups</li>
         </ul>
-      </Box>
+        <Typography variant="h2" sx={{ marginBottom: "10px", marginTop: "20px" }}>
+          In Development:
+        </Typography>
+        <ul>
+          <li>HTTPS</li>
+          <li>Websocket(socket.io)</li>
+          <li>End-to-end encryption</li>
+          <li>PWA Functionality</li>
+        </ul>
+      </Paper>
       <Box sx={{
         marginTop: "20px",
         display: "flex",
