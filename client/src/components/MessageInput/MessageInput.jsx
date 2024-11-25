@@ -6,7 +6,6 @@ import { useAuth, useMessages } from "../../context/StoreProvider";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import { SET_SHOULD_REFETCH } from "../../context/view/viewActions";
 import { ADD_MESSAGE } from "../../context/message/messageActions";
 import { GET_CONVERSATIONS } from "../../graphql/queries/getConversations";
 
@@ -79,6 +78,8 @@ const MessageInput = ({
           }
         });
         setMessage("");
+
+        onSendMessage(newMessage);
       }
     } catch (error) {
       console.error("Error sending message:", error);

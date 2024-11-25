@@ -10,6 +10,7 @@ export const SET_CURRENT_CONVERSATION = "SET_CURRENT_CONVERSATION";
 export const SET_RECIPIENT_ID = "SET_RECIPIENT_ID";
 export const SET_SHOULD_REFETCH = "SET_SHOULD_REFETCH";
 export const SET_GROUP_ID = "SET_GROUP_ID";
+export const SET_CONVERSATIONS = "SET_CONVERSATIONS";
 
 // Action creators
 export const setGroupOptionsOpen = (group) => ({

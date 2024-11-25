@@ -11,7 +11,7 @@ import { SET_MESSAGES } from "../../context/message/messageActions";
 import { useView } from "../../context/StoreProvider";
 import MessageInput from "../MessageInput/MessageInput";
 
-const Chat = ({ conversationId }) => {
+const Chat = ({ conversationId, onSendMessage }) => {
   console.log("Chat component mounted with conversationId:", conversationId);
 
   const { state: authState } = useAuth();
@@ -94,6 +94,7 @@ const Chat = ({ conversationId }) => {
         recipientId={viewState.recipientId}
         isGroupMessage={viewState.isGroupMessage}
         groupId={viewState.groupId}
+        onSendMessage={onSendMessage}
       />
     </Box>
   );

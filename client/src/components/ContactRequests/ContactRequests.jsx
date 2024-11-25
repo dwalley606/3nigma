@@ -2,6 +2,7 @@
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_CONTACT_REQUESTS } from "../../graphql/queries/getContactRequests";
 import { RESPOND_CONTACT_REQUEST } from "../../graphql/mutations/respondContactRequest";
+import { GET_CONTACTS } from "../../graphql/queries/getContacts";
 import { useContacts } from "../../context/StoreProvider"; // Import the useContacts hook
 import {
   ACCEPT_CONTACT_REQUEST,
@@ -30,6 +31,7 @@ const ContactRequests = ({ userId }) => {
         variables: { requestId, status },
         refetchQueries: [
           { query: GET_CONTACT_REQUESTS, variables: { userId } },
+          { query: GET_CONTACTS, variables: { userId } },
         ],
       });
 
@@ -63,10 +65,10 @@ const ContactRequests = ({ userId }) => {
         marginBottom: 2,
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        justifyContent: "space-between",
       }}
     >
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom align="center">
         Contact Requests
       </Typography>
       {contactRequests.length === 0 ? (

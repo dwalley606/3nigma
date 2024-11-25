@@ -11,6 +11,7 @@ const initialState = {
   recipientId: null,
   shouldRefetch: false,
   groupId: null,
+  conversations: [],
 };
 
 const ViewContext = createContext();

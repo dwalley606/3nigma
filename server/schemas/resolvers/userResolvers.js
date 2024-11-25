@@ -30,7 +30,7 @@ export const userResolvers = {
         throw new Error("You must be logged in to view users.");
       }
       try {
-        const users = await User.find().select("username email");
+        const users = await User.find({ _id: { $ne: context.user.id } }).select("username email");
         return users;
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -45,9 +45,10 @@ export const userResolvers = {
         // Fetch contacts for the user
         const user = await User.findById(userId).populate('contacts');
 
-        // Fetch all conversations for the user
+        // Fetch all non-group conversations for the user
         const conversations = await Conversation.find({
-          participants: userId
+          participants: userId,
+          isGroup: false, // Ensure we only consider non-group conversations
         });
 
         // Map through contacts and find the conversation ID for each
@@ -194,28 +195,51 @@ export const userResolvers = {
     },
     respondContactRequest: async (_, { requestId, status }, context) => {
       if (!context.user) {
-        throw new Error(
-          "You must be logged in to respond to a contact request."
-        );
+        throw new Error("You must be logged in to respond to a contact request.");
       }
       try {
-        const request = await ContactRequest.findById(requestId);
+        // Retrieve the contact request and populate the 'from' and 'to' fields
+        const request = await ContactRequest.findById(requestId).populate('from to');
 
         if (!request) {
           throw new Error("Contact request not found");
         }
 
+        console.log("Contact request details:", request);
+
         request.status = status;
         const updatedRequest = await request.save();
 
         if (status === "accepted") {
-          await User.findByIdAndUpdate(request.from, {
-            $addToSet: { contacts: request.to },
+          // Add each user to the other's contacts
+          await User.findByIdAndUpdate(request.from._id, {
+            $addToSet: { contacts: request.to._id },
           });
 
-          await User.findByIdAndUpdate(request.to, {
-            $addToSet: { contacts: request.from },
+          await User.findByIdAndUpdate(request.to._id, {
+            $addToSet: { contacts: request.from._id },
           });
+
+          // Check if a conversation already exists between the two users
+          const existingConversation = await Conversation.findOne({
+            participants: { $all: [request.from._id, request.to._id] },
+            isGroup: false,
+          });
+
+          // If no conversation exists, create a new one
+          if (!existingConversation) {
+            console.log("Creating a new conversation between users:", request.from._id, request.to._id);
+            const newConversation = new Conversation({
+              participants: [request.from._id, request.to._id],
+              isGroup: false,
+              messages: [],
+            });
+
+            await newConversation.save();
+            console.log("New conversation created with ID:", newConversation._id);
+          } else {
+            console.log("Existing conversation found with ID:", existingConversation._id);
+          }
         }
 
         return updatedRequest;

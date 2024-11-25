@@ -9,6 +9,7 @@ import {
   SET_RECIPIENT_ID,
   SET_SHOULD_REFETCH,
   SET_GROUP_ID,
+  SET_CONVERSATIONS,
 } from "./viewActions";
 
 const initialState = {
@@ -21,6 +22,7 @@ const initialState = {
   recipientId: null,
   shouldRefetch: false,
   groupId: null,
+  conversations: [],
 };
 
 // Reducer function
@@ -54,6 +56,8 @@ const viewReducer = (state = initialState, action) => {
       return { ...state, shouldRefetch: action.payload };
     case SET_GROUP_ID:
       return { ...state, groupId: action.payload };
+    case SET_CONVERSATIONS:
+      return { ...state, conversations: action.payload };
     default:
       return state;
   }
