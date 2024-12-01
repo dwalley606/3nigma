@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
 import ContactRequest from "../../models/ContactRequest.js";
 import Group from "../../models/Group.js";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import Conversation from "../../models/Conversation.js";
 
 export const userResolvers = {
