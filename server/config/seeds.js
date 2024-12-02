@@ -26,38 +26,44 @@ const seedDatabase = async () => {
       const user = new User({
         username: `User${i}`,
         email: `user${i}@example.com`,
-        password: "password", // Plain password, hashing handled in the model
+        password: "password",
         phoneNumber: `12345678${i}`,
         publicKey: `publicKeyUser${i}`,
         lastSeen: new Date().toISOString(),
         profilePicUrl: `https://example.com/user${i}.jpg`,
-        contacts: [], // Initialize contacts array
-        groups: [], // Initialize groups array
+        contacts: [],
+        groups: [],
       });
-      await user.save(); // This will trigger the pre-save middleware
+      await user.save();
       users.push(user);
     }
 
     console.log("Users inserted:", users.length);
 
-    // Generate contacts for each user
-    for (const user of users) {
-      // Randomly select 3 unique users as contacts
-      const contactIds = new Set();
+    // Generate mutual contacts for each user
+    for (let i = 0; i < users.length; i++) {
+      const userA = users[i];
+      const contactIds = new Set(userA.contacts);
+
       while (contactIds.size < 3) {
-        const randomUser = users[Math.floor(Math.random() * users.length)];
-        if (randomUser._id.toString() !== user._id.toString()) {
-          contactIds.add(randomUser._id);
+        const randomIndex = Math.floor(Math.random() * users.length);
+        const userB = users[randomIndex];
+
+        if (userA._id.toString() !== userB._id.toString() && !contactIds.has(userB._id)) {
+          contactIds.add(userB._id);
+          userB.contacts.push(userA._id); // Ensure mutual contact
+          await userB.save();
         }
       }
-      user.contacts = Array.from(contactIds); // Convert Set to Array
-      await user.save(); // Save the user with updated contacts
+
+      userA.contacts = Array.from(contactIds);
+      await userA.save();
     }
 
-    console.log("Contacts added for each user.");
+    console.log("Mutual contacts added for each user.");
 
     // Create a group and assign users to it
-    const groupMembers = users.slice(0, 5); // First 5 users in a group
+    const groupMembers = users.slice(0, 5);
     const group = new Group({
       name: "Group1",
       members: groupMembers.map((user) => user._id),
@@ -106,34 +112,40 @@ const seedDatabase = async () => {
 
     console.log("Group conversation created.");
 
-    // Create non-group (direct) conversations and messages
+    // Create non-group (direct) conversations and messages only between mutual contacts
     for (let i = 0; i < users.length; i++) {
       for (let j = i + 1; j < users.length; j++) {
-        const conversation = new Conversation({
-          participants: [users[i]._id, users[j]._id],
-          isGroup: false,
-          messages: [],
-          lastMessage: null,
-        });
-        await conversation.save();
+        const userA = users[i];
+        const userB = users[j];
 
-        const messages = [];
-        for (let k = 0; k < 3; k++) {
-          const message = new Message({
-            sender: users[i]._id,
-            userRecipientId: users[j]._id,
-            content: `Direct message ${k} from ${users[i].username} to ${users[j].username}`,
-            timestamp: new Date().toISOString(),
-            isGroupMessage: false,
+        // Check if they are mutual contacts
+        if (userA.contacts.includes(userB._id) && userB.contacts.includes(userA._id)) {
+          const conversation = new Conversation({
+            participants: [userA._id, userB._id],
+            isGroup: false,
+            messages: [],
+            lastMessage: null,
           });
-          messages.push(message);
-        }
-        const insertedDirectMessages = await Message.insertMany(messages);
-
-        if (insertedDirectMessages.length > 0) {
-          conversation.messages = insertedDirectMessages.map((msg) => msg._id);
-          conversation.lastMessage = insertedDirectMessages[insertedDirectMessages.length - 1]._id;
           await conversation.save();
+
+          const messages = [];
+          for (let k = 0; k < 3; k++) {
+            const message = new Message({
+              sender: userA._id,
+              userRecipientId: userB._id,
+              content: `Direct message ${k} from ${userA.username} to ${userB.username}`,
+              timestamp: new Date().toISOString(),
+              isGroupMessage: false,
+            });
+            messages.push(message);
+          }
+          const insertedDirectMessages = await Message.insertMany(messages);
+
+          if (insertedDirectMessages.length > 0) {
+            conversation.messages = insertedDirectMessages.map((msg) => msg._id);
+            conversation.lastMessage = insertedDirectMessages[insertedDirectMessages.length - 1]._id;
+            await conversation.save();
+          }
         }
       }
     }

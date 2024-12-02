@@ -45,23 +45,20 @@ const Contacts = () => {
 
   const handleMessageClick = (recipientId) => {
     // Find the existing conversation with the recipient
-    const existingConversation = contactsData.getContacts.find(contact => contact.id === recipientId)?.conversationId;
+    const contact = contactsData.getContacts.find(contact => contact.id === recipientId);
+    const existingConversation = contact ? contact.conversationId : null;
 
-    // Log the recipientId and existingConversation
-    console.log("Recipient ID:", recipientId);
-    console.log("Existing Conversation ID:", existingConversation);
+    if (!existingConversation) {
+      console.error("No conversation found for recipient:", recipientId);
+      return;
+    }
 
     viewDispatch({ type: SET_CHAT_ACTIVE, payload: true });
     viewDispatch({
       type: SET_CURRENT_CONVERSATION,
-      payload: { conversationId: existingConversation || null, isGroupMessage: false },
+      payload: { conversationId: existingConversation, isGroupMessage: false },
     });
     viewDispatch({ type: SET_RECIPIENT_ID, payload: recipientId });
-
-    // Log the dispatched actions
-    console.log("Dispatched SET_CHAT_ACTIVE with payload:", true);
-    console.log("Dispatched SET_CURRENT_CONVERSATION with payload:", { conversationId: existingConversation || null, isGroupMessage: false });
-    console.log("Dispatched SET_RECIPIENT_ID with payload:", recipientId);
 
     navigate('/dashboard');
   };

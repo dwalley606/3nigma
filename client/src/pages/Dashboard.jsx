@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAuth } from "../context/StoreProvider";
 import { useQuery } from "@apollo/client";
 import { GET_CONVERSATIONS } from "../graphql/queries/getConversations";
@@ -5,14 +6,13 @@ import MessageList from "../components/MessageList/MessageList";
 import Chat from "../components/Chat/Chat";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { useEffect } from "react";
 import { useView } from "../context/StoreProvider";
 import {
   SET_CHAT_ACTIVE,
   SET_CURRENT_CONVERSATION,
-  SET_SHOULD_REFETCH,
   SET_RECIPIENT_ID,
   SET_GROUP_ID,
+  SET_CONVERSATIONS,
 } from "../context/view/viewActions";
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -32,14 +32,15 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    if (!viewState.isChatActive) {
-      refetch();
-      viewDispatch({
-        type: SET_CURRENT_CONVERSATION,
-        payload: { conversationId: null, isGroupMessage: false },
+    if (data) {
+      const sortedConversations = [...data.getConversations].sort((a, b) => {
+        const aTimestamp = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : 0;
+        const bTimestamp = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : 0;
+        return bTimestamp - aTimestamp;
       });
+      viewDispatch({ type: SET_CONVERSATIONS, payload: sortedConversations });
     }
-  }, [viewState.isChatActive, viewDispatch, refetch]);
+  }, [data, viewDispatch]);
 
   const handleMessageClick = (
     conversationId,
@@ -60,13 +61,31 @@ const Dashboard = () => {
     }
   };
 
+  const handleSendMessage = (newMessage) => {
+    const updatedConversations = viewState.conversations.map((conv) => {
+      if (conv.id === viewState.currentConversationId) {
+        return {
+          ...conv,
+          lastMessage: newMessage,
+        };
+      }
+      return conv;
+    });
+
+    const sortedConversations = updatedConversations.sort((a, b) => {
+      const aTimestamp = a.lastMessage ? new Date(a.lastMessage.timestamp).getTime() : 0;
+      const bTimestamp = b.lastMessage ? new Date(b.lastMessage.timestamp).getTime() : 0;
+      return bTimestamp - aTimestamp;
+    });
+
+    viewDispatch({ type: SET_CONVERSATIONS, payload: sortedConversations });
+  };
+
   if (loading) return <Typography>Loading conversations...</Typography>;
   if (error)
     return (
       <Typography>Error fetching conversations: {error.message}</Typography>
     );
-
-  const conversations = data?.getConversations || [];
 
   return (
     <Box
@@ -86,7 +105,7 @@ const Dashboard = () => {
           }}
         >
           <MessageList
-            groupedMessages={conversations}
+            groupedMessages={viewState.conversations}
             onMessageClick={handleMessageClick}
           />
         </Box>
@@ -101,7 +120,10 @@ const Dashboard = () => {
             padding: 2,
           }}
         >
-          <Chat conversationId={viewState.currentConversationId} />
+          <Chat
+            conversationId={viewState.currentConversationId}
+            onSendMessage={handleSendMessage}
+          />
         </Box>
       )}
     </Box>
