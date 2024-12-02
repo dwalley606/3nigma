@@ -21,6 +21,11 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
       - name: Set environment variables
         run: |
           echo "VITE_API_URL=http://backend:3001" >> $GITHUB_ENV
