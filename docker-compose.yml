@@ -1,6 +1,8 @@
 version: '3.8'
 services:
   frontend:
+    image: 
+      ${DOCKERHUB_USERNAME}/3nigma-frontend:latest
     build:
       context: ./client
       dockerfile: Dockerfile
@@ -23,6 +25,8 @@ services:
         max-file: "3"
 
   backend:
+    image: 
+      ${DOCKERHUB_USERNAME}/3nigma-backend:latest
     build:
       context: ./server
       dockerfile: Dockerfile
