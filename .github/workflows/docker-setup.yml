@@ -25,6 +25,9 @@ jobs:
         run: |
           docker build -t ${{ vars.DOCKERHUB_USERNAME }}/3nigma-frontend:latest ./client
           docker push ${{ vars.DOCKERHUB_USERNAME }}/3nigma-frontend:latest
+          with:
+            build-args:
+              VITE_GRAPHQL_URI=${{ secrets.VITE_GRAPHQL_URI }}
 
       - name: Build and push backend image
         run: |
