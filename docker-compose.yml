@@ -1,38 +1,21 @@
 version: '3.8'
 
 services:
-  frontend:
+  app:
     build:
-      context: ./client
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_GRAPHQL_URI=https://threenigma-backend.onrender.com
-    volumes:
-      - ./client:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    networks:
-      - app-network
-
-  backend:
-    build:
-      context: ./server
+      context: .
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
     environment:
-      - MONGODB_URI=mongodb://db:27017/enigma
-      - JWT_SECRET=your_jwt_secret
-      - PORT=3001
-    volumes:
-      - ./server:/app
-      - /app/node_modules
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - VITE_GRAPHQL_URI=${VITE_GRAPHQL_URI}
+    depends_on:
+      - db
     networks:
       - app-network
-    restart: unless-stopped
 
   db:
     image: mongo:latest

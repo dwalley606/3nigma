@@ -21,16 +21,9 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push frontend image
+      - name: Build and push image
         uses: docker/build-push-action@v2
         with:
-          context: ./client
+          context: .
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/3nigma-frontend:latest
-          build-args: |
-            VITE_GRAPHQL_URI=${{ secrets.VITE_GRAPHQL_URI }}
-
-      - name: Build and push backend image
-        run: |
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/3nigma-backend:latest ./server
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/3nigma-backend:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/3nigma:latest
