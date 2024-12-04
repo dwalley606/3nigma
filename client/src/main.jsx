@@ -30,7 +30,7 @@ import { setContext } from "@apollo/client/link/context";
 
 // Apollo Client setup
 const httpLink = createHttpLink({
-  uri: "/graphql",
+  uri: import.meta.env.VITE_GRAPHQL_URI,
 });
 
 const authLink = setContext((_, { headers }) => {
