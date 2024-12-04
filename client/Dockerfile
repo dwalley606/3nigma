@@ -2,6 +2,9 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+ARG VITE_GRAPHQL_URI
+ENV VITE_GRAPHQL_URI=$VITE_GRAPHQL_URI
+
 COPY package*.json ./
 
 RUN npm install
@@ -14,5 +17,3 @@ EXPOSE 5173
 
 CMD ["npm", "run", "serve"]
 
-ARG VITE_GRAPHQL_URI
-ENV VITE_GRAPHQL_URI=$VITE_GRAPHQL_URI
