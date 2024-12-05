@@ -35,17 +35,21 @@ const startApolloServer = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
-    app.use(
-      cors({
-        origin: [
-          "*",
-          "http://localhost:5173",
-          "https://threenigma-frontend.onrender.com",
-          process.env.CLIENT_URL
-        ].filter(Boolean),
-        credentials: true,
-      })
-    );
+    const allowedOrigins = [
+      'https://threenigma-frontend.onrender.com',
+      'http://localhost:5173'
+    ];
+
+    app.use(cors({
+      origin: function (origin, callback) {
+        if (allowedOrigins.includes(origin) || !origin) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true, // Include credentials if needed
+    }));
 
     app.use(
       "/graphql",
