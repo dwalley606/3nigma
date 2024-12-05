@@ -35,6 +35,9 @@ const startApolloServer = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
+    app.options('*', cors()); // Enable preflight response for all routes
+
+
     const allowedOrigins = [
       'https://threenigma-frontend.onrender.com',
       'http://localhost:5173'
