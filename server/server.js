@@ -35,8 +35,6 @@ const startApolloServer = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
-    app.options('*', cors()); // Enable preflight response for all routes
-
 
     const allowedOrigins = [
       'https://threenigma-frontend.onrender.com',
@@ -53,6 +51,12 @@ const startApolloServer = async () => {
       },
       credentials: true, // Include credentials if needed
     }));
+
+    // Force OPTIONS preflight response to include headers
+    app.options('*', cors({
+    origin: 'https://threenigma-frontend.onrender.com',
+    credentials: true,
+}));
 
     app.use(
       "/graphql",
