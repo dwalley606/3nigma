@@ -1,17 +1,29 @@
 version: '3.8'
 
 services:
-  app:
+  frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ./client
+      dockerfile: Dockerfile.client.prod
+    ports:
+      - "80:80"
+    environment:
+      - VITE_GRAPHQL_URI=${VITE_GRAPHQL_URI}
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.server.prod
     ports:
       - "3001:3001"
     environment:
       - MONGODB_URI=${MONGODB_URI}
       - JWT_SECRET=${JWT_SECRET}
       - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
-      - VITE_GRAPHQL_URI=${VITE_GRAPHQL_URI}
     depends_on:
       - db
     networks:

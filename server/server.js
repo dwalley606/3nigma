@@ -21,7 +21,7 @@ const server = new ApolloServer({
   resolvers,
 });
 
-app.get('/health', (_, res) => res.status(200).send('OK'));
+// app.get('/health', (_, res) => res.status(200).send('OK'));
 
 const startApolloServer = async () => {
   try {
