@@ -41,13 +41,8 @@ services:
     volumes:
       - mongodb_data:/data/db
     environment:
-      - MONGODB_LOG_LEVEL=warning
       - MONGO_INITDB_QUIET=true
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    command: ["mongod", "--quiet", "--logpath", "/dev/null", "--logappend"]
     networks:
       - app-network
 
