@@ -28,6 +28,7 @@ jobs:
           file: ./client/Dockerfile.client.prod
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/3nigma-frontend:latest
+          no-cache: true
 
       - name: Build and push backend image
         uses: docker/build-push-action@v3
@@ -36,3 +37,4 @@ jobs:
           file: ./server/Dockerfile.server.prod
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/3nigma-backend:latest
+          no-cache: true

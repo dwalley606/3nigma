@@ -35,28 +35,36 @@ const startApolloServer = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
-
-    const allowedOrigins = [
-      'https://threenigma-frontend.onrender.com',
-      'http://localhost:5173'
-    ];
+    app.use((req, res, next) => {
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'https://threenigma-frontend.onrender.com'
+      ];
+      
+      const origin = req.headers.origin;
+      if (allowedOrigins.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+      }
+      
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      
+      if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+      }
+      next();
+    });
 
     app.use(cors({
-      origin: function (origin, callback) {
-        if (allowedOrigins.includes(origin) || !origin) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      },
-      credentials: true, // Include credentials if needed
+      origin: [
+        "http://localhost:5173",
+        "https://threenigma-frontend.onrender.com"
+      ],
+      credentials: true,
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
     }));
-
-    // Force OPTIONS preflight response to include headers
-    app.options('*', cors({
-    origin: 'https://threenigma-frontend.onrender.com',
-    credentials: true,
-}));
 
     app.use(
       "/graphql",
