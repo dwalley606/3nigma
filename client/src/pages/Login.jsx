@@ -1,7 +1,7 @@
 // client/src/pages/Login.jsx
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { LOGIN_USER } from "../graphql/mutations/loginUser";
+import { LOGIN } from "../graphql/mutations/login";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/StoreProvider";
 import { Container, TextField, Button, Typography, Box } from "@mui/material";
@@ -9,7 +9,7 @@ import { Container, TextField, Button, Typography, Box } from "@mui/material";
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [login, { loading, error }] = useMutation(LOGIN_USER);
+  const [login, { loading, error }] = useMutation(LOGIN);
   const navigate = useNavigate();
   const { dispatch } = useAuth();
 
