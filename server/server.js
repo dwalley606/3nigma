@@ -35,35 +35,40 @@ const startApolloServer = async () => {
     app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
+    // First, define allowed origins
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://threenigma-frontend.onrender.com'
+    ];
+
+    // Pre-flight CORS handler
     app.use((req, res, next) => {
-      const allowedOrigins = [
-        'http://localhost:5173',
-        'https://threenigma-frontend.onrender.com'
-      ];
-      
       const origin = req.headers.origin;
       if (allowedOrigins.includes(origin)) {
         res.header('Access-Control-Allow-Origin', origin);
-      }
-      
-      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      res.header('Access-Control-Allow-Credentials', 'true');
-      
-      if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
+        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        // Handle preflight
+        if (req.method === 'OPTIONS') {
+          return res.status(204).send();
+        }
       }
       next();
     });
 
+    // Main CORS middleware
     app.use(cors({
-      origin: [
-        "http://localhost:5173",
-        "https://threenigma-frontend.onrender.com"
-      ],
+      origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,
-      methods: ['GET', 'POST', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization']
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
     }));
 
     app.use(
