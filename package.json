@@ -14,7 +14,9 @@
     "test:server": "jest --config=jest.server.config.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "generate:client": "graphql-codegen --config codegen.yml",
+    "generate:server": "graphql-codegen --config codegen.server.yml"
   },
   "repository": {
     "type": "git",
@@ -29,6 +31,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.25.8",
     "@babel/preset-react": "^7.25.7",
+    "@graphql-codegen/cli": "^5.0.3",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
@@ -44,6 +47,9 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@graphql-codegen/typescript": "^4.1.2",
+    "@graphql-codegen/typescript-operations": "^4.4.0",
+    "@graphql-codegen/typescript-resolvers": "^4.4.1",
     "3nigma": "file:"
   }
 }

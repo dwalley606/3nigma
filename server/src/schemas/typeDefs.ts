@@ -1,4 +1,4 @@
-const typeDefs = `
+const typeDefs: string = `
   type User {
     id: ID!
     username: String!

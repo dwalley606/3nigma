@@ -1,0 +1,9 @@
+overwrite: true
+schema: "server/src/schemas/typeDefs.ts" # Path to your schema file
+documents: "client/src/**/*.graphql" # Path to your GraphQL operations
+generates:
+  client/src/generated/graphql.ts: # Output path for generated types
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-resolvers"
