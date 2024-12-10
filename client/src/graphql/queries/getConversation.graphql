@@ -1,0 +1,31 @@
+query GetConversation($conversationId: ID!) {
+  getConversation(conversationId: $conversationId) {
+    id
+    isGroup
+    participants {
+      id
+      username
+    }
+    messages {
+      id
+      content
+      sender {
+        id
+        username
+      }
+      userRecipientId
+      timestamp
+      isGroupMessage
+      groupRecipientId
+    }
+    lastMessage {
+      id
+      content
+      sender {
+        id
+        username
+      }
+      groupRecipientId
+    }
+  }
+}

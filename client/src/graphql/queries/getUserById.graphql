@@ -1,0 +1,15 @@
+query getUserById($id: ID!) {
+  getUserById(id: $id) {
+    id
+    username
+    email
+    phoneNumber
+    publicKey
+    lastSeen
+    profilePicUrl
+    contacts {
+      id
+      username
+    }
+  }
+}

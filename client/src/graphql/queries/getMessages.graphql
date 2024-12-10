@@ -1,0 +1,12 @@
+query GetMessages($recipientId: ID!) {
+  getMessages(recipientId: $recipientId) {
+    id
+    senderId
+    senderName
+    recipientId
+    content
+    timestamp
+    read
+    isGroupMessage
+  }
+}

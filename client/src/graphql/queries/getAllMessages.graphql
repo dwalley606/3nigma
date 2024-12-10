@@ -1,0 +1,30 @@
+query GetAllMessages($userId: ID!) {
+  getAllMessages(userId: $userId) {
+    name
+    mostRecentMessage {
+      id
+      senderId
+      senderName
+      userRecipientId
+      groupRecipientId
+      content
+      timestamp
+      read
+      isGroupMessage
+      groupName
+    }
+    messages {
+      id
+      senderId
+      senderName
+      userRecipientId
+      groupRecipientId
+      content
+      timestamp
+      read
+      isGroupMessage
+      groupName
+    }
+  }
+}
+

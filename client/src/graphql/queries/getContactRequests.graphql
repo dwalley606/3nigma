@@ -1,0 +1,11 @@
+query GetContactRequests($userId: ID!) {
+  getContactRequests(userId: $userId) {
+    id
+    from {
+      id
+      username
+      email
+    }
+    status
+  }
+};

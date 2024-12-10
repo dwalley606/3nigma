@@ -1,0 +1,6 @@
+mutation RespondContactRequest($requestId: ID!, $status: String!) {
+    respondContactRequest(requestId: $requestId, status: $status) {
+      id
+      status
+    }
+  };

@@ -1,0 +1,9 @@
+query getUsers {
+  getUsers {
+    id
+    username
+    email
+    phoneNumber
+    profilePicUrl
+  }
+}

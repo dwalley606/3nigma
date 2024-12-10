@@ -1,0 +1,16 @@
+mutation sendGroupMessage($groupId: ID!, $content: String!) {
+  sendGroupMessage(groupId: $groupId, content: $content) {
+    success
+    message {
+      id
+      content
+      sender {
+        id
+        username
+      }
+      groupRecipientId
+      timestamp
+      isGroupMessage
+    }
+  }
+}

@@ -1,0 +1,14 @@
+query getDirectMessages($userId: ID!) {
+  getDirectMessages(userId: $userId) {
+    id
+    content
+    sender {
+      id
+      username
+    }
+    timestamp
+    isGroupMessage
+    groupRecipientId
+    userRecipientId
+  }
+}

@@ -1,0 +1,16 @@
+query GetUserGroups($userId: ID!) {
+  getUserGroups(userId: $userId) {
+    id
+    name
+    members {
+      id
+      username
+    }
+    admins {
+      id
+      username
+    }
+    createdAt
+    updatedAt
+  }
+}

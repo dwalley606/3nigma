@@ -1,0 +1,3 @@
+mutation DeleteMessage($messageId: ID!, $forEveryone: Boolean!) {
+    deleteMessage(messageId: $messageId, forEveryone: $forEveryone)
+  };

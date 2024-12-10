@@ -1,0 +1,13 @@
+query getGroupMessages($groupId: ID!) {
+  getGroupMessages(groupId: $groupId) {
+    id
+    content
+    sender {
+      id
+      username
+    }
+    timestamp
+    isGroupMessage
+    groupRecipientId
+  }
+}
