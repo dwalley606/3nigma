@@ -1,4 +1,4 @@
-// server/schemas/index.js
+// server/schemas/index.ts
 import typeDefs from './typeDefs.js';
 import resolvers from './resolvers/index.js';
 

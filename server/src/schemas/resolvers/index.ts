@@ -1,8 +1,9 @@
-import { userResolvers } from './user/queries.js';
-import { messageResolvers } from './message/queries.js';
-import { groupResolvers } from './group/queries.js/index.js';
+import { IResolvers } from '@graphql-tools/utils';
+import { userResolvers } from './user/index.js';
+import { messageResolvers } from './message/index.js';
+import { groupResolvers } from './group/index.js';
 
-const resolvers = {
+const resolvers: IResolvers = {
   Query: {
     ...userResolvers.Query,
     ...messageResolvers.Query,

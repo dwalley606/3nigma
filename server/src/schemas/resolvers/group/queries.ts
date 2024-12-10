@@ -1,10 +1,24 @@
+import { IResolvers } from '@graphql-tools/utils';
 import Group from "../../../models/Group.js";
 import User from "../../../models/User.js";
 import Conversation from "../../../models/Conversation.js";
-import Message from "../../../models/Message.js";
+import { Context } from '../../types'; // Assuming you have a Context type defined
 
-export const groupQueries = {
-    getGroupConversations: async (_, { userId }, context) => {
+interface GetGroupConversationsArgs {
+  userId: string;
+}
+
+interface GetGroupDetailsArgs {
+  userId: string;
+}
+
+export const groupQueries: IResolvers = {
+  Query: {
+    getGroupConversations: async (
+      _: unknown,
+      { userId }: GetGroupConversationsArgs,
+      context: Context
+    ) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group conversations.");
       }
@@ -15,7 +29,7 @@ export const groupQueries = {
         })
           .populate({
             path: "lastMessage",
-            populate: { path: "sender", select: "username email" }, // Populate sender details if needed
+            populate: { path: "sender", select: "username email" },
           })
           .sort({ "lastMessage.timestamp": -1 })
           .exec();
@@ -43,7 +57,7 @@ export const groupQueries = {
                       : null,
                   },
                   timestamp: lastMessage.timestamp,
-                  groupRecipientId: lastMessage.groupRecipientId, // Include groupRecipientId
+                  groupRecipientId: lastMessage.groupRecipientId,
                 }
               : null,
             createdAt: conversation.createdAt,
@@ -55,67 +69,66 @@ export const groupQueries = {
       }
     },
 
-    getGroupDetails: async (_, { userId }, context) => {
+    getGroupDetails: async (
+      _: unknown,
+      { userId }: GetGroupDetailsArgs,
+      context: Context
+    ) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group details.");
       }
       try {
-        // Fetch group conversations for the user
         const conversations = await Conversation.find({
           isGroup: true,
           participants: userId,
         })
           .populate({
             path: "lastMessage",
-            populate: { path: "sender", select: "username email" }, // Populate sender details if needed
+            populate: { path: "sender", select: "username email" },
           })
           .exec();
 
-        // Log the conversations to check if they are being fetched correctly
         console.log("Fetched conversations:", conversations);
 
-        // Fetch group details including admins and members
         const groupsWithDetails = await Promise.all(
           conversations.map(async (conversation) => {
             if (!conversation) {
               console.warn("Conversation is null or undefined:", conversation);
-              return null; // Skip this iteration if conversation is invalid
+              return null;
             }
 
             const lastMessage = conversation.lastMessage || null;
-            const groupId = lastMessage ? lastMessage.groupRecipientId : null; // Use groupRecipientId
+            const groupId = lastMessage ? lastMessage.groupRecipientId : null;
 
             if (!groupId) {
               console.warn(
                 "No groupRecipientId found for conversation ID:",
                 conversation._id
               );
-              return null; // Skip if no group ID is found
+              return null;
             }
 
-            // Fetch the group details from the Group model
             const group = await Group.findById(groupId)
-              .populate("admins", "id username") // Populate admins with username
-              .populate("members", "id username") // Populate members with username
+              .populate("admins", "id username")
+              .populate("members", "id username")
               .exec();
 
             if (!group) {
               console.warn("Group not found for group ID:", groupId);
-              return null; // Skip this iteration if group is not found
+              return null;
             }
 
             return {
               id: group._id.toString(),
               name: group.name,
-              lastMessage: lastMessage || null, // Include lastMessage from the conversation
+              lastMessage: lastMessage || null,
               admins: group.admins,
               members: group.members,
-              isGroup: true, // Set isGroup to true for group conversations
+              isGroup: true,
             };
           })
         );
 
-        // Filter out any null results from the mapping
         return groupsWithDetails.filter((group) => group !== null);
       } catch (error) {
         console.error("Error fetching group details:", error);
@@ -123,4 +136,5 @@ export const groupQueries = {
       }
     },
   },
+};
   
