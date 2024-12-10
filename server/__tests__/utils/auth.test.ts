@@ -18,44 +18,36 @@ const createMockRequest = (authHeader?: string): Partial<Request> => ({
 });
 
 describe('Auth Middleware', () => {
+  const TEST_SECRET = 'test_secret_key_for_tests';
+
   beforeEach(() => {
     jest.clearAllMocks();
+    // Ensure we're using the test secret
+    process.env.JWT_SECRET = TEST_SECRET;
   });
 
   test('successfully validates token and returns user', async () => {
+    // Set up mock user
     const mockUser = {
       _id: '123',
-      username: 'testuser',
-      email: 'test@example.com'
+      username: 'testuser'
     };
 
-    // Create token using actual JWT_SECRET
+    // Create token with the same secret used in middleware
     const token = jwt.sign({ id: mockUser._id }, process.env.JWT_SECRET!);
-    console.log('Created token:', token);
 
-    // Set up mock user with proper MongoDB-like structure
-    const mockUserDocument = {
-      _id: { toString: () => mockUser._id },
-      username: mockUser.username,
-      email: mockUser.email,
-      select: jest.fn().mockReturnValue({
+    // Set up mock to return user
+    (User.findById as jest.Mock).mockReturnValue({
+      select: jest.fn().mockResolvedValue({
         _id: { toString: () => mockUser._id },
-        username: mockUser.username,
-        email: mockUser.email
+        username: mockUser.username
       })
-    };
-
-    // Set up User.findById mock
-    (User.findById as jest.Mock).mockImplementation((id) => {
-      console.log('Mock findById called with:', id);
-      return {
-        select: () => Promise.resolve(mockUserDocument)
-      };
     });
 
     const mockReq = createMockRequest(`Bearer ${token}`);
     const result = await authMiddleware({ req: mockReq as Request });
 
+    expect(User.findById).toHaveBeenCalledWith(mockUser._id);
     expect(result).toEqual({
       user: {
         id: mockUser._id,
