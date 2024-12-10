@@ -1,17 +1,11 @@
 import mongoose from "mongoose";
-import User from "../models/User.js";
-import ContactRequest from "../models/ContactRequest.js";
-import Message from "../models/Message.js";
-import Group from "../models/Group.js";
-import Conversation from "../models/Conversation.js";
+import User, { IUser } from "../models/User";
+import ContactRequest from "../models/ContactRequest";
+import Message, { IMessage } from "../models/Message";
+import Group, { IGroup } from "../models/Group";
+import Conversation from "../models/Conversation";
 
-// Connect to your MongoDB database
-mongoose.connect("mongodb://localhost:27017/3nigma", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const seedDatabase = async () => {
+const seedDatabase = async (): Promise<void> => {
   try {
     // Clear existing data
     await User.deleteMany({});
@@ -21,7 +15,7 @@ const seedDatabase = async () => {
     await Conversation.deleteMany({});
 
     // Create and save 10 sample users individually
-    const users = [];
+    const users: IUser[] = [];
     for (let i = 0; i < 10; i++) {
       const user = new User({
         username: `User${i}`,
@@ -77,14 +71,14 @@ const seedDatabase = async () => {
 
     // Update each user's groups field with the correct groupId
     for (const member of groupMembers) {
-      member.groups.push(group._id);
+      member.groups.push(group._id as mongoose.Types.ObjectId);
       await member.save();
     }
 
     console.log("Group IDs added to users' groups field.");
 
     // Create group messages
-    const groupMessages = [];
+    const groupMessages: IMessage[] = [];
     for (const user of groupMembers) {
       for (let j = 0; j < 3; j++) {
         const message = new Message({
@@ -103,8 +97,8 @@ const seedDatabase = async () => {
     const groupConversation = new Conversation({
       participants: groupMembers.map((user) => user._id),
       isGroup: true,
-      messages: insertedGroupMessages.map((msg) => msg._id),
-      lastMessage: insertedGroupMessages[insertedGroupMessages.length - 1]._id,
+      messages: insertedGroupMessages.map((msg) => msg._id as mongoose.Types.ObjectId),
+      lastMessage: insertedGroupMessages[insertedGroupMessages.length - 1]._id as mongoose.Types.ObjectId,
       name: group.name,
       groupId: group._id,
     });
@@ -128,7 +122,7 @@ const seedDatabase = async () => {
           });
           await conversation.save();
 
-          const messages = [];
+          const messages: IMessage[] = [];
           for (let k = 0; k < 3; k++) {
             const message = new Message({
               sender: userA._id,
@@ -142,8 +136,8 @@ const seedDatabase = async () => {
           const insertedDirectMessages = await Message.insertMany(messages);
 
           if (insertedDirectMessages.length > 0) {
-            conversation.messages = insertedDirectMessages.map((msg) => msg._id);
-            conversation.lastMessage = insertedDirectMessages[insertedDirectMessages.length - 1]._id;
+            conversation.messages = insertedDirectMessages.map((msg) => msg._id as mongoose.Types.ObjectId);
+            conversation.lastMessage = insertedDirectMessages[insertedDirectMessages.length - 1]._id as mongoose.Types.ObjectId;
             await conversation.save();
           }
         }
@@ -153,9 +147,7 @@ const seedDatabase = async () => {
     console.log("Database seeded successfully with conversations and messages!");
   } catch (error) {
     console.error("Error seeding database:", error);
-  } finally {
-    mongoose.connection.close();
   }
 };
 
-seedDatabase();
+export default seedDatabase;

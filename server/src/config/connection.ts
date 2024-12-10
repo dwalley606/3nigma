@@ -3,19 +3,31 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const config = {
+interface Config {
+  mongodb: {
+    uri: string;
+  };
+  server: {
+    port: number;
+  };
+  jwt: {
+    secret: string;
+  };
+}
+
+const config: Config = {
   mongodb: {
     uri: process.env.MONGODB_URI || "mongodb://db:27017/enigma",
   },
   server: {
-    port: process.env.PORT || 3001,
+    port: parseInt(process.env.PORT || '3001', 10),
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'your_default_secret',
   }
 };
 
-const connectDB = async () => {
+const connectDB = async (): Promise<boolean> => {
   try {
     await mongoose.connect(config.mongodb.uri, {
       serverSelectionTimeoutMS: 5000,
@@ -27,7 +39,7 @@ const connectDB = async () => {
       console.log('MongoDB Connected Successfully');
     });
 
-    mongoose.connection.on('error', (err) => {
+    mongoose.connection.on('error', (err: Error) => {
       console.error('MongoDB connection error:', err);
     });
 
@@ -36,7 +48,7 @@ const connectDB = async () => {
     });
 
   } catch (err) {
-    console.error('Error connecting to MongoDB:', err.message);
+    console.error('Error connecting to MongoDB:', (err as Error).message);
     return false;
   }
   return true;

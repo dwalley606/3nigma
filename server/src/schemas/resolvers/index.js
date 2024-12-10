@@ -1,6 +1,6 @@
-import { userResolvers } from './userResolvers.js';
-import { messageResolvers } from './messageResolvers.js';
-import { groupResolvers } from './groupResolvers.js';
+import { userResolvers } from './user/queries.js';
+import { messageResolvers } from './message/queries.js';
+import { groupResolvers } from './group/queries.js/index.js';
 
 const resolvers = {
   Query: {
