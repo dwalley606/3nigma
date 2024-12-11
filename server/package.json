@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc && npm run copy-schemas",
     "start": "node dist/server.js",
-    "dev": "cross-env NODE_ENV=development ts-node-dev --esm --experimental-specifier-resolution=node src/server.ts",
+    "dev": "cross-env NODE_ENV=development ts-node-dev --experimental-specifier-resolution=node ./src/server.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --detectOpenHandles",
     "test:watch": "jest --watch",
     "watch": "tsc -w",
@@ -24,6 +24,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "graphql": "^16.9.0",
+    "graphql-tag": "^2.12.6",
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.9.0",
