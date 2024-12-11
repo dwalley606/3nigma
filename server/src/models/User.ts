@@ -1,7 +1,7 @@
 // server/models/User.ts
 import mongoose, { Document, Schema, Model } from "mongoose";
 import bcrypt from "bcryptjs";
-import { IGroup } from "./Group"; // Assuming you have a Group interface
+import { IGroup } from "./Group.js"; // Assuming you have a Group interface
 
 // Define an interface for the User document
 export interface IUser extends Document {

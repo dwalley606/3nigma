@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
-import { IUser } from "./User"; // Assuming you have a User interface
+import { IUser } from "./User.js"; // Assuming you have a User interface
 
 // Define an interface for the Group document
 export interface IGroup extends Document {
@@ -8,6 +8,7 @@ export interface IGroup extends Document {
   admins: IUser['_id'][];
   createdAt: Date;
   updatedAt: Date;
+  conversationId: mongoose.Types.ObjectId;
 }
 
 // Define the schema
@@ -17,6 +18,7 @@ const groupSchema: Schema<IGroup> = new Schema({
   admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  conversationId: { type: mongoose.Schema.Types.ObjectId, ref: "Conversation" },
 });
 
 // Create the model

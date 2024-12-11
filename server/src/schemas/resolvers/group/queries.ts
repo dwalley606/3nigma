@@ -1,8 +1,11 @@
+import mongoose from 'mongoose';
 import { IResolvers } from '@graphql-tools/utils';
 import Group from "../../../models/Group.js";
 import User from "../../../models/User.js";
 import Conversation from "../../../models/Conversation.js";
-import { Context } from '../../types'; // Assuming you have a Context type defined
+import { AuthContext } from '../../../utils/auth.js'; // Import the AuthContext type
+import { IMessage } from "../../../models/Message.js";
+import { IUser } from "../../../models/User.js"; // Assuming you have a User interface
 
 interface GetGroupConversationsArgs {
   userId: string;
@@ -17,7 +20,7 @@ export const groupQueries: IResolvers = {
     getGroupConversations: async (
       _: unknown,
       { userId }: GetGroupConversationsArgs,
-      context: Context
+      context: AuthContext // Use the context type
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group conversations.");
@@ -40,26 +43,34 @@ export const groupQueries: IResolvers = {
             return null;
           }
 
-          const lastMessage = conversation.lastMessage || null;
+          const lastMessage = conversation.lastMessage;
+
+          if (!lastMessage || !(lastMessage instanceof mongoose.Document)) {
+            console.warn("Last message is not populated");
+            return null;
+          }
+
+          const message = lastMessage.toObject() as IMessage;
+
+          const groupId = message.groupRecipientId;
+
+          if (!groupId) {
+            console.warn("No groupRecipientId found for conversation ID:", conversation._id);
+            return null;
+          }
 
           return {
             id: conversation._id ? conversation._id.toString() : null,
-            lastMessage: lastMessage
-              ? {
-                  id: lastMessage._id ? lastMessage._id.toString() : null,
-                  content: lastMessage.content || "",
-                  sender: {
-                    id: lastMessage.sender
-                      ? lastMessage.sender._id.toString()
-                      : null,
-                    username: lastMessage.sender
-                      ? lastMessage.sender.username
-                      : null,
-                  },
-                  timestamp: lastMessage.timestamp,
-                  groupRecipientId: lastMessage.groupRecipientId,
-                }
-              : null,
+            lastMessage: {
+              id: message._id ? message._id.toString() : null,
+              content: message.content || "",
+              sender: {
+                id: message.sender ? message.sender._id.toString() : null,
+                username: message.sender ? message.sender.username : null,
+              },
+              timestamp: message.timestamp,
+              groupRecipientId: message.groupRecipientId,
+            },
             createdAt: conversation.createdAt,
           };
         });
@@ -72,7 +83,7 @@ export const groupQueries: IResolvers = {
     getGroupDetails: async (
       _: unknown,
       { userId }: GetGroupDetailsArgs,
-      context: Context
+      context: AuthContext // Use the context type
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group details.");

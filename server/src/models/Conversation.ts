@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Model } from 'mongoose';
 
 // Define interfaces for the Conversation document
 interface IConversation extends Document {
@@ -9,6 +9,8 @@ interface IConversation extends Document {
   name?: string;
   unreadCount: number;
   groupId?: mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const conversationSchema = new Schema<IConversation>({
@@ -48,7 +50,7 @@ const conversationSchema = new Schema<IConversation>({
     type: Schema.Types.ObjectId, 
     ref: 'Group' 
   }
-});
+}, { timestamps: true });
 
 // Export the model with type information
 export default mongoose.model<IConversation>('Conversation', conversationSchema);

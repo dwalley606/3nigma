@@ -3,7 +3,9 @@ import Group from "../../../models/Group.js";
 import User from "../../../models/User.js";
 import Conversation from "../../../models/Conversation.js";
 import Message from "../../../models/Message.js";
-import { Context } from '../../types'; // Assuming you have a Context type defined
+import { AuthContext } from '../../../utils/auth.js';
+import { IUser } from "../../../models/User.js";
+import mongoose, { Types } from 'mongoose';
 
 interface CreateGroupArgs {
   name: string;
@@ -30,7 +32,7 @@ export const groupMutations: IResolvers = {
     createGroup: async (
       _: unknown,
       { name, memberIds }: CreateGroupArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to create a group.");
@@ -70,8 +72,12 @@ export const groupMutations: IResolvers = {
 
         const savedMessage = await newMessage.save();
 
-        savedConversation.lastMessage = savedMessage._id;
-        savedConversation.messages.push(savedMessage._id);
+        if (!savedMessage._id) {
+          throw new Error("Failed to save message and generate an ObjectId.");
+        }
+
+        savedConversation.lastMessage = savedMessage._id as Types.ObjectId;
+        savedConversation.messages.push(savedMessage._id as Types.ObjectId);
         await savedConversation.save();
 
         const populatedGroup = await Group.findById(savedGroup._id)
@@ -81,10 +87,17 @@ export const groupMutations: IResolvers = {
         return {
           id: populatedGroup._id.toString(),
           name: populatedGroup.name,
-          members: populatedGroup.members.map((member) => ({
-            id: member._id.toString(),
-            username: member.username,
-          })),
+          members: populatedGroup.members.map((member) => {
+            if (member instanceof mongoose.Document) {
+              const user = member.toObject() as IUser;
+              return {
+                id: user._id.toString(),
+                username: user.username,
+              };
+            }
+            console.warn("Member is not a populated document:", member);
+            return null;
+          }).filter((member) => member !== null),
           createdAt: populatedGroup.createdAt,
         };
       } catch (error) {
@@ -96,7 +109,7 @@ export const groupMutations: IResolvers = {
     addUserToGroup: async (
       _: unknown,
       { groupId, userId }: AddUserToGroupArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to add a group member.");
@@ -129,7 +142,7 @@ export const groupMutations: IResolvers = {
 
         const conversation = await Conversation.findById(group.conversationId);
         if (conversation) {
-          conversation.lastMessage = newMessage._id;
+          conversation.lastMessage = newMessage._id as Types.ObjectId;
           await conversation.save();
         }
 
@@ -151,7 +164,7 @@ export const groupMutations: IResolvers = {
     promoteToAdmin: async (
       _: unknown,
       { groupId, userId }: PromoteToAdminArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to promote a member to admin.");
@@ -160,36 +173,51 @@ export const groupMutations: IResolvers = {
         const group = await Group.findById(groupId);
         if (!group) throw new Error("Group not found");
 
-        if (!group.admins.includes(context.user.id)) {
+        if (!group.admins.includes(new mongoose.Types.ObjectId(context.user.id))) {
           throw new Error("You must be an admin to promote members");
         }
 
-        if (!group.members.includes(userId)) {
+        if (!group.members.includes(new mongoose.Types.ObjectId(userId))) {
           throw new Error("User is not a member of the group");
         }
 
-        if (group.admins.includes(userId)) {
+        if (group.admins.includes(new mongoose.Types.ObjectId(userId))) {
           throw new Error("User is already an admin");
         }
 
-        group.admins.push(userId);
+        group.admins.push(new mongoose.Types.ObjectId(userId));
         await group.save();
 
         const updatedGroup = await Group.findById(groupId)
-          .populate("admins", "_id username")
-          .populate("members", "_id username");
+          .populate("admins", "username email")
+          .populate("members", "username email")
+          .exec();
 
         return {
           id: updatedGroup._id.toString(),
           name: updatedGroup.name,
-          admins: updatedGroup.admins.map((admin) => ({
-            id: admin._id.toString(),
-            username: admin.username,
-          })),
-          members: updatedGroup.members.map((member) => ({
-            id: member._id.toString(),
-            username: member.username,
-          })),
+          admins: updatedGroup.admins.map((admin) => {
+            if (admin instanceof mongoose.Document) {
+              const user = admin.toObject() as IUser;
+              return {
+                id: user._id.toString(),
+                username: user.username,
+              };
+            }
+            console.warn("Admin is not a populated document:", admin);
+            return null;
+          }).filter((admin) => admin !== null),
+          members: updatedGroup.members.map((member) => {
+            if (member instanceof mongoose.Document) {
+              const user = member.toObject() as IUser;
+              return {
+                id: user._id.toString(),
+                username: user.username,
+              };
+            }
+            console.warn("Member is not a populated document:", member);
+            return null;
+          }).filter((member) => member !== null),
         };
       } catch (error) {
         console.error("Error promoting member to admin:", error);
@@ -200,7 +228,7 @@ export const groupMutations: IResolvers = {
     removeGroupMember: async (
       _: unknown,
       { groupId, userId }: RemoveGroupMemberArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to remove a group member.");
@@ -209,12 +237,14 @@ export const groupMutations: IResolvers = {
         const group = await Group.findById(groupId);
         if (!group) throw new Error("Group not found");
 
-        const isAdmin = group.admins.includes(userId);
+        const userObjectId = new mongoose.Types.ObjectId(userId);
 
-        group.members = group.members.filter((memberId) => memberId !== userId);
+        const isAdmin = group.admins.includes(userObjectId);
+
+        group.members = group.members.filter((memberId) => !memberId.equals(userObjectId));
 
         if (isAdmin) {
-          group.admins = group.admins.filter((adminId) => adminId !== userId);
+          group.admins = group.admins.filter((adminId) => !adminId.equals(userObjectId));
 
           if (group.admins.length === 0 && group.members.length > 0) {
             group.admins.push(group.members[0]);

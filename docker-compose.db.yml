@@ -1,18 +1,23 @@
+
+
 services:
-  backend:
+  server:
     build:
       context: ./server
       dockerfile: Dockerfile.server.dev
     ports:
       - "3001:3001"
     environment:
-      - JWT_SECRET=${JWT_SECRET}
-      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://db:27017/enigma
+      - JWT_SECRET=your_jwt_secret
     volumes:
       - ./server:/app
       - /app/node_modules
     depends_on:
       - db
+    networks:
+      - app-network
 
   db:
     image: mongo:latest
@@ -20,6 +25,12 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - app-network
 
 volumes:
   mongodb_data:
+
+networks:
+  app-network:
+    driver: bridge

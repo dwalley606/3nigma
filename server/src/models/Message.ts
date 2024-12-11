@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
-import { IUser } from "./User"; // Assuming you have a User interface
-import { IGroup } from "./Group"; // Assuming you have a Group interface
+import { IUser } from "./User.js"; // Assuming you have a User interface
+import { IGroup } from "./Group.js"; // Assuming you have a Group interface
 
 // Define an interface for the Message document
 export interface IMessage extends Document {

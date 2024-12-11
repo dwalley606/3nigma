@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import User, { IUser } from "../models/User";
-import ContactRequest from "../models/ContactRequest";
-import Message, { IMessage } from "../models/Message";
-import Group, { IGroup } from "../models/Group";
-import Conversation from "../models/Conversation";
+import User, { IUser } from "../models/User.js";
+import ContactRequest from "../models/ContactRequest.js";
+import Message, { IMessage } from "../models/Message.js";
+import Group, { IGroup } from "../models/Group.js";
+import Conversation from "../models/Conversation.js";
 
 const seedDatabase = async (): Promise<void> => {
   try {

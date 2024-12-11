@@ -12,7 +12,7 @@ interface AuthUser {
   username: string;
 }
 
-interface AuthContext {
+export interface AuthContext {
   user: AuthUser | null;
 }
 
