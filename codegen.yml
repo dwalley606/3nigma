@@ -1,9 +1,29 @@
 overwrite: true
-schema: "server/src/schemas/typeDefs.ts" # Path to your schema file
-documents: "client/src/**/*.graphql" # Path to your GraphQL operations
+schema: "./server/src/schemas/typeDefs.ts"
+documents: "./client/src/graphql/**/*.graphql"
 generates:
-  client/src/generated/graphql.ts: # Output path for generated types
+  client/src/generated/graphql.ts:
     plugins:
       - "typescript"
       - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      withHooks: true
+      
+  server/src/generated/graphql.ts:
+    plugins:
+      - "typescript"
       - "typescript-resolvers"
+    config:
+      mappers:
+        User: "../models/User#IUser"
+        Group: "../models/Group#IGroup"
+        Message: "../models/Message#IMessage"
+        Conversation: "../models/Conversation#IConversation"
+
+hooks:
+  afterAllFileWrite:
+    - prettier --write
+
+require:
+  - ts-node/register
