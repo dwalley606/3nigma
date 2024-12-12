@@ -2,7 +2,9 @@ import { IResolvers } from '@graphql-tools/utils';
 import mongoose from 'mongoose';
 import Message from "../../../models/Message.js";
 import Conversation from "../../../models/Conversation.js";
-import { Context } from '../../types'; // Assuming you have a Context type defined
+import { AuthContext } from '../../../utils/auth.js';
+import { IUser } from "../../../models/User.js";
+import { IMessage } from "../../../models/Message.js";
 
 interface GetConversationsArgs {
   userId: string;
@@ -21,36 +23,36 @@ export const messageQueries: IResolvers = {
     getConversations: async (
       _: unknown,
       { userId }: GetConversationsArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to view conversations.");
       }
       try {
         const conversations = await Conversation.find({ participants: userId })
-          .populate("participants", "id username")
+          .populate("participants", "username")
           .populate({
             path: "messages",
             populate: {
               path: "sender",
-              select: "id username",
+              select: "username",
             },
           })
           .populate({
             path: "lastMessage",
             populate: {
               path: "sender",
-              select: "id username",
+              select: "username",
             },
           })
           .populate("groupId");
 
         const sortedConversations = conversations.sort((a, b) => {
-          const lastMessageA = a.lastMessage
-            ? new Date(a.lastMessage.timestamp).getTime()
+          const lastMessageA = a.lastMessage instanceof mongoose.Document
+            ? new Date((a.lastMessage.toObject() as IMessage).timestamp).getTime()
             : 0;
-          const lastMessageB = b.lastMessage
-            ? new Date(b.lastMessage.timestamp).getTime()
+          const lastMessageB = b.lastMessage instanceof mongoose.Document
+            ? new Date((b.lastMessage.toObject() as IMessage).timestamp).getTime()
             : 0;
           return lastMessageB - lastMessageA;
         });
@@ -62,40 +64,41 @@ export const messageQueries: IResolvers = {
               : null;
 
           return {
-            ...conversation.toObject(),
             id: conversation._id.toString(),
             participants: conversation.participants.map((participant) => {
-              if (!participant) {
-                console.warn(
-                  "Missing participant in conversation:",
-                  conversation._id
-                );
-                return null;
+              if (participant instanceof mongoose.Document) {
+                const user = participant.toObject() as IUser;
+                return {
+                  id: user._id.toString(),
+                  username: user.username,
+                };
               }
-              return {
-                ...participant.toObject(),
-                id: participant._id.toString(),
-              };
-            }),
-            messages: conversation.messages.map((message) => ({
-              ...message.toObject(),
-              id: message._id.toString(),
-              sender: {
-                ...message.sender.toObject(),
-                id: message.sender._id.toString(),
-              },
-            })),
-            lastMessage: conversation.lastMessage
+              return null;
+            }).filter((participant) => participant !== null),
+            messages: conversation.messages.map((message) => {
+              if (message instanceof mongoose.Document) {
+                const msg = message.toObject();
+                return {
+                  id: msg._id.toString(),
+                  content: msg.content,
+                  sender: msg.sender instanceof mongoose.Document ? {
+                    id: msg.sender._id.toString(),
+                    username: msg.sender.username,
+                  } : null,
+                  timestamp: msg.timestamp,
+                };
+              }
+              return null;
+            }).filter((message) => message !== null),
+            lastMessage: conversation.lastMessage instanceof mongoose.Document
               ? {
-                  ...conversation.lastMessage.toObject(),
                   id: conversation.lastMessage._id.toString(),
-                  sender: conversation.lastMessage.sender
-                    ? {
-                        ...conversation.lastMessage.sender.toObject(),
-                        id: conversation.lastMessage.sender._id.toString(),
-                      }
-                    : null,
-                  timestamp: conversation.lastMessage.timestamp,
+                  content: (conversation.lastMessage.toObject() as IMessage).content,
+                  sender: (conversation.lastMessage.toObject() as IMessage & { sender: IUser }).sender ? {
+                    id: (conversation.lastMessage.toObject() as IMessage & { sender: IUser }).sender._id.toString(),
+                    username: (conversation.lastMessage.toObject() as IMessage & { sender: IUser }).sender.username,
+                  } : null,
+                  timestamp: (conversation.lastMessage.toObject() as IMessage).timestamp,
                 }
               : null,
             isGroup: conversation.isGroup,
@@ -103,8 +106,7 @@ export const messageQueries: IResolvers = {
           };
         });
       } catch (error) {
-        console.error("Error fetching conversations:", error.message);
-        console.error("Stack trace:", error.stack);
+        console.error("Error fetching conversations:", error);
         throw new Error("Failed to fetch conversations");
       }
     },
@@ -112,7 +114,7 @@ export const messageQueries: IResolvers = {
     getDirectMessages: async (
       _: unknown,
       { userId }: GetDirectMessagesArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to view messages.");
@@ -123,7 +125,15 @@ export const messageQueries: IResolvers = {
           isGroupMessage: false,
         }).populate("sender", "username");
 
-        return messages;
+        return messages.map((message) => ({
+          id: message._id.toString(),
+          content: message.content,
+          sender: message.sender instanceof mongoose.Document ? {
+            id: message.sender._id.toString(),
+            username: (message.sender.toObject() as IUser).username,
+          } : null,
+          timestamp: message.timestamp,
+        }));
       } catch (error) {
         console.error("Error fetching direct messages:", error);
         throw new Error("Failed to fetch direct messages");
@@ -133,7 +143,7 @@ export const messageQueries: IResolvers = {
     getGroupMessages: async (
       _: unknown,
       { groupId }: GetGroupMessagesArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to view group messages.");
@@ -146,22 +156,16 @@ export const messageQueries: IResolvers = {
         const messages = await Message.find({
           groupRecipientId: groupId,
           isGroupMessage: true,
-        }).populate("sender", "id username");
-
-        if (!messages.length) {
-          throw new Error("No messages found for this group.");
-        }
+        }).populate("sender", "username");
 
         return messages.map((message) => ({
           id: message._id.toString(),
           content: message.content,
-          sender: {
+          sender: message.sender instanceof mongoose.Document ? {
             id: message.sender._id.toString(),
-            username: message.sender.username,
-          },
+            username: (message.sender.toObject() as IUser).username,
+          } : null,
           timestamp: message.timestamp,
-          isGroupMessage: message.isGroupMessage,
-          groupRecipientId: message.groupRecipientId.toString(),
         }));
       } catch (error) {
         console.error("Error fetching group messages:", error);

@@ -253,14 +253,21 @@ export const groupMutations: IResolvers = {
 
         await group.save();
 
+        const populatedGroup = await Group.findById(groupId)
+          .populate('members', 'username')
+          .populate('admins', 'username')
+          .exec();
+
         return {
-          id: group._id.toString(),
-          name: group.name,
-          admins: group.admins.map((adminId) => ({
-            id: adminId.toString(),
+          id: populatedGroup._id.toString(),
+          name: populatedGroup.name,
+          admins: populatedGroup.admins.map((admin: any) => ({
+            id: admin._id.toString(),
+            username: admin.username,
           })),
-          members: group.members.map((memberId) => ({
-            id: memberId.toString(),
+          members: populatedGroup.members.map((member: any) => ({
+            id: member._id.toString(),
+            username: member.username,
           })),
         };
       } catch (error) {

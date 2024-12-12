@@ -2,7 +2,8 @@ import { IResolvers } from '@graphql-tools/utils';
 import Message from "../../../models/Message.js";
 import Conversation from "../../../models/Conversation.js";
 import Group from "../../../models/Group.js";
-import { Context } from '../../types'; // Assuming you have a Context type defined
+import { AuthContext } from '../../../utils/auth.js';
+import { Types } from 'mongoose';
 
 interface SendDirectMessageArgs {
   recipientId: string;
@@ -23,12 +24,17 @@ interface MarkMessagesAsReadArgs {
   conversationId: string;
 }
 
+interface PopulatedSender {
+  _id: Types.ObjectId;
+  username: string;
+}
+
 export const messageMutations: IResolvers = {
   Mutation: {
     sendDirectMessage: async (
       _: unknown,
       { recipientId, content }: SendDirectMessageArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to send messages.");
@@ -60,16 +66,28 @@ export const messageMutations: IResolvers = {
             isGroup: false,
           });
         } else {
-          conversation.messages.push(savedMessage._id);
-          conversation.lastMessage = savedMessage._id;
+          conversation.messages.push(savedMessage._id as Types.ObjectId);
+          conversation.lastMessage = savedMessage._id as Types.ObjectId;
         }
 
         await conversation.save();
-        await savedMessage.populate("sender", "id username");
+        await savedMessage.populate({
+          path: "sender",
+          select: "username"
+        });
 
         return {
           success: true,
-          message: savedMessage,
+          message: {
+            id: savedMessage._id.toString(),
+            content: savedMessage.content,
+            sender: {
+              id: (savedMessage.sender as unknown as PopulatedSender)._id.toString(),
+              username: (savedMessage.sender as unknown as PopulatedSender).username,
+            },
+            timestamp: savedMessage.timestamp,
+            isGroupMessage: savedMessage.isGroupMessage,
+          },
         };
       } catch (error) {
         console.error("Error in sendDirectMessage:", error);
@@ -80,7 +98,7 @@ export const messageMutations: IResolvers = {
     sendGroupMessage: async (
       _: unknown,
       { groupId, content }: SendGroupMessageArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to send messages.");
@@ -118,8 +136,8 @@ export const messageMutations: IResolvers = {
             groupId: groupId,
           });
         } else {
-          conversation.messages.push(savedMessage._id);
-          conversation.lastMessage = savedMessage._id;
+          conversation.messages.push(savedMessage._id as Types.ObjectId);
+          conversation.lastMessage = savedMessage._id as Types.ObjectId;
         }
         await conversation.save();
         await savedMessage.populate("sender", "id username");
@@ -130,8 +148,8 @@ export const messageMutations: IResolvers = {
             id: savedMessage._id.toString(),
             content: savedMessage.content,
             sender: {
-              id: savedMessage.sender._id.toString(),
-              username: savedMessage.sender.username,
+              id: (savedMessage.sender as unknown as PopulatedSender)._id.toString(),
+              username: (savedMessage.sender as unknown as PopulatedSender).username,
             },
             timestamp: savedMessage.timestamp,
             isGroupMessage: savedMessage.isGroupMessage,
@@ -146,7 +164,7 @@ export const messageMutations: IResolvers = {
     deleteMessage: async (
       _: unknown,
       { messageId, forEveryone }: DeleteMessageArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to delete messages.");
@@ -169,7 +187,7 @@ export const messageMutations: IResolvers = {
     markMessagesAsRead: async (
       _: unknown,
       { conversationId }: MarkMessagesAsReadArgs,
-      context: Context
+      context: AuthContext
     ) => {
       if (!context.user) {
         throw new Error("You must be logged in to mark messages as read.");

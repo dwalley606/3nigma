@@ -50,7 +50,7 @@ export const groupQueries: IResolvers = {
             return null;
           }
 
-          const message = lastMessage.toObject() as IMessage;
+          const message = lastMessage.toObject() as IMessage & { sender: IUser };
 
           const groupId = message.groupRecipientId;
 
@@ -108,35 +108,56 @@ export const groupQueries: IResolvers = {
               return null;
             }
 
-            const lastMessage = conversation.lastMessage || null;
-            const groupId = lastMessage ? lastMessage.groupRecipientId : null;
+            const lastMessage = conversation.lastMessage;
+            if (lastMessage instanceof mongoose.Document) {
+              const message = lastMessage.toObject() as IMessage;
+              const groupId = message.groupRecipientId;
 
-            if (!groupId) {
-              console.warn(
-                "No groupRecipientId found for conversation ID:",
-                conversation._id
-              );
-              return null;
+              if (!groupId) {
+                console.warn(
+                  "No groupRecipientId found for conversation ID:",
+                  conversation._id
+                );
+                return null;
+              }
+
+              const group = await Group.findById(groupId)
+                .populate("admins", "username")
+                .populate("members", "username")
+                .exec();
+
+              if (!group) {
+                console.warn("Group not found for group ID:", groupId);
+                return null;
+              }
+
+              return {
+                id: group._id.toString(),
+                name: group.name,
+                lastMessage: lastMessage || null,
+                admins: group.admins.map((admin) => {
+                  if (admin instanceof mongoose.Document) {
+                    const user = admin.toObject() as IUser;
+                    return {
+                      id: user._id.toString(),
+                      username: user.username,
+                    };
+                  }
+                  return null;
+                }).filter((admin) => admin !== null),
+                members: group.members.map((member) => {
+                  if (member instanceof mongoose.Document) {
+                    const user = member.toObject() as IUser;
+                    return {
+                      id: user._id.toString(),
+                      username: user.username,
+                    };
+                  }
+                  return null;
+                }).filter((member) => member !== null),
+                isGroup: true,
+              };
             }
-
-            const group = await Group.findById(groupId)
-              .populate("admins", "id username")
-              .populate("members", "id username")
-              .exec();
-
-            if (!group) {
-              console.warn("Group not found for group ID:", groupId);
-              return null;
-            }
-
-            return {
-              id: group._id.toString(),
-              name: group.name,
-              lastMessage: lastMessage || null,
-              admins: group.admins,
-              members: group.members,
-              isGroup: true,
-            };
           })
         );
 
