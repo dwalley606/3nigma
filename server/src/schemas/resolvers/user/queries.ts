@@ -3,6 +3,7 @@ import ContactRequest from "../../../models/ContactRequest.js";
 import Group from "../../../models/Group.js";
 import Conversation from "../../../models/Conversation.js";
 import { IResolvers } from '@graphql-tools/utils';
+import mongoose from 'mongoose';
 
 interface GetUserByIdArgs {
   id: string;
@@ -60,12 +61,13 @@ export const userQueries: IResolvers = {
           isGroup: false,
         });
 
-        return user.contacts.map(contact => {
-          const conversation = conversations.find(conv => conv.participants.includes(contact.id));
+        return user.contacts.map(async contact => {
+          const contactUser = await User.findById(new mongoose.Types.ObjectId(contact.id.toString()));
+          const conversation = conversations.find(conv => conv.participants.includes(contactUser._id));
           return {
-            id: contact.id,
-            username: contact.username,
-            email: contact.email,
+            id: contactUser._id.toString(),
+            username: contactUser.username,
+            email: contactUser.email,
             conversationId: conversation ? conversation.id : null,
           };
         });
@@ -89,13 +91,10 @@ export const userQueries: IResolvers = {
           status: "pending",
         }).populate("to", "username email");
 
-        return [...incomingRequests, ...outgoingRequests].map(request => ({
-          id: request.id.toString(),
-          from: {
-            id: request.from.id.toString(),
-            username: request.from.username,
-            email: request.from.email,
-          },
+        return incomingRequests.map(request => ({
+          id: request.from._id.toString(),
+          username: request.from.username,
+          email: request.from.email,
           status: request.status,
         }));
       } catch (error) {

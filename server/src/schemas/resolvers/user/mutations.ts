@@ -67,7 +67,7 @@ export const userMutations: IResolvers = {
     },
     refreshToken: async (_: unknown, { refreshToken }: RefreshTokenArgs) => {
       try {
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET) as jwt.JwtPayload;
         const newToken = jwt.sign({ id: decoded.id }, process.env.JWT_SECRET, {
           expiresIn: "15m",
         });
@@ -109,7 +109,7 @@ export const userMutations: IResolvers = {
           throw new Error("Contact request not found");
         }
 
-        request.status = status;
+        request.status = status as "pending" | "accepted" | "rejected";
         const updatedRequest = await request.save();
 
         if (status === "accepted") {
