@@ -1,20 +1,17 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": false,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "allowJs": true
+    "strict": true,
+    "noImplicitAny": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifiers": true
-  },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["node_modules", "dist"]
 }
