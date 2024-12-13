@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ interface Config {
 
 const config: Config = {
   mongodb: {
-    uri: process.env.MONGODB_URI || "mongodb://db:27017/enigma",
+    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/3nigma',
   },
   server: {
     port: parseInt(process.env.PORT || '3001', 10),
@@ -29,7 +30,11 @@ const config: Config = {
 
 const connectDB = async (): Promise<boolean> => {
   try {
-    await mongoose.connect(config.mongodb.uri, {
+    console.log('Using MongoDB Memory Server...');
+    const mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+
+    await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 5000,
       heartbeatFrequencyMS: 30000,
       maxPoolSize: 10,
