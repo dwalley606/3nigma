@@ -1,7 +1,8 @@
 import mongoose, { Document, Schema, Model } from 'mongoose';
 
 // Define interfaces for the Conversation document
-interface IConversation extends Document {
+export interface IConversation extends Document {
+  _id: mongoose.Types.ObjectId;
   participants: mongoose.Types.ObjectId[];
   messages: mongoose.Types.ObjectId[];
   lastMessage?: mongoose.Types.ObjectId;
@@ -14,6 +15,7 @@ interface IConversation extends Document {
 }
 
 const conversationSchema = new Schema<IConversation>({
+  _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
   participants: {
     type: [{ 
       type: Schema.Types.ObjectId, 
@@ -53,4 +55,6 @@ const conversationSchema = new Schema<IConversation>({
 }, { timestamps: true });
 
 // Export the model with type information
-export default mongoose.model<IConversation>('Conversation', conversationSchema);
+const Conversation: Model<IConversation> = mongoose.model<IConversation>('Conversation', conversationSchema);
+
+export default Conversation;

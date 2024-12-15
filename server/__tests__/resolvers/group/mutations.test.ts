@@ -1,9 +1,8 @@
 import request from 'supertest';
 import app from '../../../src/server.js'; // Adjust the path to your Express app
 import User from '../../../src/models/User.js';
-import Group from '../../../src/models/Group.js';
-import Message from '../../../src/models/Message.js';
-import Conversation from '../../../src/models/Conversation.js';
+import Group, { IGroup } from '../../../src/models/Group.js'; // Import the Group model type
+import { MutationCreateGroupArgs, MutationAddUserToGroupArgs, MutationPromoteToAdminArgs, MutationRemoveGroupMemberArgs } from '../../../src/generated/graphql.js'; // Adjust the path to your generated types
 
 describe('Group Mutations', () => {
   let userId: string;
@@ -21,12 +20,17 @@ describe('Group Mutations', () => {
   });
 
   it('should create a group', async () => {
+    const variables: MutationCreateGroupArgs = {
+      name: "Test Group",
+      memberIds: [userId],
+    };
+
     const response = await request(app)
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            createGroup(name: "Test Group", memberIds: ["${userId}"]) {
+          mutation CreateGroup($name: String!, $memberIds: [ID!]!) {
+            createGroup(name: $name, memberIds: $memberIds) {
               id
               name
               members {
@@ -37,6 +41,7 @@ describe('Group Mutations', () => {
             }
           }
         `,
+        variables,
       })
       .set('Authorization', `Bearer YOUR_JWT_TOKEN`); // Replace with a valid JWT token
 
@@ -47,14 +52,13 @@ describe('Group Mutations', () => {
   });
 
   it('should add a user to a group', async () => {
-    // First, create a group
-    const group = await Group.create({
+    const group: IGroup = await Group.create({ // Explicitly type the group
       name: 'Another Group',
       members: [userId],
       admins: [userId],
       createdAt: new Date().toISOString(),
     });
-    groupId = group._id.toString();
+    groupId = group._id.toString(); // Now this should work without error
 
     const newUser = await User.create({
       username: 'newuser',
@@ -63,12 +67,17 @@ describe('Group Mutations', () => {
       phoneNumber: '0987654321',
     });
 
+    const variables: MutationAddUserToGroupArgs = {
+      groupId: groupId,
+      userId: newUser._id.toString(),
+    };
+
     const response = await request(app)
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            addUserToGroup(groupId: "${groupId}", userId: "${newUser._id}") {
+          mutation AddUserToGroup($groupId: ID!, $userId: ID!) {
+            addUserToGroup(groupId: $groupId, userId: $userId) {
               id
               name
               members {
@@ -78,6 +87,7 @@ describe('Group Mutations', () => {
             }
           }
         `,
+        variables,
       })
       .set('Authorization', `Bearer YOUR_JWT_TOKEN`); // Replace with a valid JWT token
 
@@ -86,8 +96,7 @@ describe('Group Mutations', () => {
   });
 
   it('should promote a user to admin', async () => {
-    // Create a group and promote the user
-    const group = await Group.create({
+    const group: IGroup = await Group.create({
       name: 'Group to Promote',
       members: [userId],
       admins: [userId],
@@ -107,21 +116,30 @@ describe('Group Mutations', () => {
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            addUserToGroup(groupId: "${groupId}", userId: "${newUser._id}") {
+          mutation AddUserToGroup($groupId: ID!, $userId: ID!) {
+            addUserToGroup(groupId: $groupId, userId: $userId) {
               id
             }
           }
         `,
+        variables: {
+          groupId: groupId,
+          userId: newUser._id.toString(),
+        },
       })
       .set('Authorization', `Bearer YOUR_JWT_TOKEN`); // Replace with a valid JWT token
+
+    const variables: MutationPromoteToAdminArgs = {
+      groupId: groupId,
+      userId: newUser._id.toString(),
+    };
 
     const response = await request(app)
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            promoteToAdmin(groupId: "${groupId}", userId: "${newUser._id}") {
+          mutation PromoteToAdmin($groupId: ID!, $userId: ID!) {
+            promoteToAdmin(groupId: $groupId, userId: $userId) {
               id
               admins {
                 id
@@ -130,6 +148,7 @@ describe('Group Mutations', () => {
             }
           }
         `,
+        variables,
       })
       .set('Authorization', `Bearer YOUR_JWT_TOKEN`); // Replace with a valid JWT token
 
@@ -140,7 +159,6 @@ describe('Group Mutations', () => {
   });
 
   it('should remove a user from a group', async () => {
-    // Create a group and add a user
     const group = await Group.create({
       name: 'Group to Remove From',
       members: [userId],
@@ -161,21 +179,30 @@ describe('Group Mutations', () => {
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            addUserToGroup(groupId: "${groupId}", userId: "${newUser._id}") {
+          mutation AddUserToGroup($groupId: ID!, $userId: ID!) {
+            addUserToGroup(groupId: $groupId, userId: $userId) {
               id
             }
           }
         `,
+        variables: {
+          groupId: groupId,
+          userId: newUser._id.toString(),
+        },
       })
       .set('Authorization', `Bearer YOUR_JWT_TOKEN`); // Replace with a valid JWT token
+
+    const variables: MutationRemoveGroupMemberArgs = {
+      groupId: groupId,
+      userId: newUser._id.toString(),
+    };
 
     const response = await request(app)
       .post('/graphql')
       .send({
         query: `
-          mutation {
-            removeGroupMember(groupId: "${groupId}", userId: "${newUser._id}") {
+          mutation RemoveGroupMember($groupId: ID!, $userId: ID!) {
+            removeGroupMember(groupId: $groupId, userId: $userId) {
               id
               members {
                 id
@@ -184,6 +211,7 @@ describe('Group Mutations', () => {
             }
           }
         `,
+        variables,
       })
       .set('Authorization', `Bearer YOUR_JWT_TOKEN`); // Replace with a valid JWT token
 

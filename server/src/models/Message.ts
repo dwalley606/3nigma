@@ -4,6 +4,7 @@ import { IGroup } from "./Group.js"; // Assuming you have a Group interface
 
 // Define an interface for the Message document
 export interface IMessage extends Document {
+  _id: mongoose.Types.ObjectId;
   content: string;
   sender: mongoose.Types.ObjectId;
   userRecipientId?: mongoose.Types.ObjectId;
@@ -14,6 +15,7 @@ export interface IMessage extends Document {
 
 // Define the schema
 const messageSchema: Schema<IMessage> = new Schema({
+  _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
   content: { type: String, required: true },
   sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   userRecipientId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

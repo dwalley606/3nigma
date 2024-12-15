@@ -1,7 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Model } from 'mongoose';
 
 // Define an interface for the ContactRequest document
-interface IContactRequest extends Document {
+export interface IContactRequest extends Document {
+  _id: mongoose.Types.ObjectId;
   from: mongoose.Types.ObjectId;
   to: mongoose.Types.ObjectId;
   status: 'pending' | 'accepted' | 'rejected';
@@ -12,14 +13,15 @@ interface IContactRequest extends Document {
 const CONTACT_REQUEST_STATUSES = ['pending', 'accepted', 'rejected'] as const;
 type ContactRequestStatus = typeof CONTACT_REQUEST_STATUSES[number];
 
-const contactRequestSchema = new Schema<IContactRequest>({
+const contactRequestSchema: Schema<IContactRequest> = new Schema({
+  _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
   from: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
   to: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
   },
@@ -35,5 +37,7 @@ const contactRequestSchema = new Schema<IContactRequest>({
   },
 });
 
-// Export the model with type information
-export default mongoose.model<IContactRequest>('ContactRequest', contactRequestSchema);
+// Create the model
+const ContactRequest: Model<IContactRequest> = mongoose.model<IContactRequest>('ContactRequest', contactRequestSchema);
+
+export default ContactRequest;

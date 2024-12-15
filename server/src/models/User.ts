@@ -44,6 +44,7 @@ const userSchema: Schema<IUser> = new Schema({
   lastSeen: Date,
   profilePicUrl: String,
   contacts: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
 });
 
 // Pre-save middleware to hash the password before saving

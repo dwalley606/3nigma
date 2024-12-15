@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import path from "path";
-import { fileURLToPath } from "url";
+// import path from "path";
+// import { fileURLToPath } from "url";
 import express, { Express, Request, Response } from "express";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware, ExpressContextFunctionArgument } from "@apollo/server/express4";
@@ -11,8 +11,8 @@ import { typeDefs, resolvers } from "./schemas/index.js";
 import connectDB, { config } from './config/connection.js';
 import cors from "cors";
 
-const __filename: string = fileURLToPath(import.meta.url);
-const __dirname: string = path.dirname(__filename);
+// const __filename: string = fileURLToPath(import.meta.url);
+// const __dirname: string = path.dirname(__filename);
 
 const PORT: number = config.server.port;
 const app: Express = express();
